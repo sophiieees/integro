@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Propiedad · Íntegro</title>
+  <meta name="description" content="Ficha de una propiedad verificada en Íntegro: precio total, anfitrión verificado y entrada con chapa inteligente.">
+  <meta name="theme-color" content="#0F3D52">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body>
+  <!-- Ficha de propiedad. Se llena desde assets/js/datos.js con el parámetro ?id= de la URL. -->
+  <header class="cabecera">
+    <div class="contenedor">
+      <a class="marca" href="index.html" aria-label="Íntegro, inicio"><span class="marca-punto" aria-hidden="true"></span>Íntegro</a>
+      <nav class="nav-principal" aria-label="Principal">
+        <a href="index.html#resultados" aria-current="page">Hospedajes</a>
+        <a href="index.html#como-funciona">Cómo funciona</a>
+        <a href="index.html#anfitriones">Anfitriones</a>
+      </nav>
+      <div class="cabecera-acciones">
+        <a class="btn btn-secundario btn-publicar-cabecera" href="index.html#anfitriones">Publica tu propiedad</a>
+        <a class="btn-enlace" href="#">Entrar</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="ficha contenedor" id="ficha">
+    <p class="migas"><a href="index.html">Inicio</a> › <a href="index.html#resultados"><span data-campo="ciudad">Ciudad</span></a> › <span data-campo="zona-corta">Zona</span></p>
+
+    <div class="ficha-titulo">
+      <h1 data-campo="titulo">Propiedad</h1>
+      <div class="ficha-resumen">
+        <span class="pastilla" data-nivel>Anfitrión verificado</span>
+        <span class="pastilla" data-chapa>Chapa inteligente</span>
+        <span data-campo="calif"></span>
+        <span data-campo="zona"></span>
+      </div>
+    </div>
+
+    <div class="galeria" aria-label="Fotos de la propiedad">
+      <div data-foto><div class="marcador-foto">Foto 1</div></div>
+      <div data-foto><div class="marcador-foto">Foto 2</div></div>
+      <div data-foto><div class="marcador-foto">Foto 3</div></div>
+      <div data-foto><div class="marcador-foto">Foto 4</div></div>
+      <div data-foto><div class="marcador-foto">Foto 5</div></div>
+    </div>
+
+    <div class="ficha-cuerpo">
+      <div>
+        <section class="bloque">
+          <h2 data-campo="tipo">Tipo</h2>
+          <p class="texto-suave" data-campo="capacidad"></p>
+          <div class="anfitrion-tarjeta">
+            <div class="avatar" data-campo="anfitrion-inicial" aria-hidden="true">A</div>
+            <div>
+              <strong>Anfitrión: <span data-campo="anfitrion-nombre"></span></strong>
+              <span data-campo="responde"></span>
+            </div>
+          </div>
+          <ul class="verificacion-capas" aria-label="Verificaciones del anfitrión">
+            <li>Identidad verificada con INE o pasaporte y rostro</li>
+            <li>Cuenta CLABE a su nombre</li>
+            <li>Tarjeta registrada a su nombre</li>
+            <li>Documento de la propiedad y ubicación geolocalizada</li>
+          </ul>
+          <p class="nota-chica" style="margin-top: 12px;" data-campo="pago-anfitrion"></p>
+        </section>
+
+        <section class="bloque">
+          <h2>Descripción</h2>
+          <p data-campo="descripcion"></p>
+        </section>
+
+        <section class="bloque">
+          <h2>Servicios</h2>
+          <ul class="lista-dos-columnas" data-lista="servicios"></ul>
+        </section>
+
+        <section class="bloque">
+          <h2>Reglas de la casa</h2>
+          <ul class="lista-dos-columnas" data-lista="reglas"></ul>
+        </section>
+
+        <section class="bloque">
+          <h2>Política de cancelación: <span data-campo="cancelacion"></span></h2>
+          <p data-campo="cancelacion-detalle"></p>
+          <p class="nota-chica">Política estandarizada de Íntegro. Los plazos exactos son una propuesta pendiente de la revisión legal.</p>
+        </section>
+
+        <section class="bloque">
+          <h2>Ubicación</h2>
+          <p class="texto-suave">Mostramos una zona aproximada de unos 300 metros. La dirección exacta se comparte al confirmar la reserva, para proteger la casa cuando está vacía.</p>
+          <div class="mapa-aproximado" role="img" aria-label="Mapa con la zona aproximada de la propiedad">
+            <div class="mapa-zona"></div>
+            <div class="mapa-leyenda">Zona aproximada · <span data-campo="zona-corta"></span></div>
+          </div>
+        </section>
+
+        <section class="bloque">
+          <h2>Reseñas verificadas</h2>
+          <p class="nota-chica">Solo pueden reseñar quienes completaron una estancia. Huésped y anfitrión califican y las reseñas se publican al mismo tiempo.</p>
+          <div class="resena">
+            <strong>Carla</strong>
+            <span class="texto-suave">Septiembre de 2026 · estancia de 3 noches</span>
+            <p>Tal como en las fotos. Entramos con el teléfono sin coordinar nada y el anfitrión respondió rápido a una duda sobre el agua caliente.</p>
+          </div>
+          <div class="resena">
+            <strong>Rodrigo</strong>
+            <span class="texto-suave">Agosto de 2026 · estancia de 2 noches</span>
+            <p>El total que vi al buscar fue exactamente lo que pagué. Buena ubicación y todo limpio.</p>
+          </div>
+        </section>
+      </div>
+
+      <aside>
+        <div class="caja-precio revelar">
+          <div class="precio-noche"><strong data-campo="precio-noche">$0</strong> <span>por noche</span></div>
+          <form onsubmit="return false">
+            <div class="caja-fechas">
+              <label><span>Llegada</span><input type="date" name="llegada"></label>
+              <label><span>Salida</span><input type="date" name="salida"></label>
+            </div>
+            <div class="caja-huespedes">
+              <label><span>Huéspedes</span>
+                <select name="huespedes">
+                  <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+                </select>
+              </label>
+            </div>
+            <div class="desglose" aria-label="Desglose del precio">
+              <div><span>2 noches × <span data-campo="precio-noche"></span></span><span data-campo="subtotal"></span></div>
+              <div><span>Limpieza</span><span data-campo="limpieza"></span></div>
+              <div><span>Comisión de plataforma</span><span class="cero">$0</span></div>
+              <div class="total"><span>Total</span><span data-campo="total"></span></div>
+            </div>
+            <button class="btn btn-primario" type="button">Reservar</button>
+            <p class="caja-nota">Ejemplo para 2 noches. La cotización por fechas (temporadas, estancia mínima, disponibilidad) todavía no existe en este prototipo.</p>
+          </form>
+          <div class="caja-chapa" data-caja-chapa>
+            <strong>Entrada con chapa inteligente</strong>
+            Tu llave digital llega a la app al confirmar y se desactiva sola al terminar la estancia.
+          </div>
+          <a class="enlace-reporte" href="#">Reportar este anuncio</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      <p><strong>Íntegro</strong> · nombre provisional, sujeto a validación ante el IMPI · Prototipo de octubre de 2026</p>
+      <nav aria-label="Legal">
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Aviso de privacidad</a>
+        <a href="#">Reportar un problema</a>
+      </nav>
+      <p class="pie-seguridad">Íntegro nunca te pedirá pagar fuera de la plataforma ni tu contraseña por correo. Si alguien lo hace, repórtalo desde tu cuenta.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/datos.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
