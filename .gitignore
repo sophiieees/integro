@@ -1,0 +1,10 @@
+# Dependencias (no se usan en el prototipo; se dejan por si entra Next.js)
+node_modules/
+.next/
+# Secretos: nunca en el repositorio (ver docs/arquitectura.md, sección Seguridad)
+.env
+.env.*
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
