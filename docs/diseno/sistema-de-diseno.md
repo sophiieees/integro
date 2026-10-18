@@ -41,14 +41,15 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 
 | Componente | Dónde | Qué comunica |
 |---|---|---|
-| Cabecera fija con marca, navegación y "Publica tu propiedad" | Ambas páginas | El anfitrión tiene un camino visible desde cualquier pantalla (como "List on Wander") |
-| Buscador de cuatro campos y botón | Inicio | Destino, llegada, salida, huéspedes. Rectangular, no píldora, para separarse de Airbnb |
-| Sello de confianza (`.sello`) | Inicio | Cuatro promesas con línea superior verde; elementos libres, sin cajas ni iconos |
+| Cabecera fija con marca, buscador compacto y "Publica tu propiedad" | Portada | Como la cabecera de Wander: la búsqueda siempre a la mano y el anfitrión con un camino visible; sin menú de navegación, los enlaces van en el pie |
+| Buscador de cuatro campos y botón (`.buscador`) | Cabecera de la portada | Destino, llegada, salida, huéspedes. Compacto (una línea de 50 px); en pantallas angostas baja a una segunda fila de la cabecera |
+| Hero con imagen de fondo (`.hero`) | Portada y anfitriones | Foto a lo ancho con velo oscuro y titular centrado; sin imagen, degradado y marcador que dice qué archivo guardar |
+| Sello de confianza (`.sello`) | Portada, debajo de las propiedades | Cuatro promesas con línea superior verde; elementos libres, sin cajas ni iconos |
 | Tarjeta de propiedad (`.tarjeta`) | Inicio | Foto, insignias "Anfitrión verificado" y "Chapa inteligente", título, zona, calificación, precio por noche y total de 2 noches sin cargos |
 | Insignia (`.insignia`) y pastilla (`.pastilla`) | Tarjeta y ficha | Estado del anfitrión (verificado o nuevo) y chapa. El rombo verde es la marca de "verificado" en todo el sitio |
 | Pasos numerados (`.pasos`) | Inicio | Cómo reservar, con numerales en serif |
-| Tabla de planes (`.tabla`) | Inicio | Membresía por propiedades activas; fila destacada en verde |
-| Tabla comparativa (`.tabla-comparativa`) | Inicio, fondo oscuro | Modelo por comisión frente a Íntegro, sin cifras de terceros |
+| Tabla de planes (`.tabla`) | Anfitriones | Membresía por propiedades activas; fila destacada en verde |
+| Tabla comparativa (`.tabla-comparativa`) | Anfitriones, fondo oscuro | Modelo por comisión frente a Íntegro, sin cifras de terceros |
 | Caja de precio (`.caja-precio`) | Ficha, fija al hacer scroll | Desglose con "Comisión de plataforma $0" en verde; es la pantalla donde la promesa de precio total se cumple |
 | Mapa aproximado (`.mapa-aproximado`) | Ficha | Círculo de zona, sin pin exacto: la ubicación exacta solo con reserva confirmada |
 | Aviso de seguridad en el pie (`.pie-seguridad`) | Ambas | "Íntegro nunca te pedirá pagar fuera de la plataforma" (control del documento de ciberseguridad) |
@@ -58,18 +59,18 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 - Sin emojis ni iconos en las secciones. Las viñetas son rombos o cuadrados pequeños en el color de marca.
 - Esquinas discretas (6 a 10 px). Preferencia por elementos libres sobre el fondo en vez de cajas; las únicas cajas son las que necesitan destacarse (buscador, planes, caja de precio).
 - Animaciones solo al entrar en pantalla, una sola vez (`.revelar`), y desactivadas si el sistema pide movimiento reducido.
-- Las imágenes las coloca Sophia. Cada hueco tiene un marcador con la proporción esperada (hero 4:5, tarjetas 4:3, galería de ficha 5 fotos).
+- Las imágenes las coloca Sophia en `web/assets/img/` con los nombres de `web/assets/img/LEEME.md` (`imagen-bienvenida.jpg` para el hero, `propiedad-<id>-<n>.jpg` para tarjetas y galería). Si un archivo no existe, la página muestra el marcador; en cuanto existe, aparece la foto.
 - Contraste mínimo AA en texto; foco visible en verde; etiquetas en todos los campos de formulario.
 
 ## Responsivo
 
 | Corte | Qué cambia |
 |---|---|
-| Más de 960 px | Hero en dos columnas, cuatro sellos en fila, ficha en dos columnas con caja de precio fija |
-| 720 a 960 px | Hero en una columna sin imagen, sellos en dos columnas, ficha en una columna |
-| Menos de 720 px | Navegación oculta (queda la marca y "Entrar"), buscador en dos columnas, sellos y pasos en una columna |
+| Más de 1080 px | Cabecera en una línea: marca, buscador, botón de anfitrión; cuatro sellos en fila; ficha en dos columnas con caja de precio fija |
+| 720 a 1080 px | El buscador baja a una segunda fila de la cabecera; sellos en dos columnas; ficha en una columna |
+| Menos de 720 px | Cabecera ya no fija; buscador en dos columnas (destino y huéspedes a lo ancho); el botón "Publica tu propiedad" se vuelve el enlace "Anfitriones"; sellos y pasos en una columna |
 
-Pendiente: menú para celular; hoy la navegación se oculta y el usuario llega a las secciones haciendo scroll.
+Los enlaces a Hospedajes, Cómo funciona y Anfitriones viven en el pie de página en todos los tamaños.
 
 ## Pendientes de diseño
 

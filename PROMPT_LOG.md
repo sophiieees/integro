@@ -19,7 +19,7 @@
 
 El 18 de octubre de 2026 se creó este repositorio con:
 
-- un prototipo estático de la web (`web/`): inicio con buscador, sellos de confianza, tarjetas de propiedades, sección de anfitriones, comparativa, y una ficha de propiedad;
+- un prototipo estático de la web (`web/`): portada del huésped con buscador en la cabecera y tarjetas de propiedades, ficha de propiedad, y página del anfitrión con planes y comparativa (separada de la portada en la segunda revisión del mismo día, ver entradas 0.11 a 0.15);
 - la arquitectura objetivo documentada (`docs/arquitectura.md`) y once decisiones registradas (`docs/decisiones/`);
 - el sistema de diseño y el benchmark de competencia (`docs/diseno/`).
 
@@ -72,7 +72,7 @@ Qué cambió en el código (archivo, commit): ...
 
 ### 2.0 Decisiones previas a la especificación (sesión 0 · 18 de octubre de 2026)
 
-Estas decisiones son anteriores a la función del assignment, pero son reales y están en este repositorio. No sustituyen las entradas de la sección 2.1 (que deben citar la especificación), pero muestran el mismo patrón: propuesta de la IA, revisión de Sophia, veredicto con razón. Los veredictos siguen pendientes.
+Estas decisiones son anteriores a la función del assignment, pero son reales y están en este repositorio. No sustituyen las entradas de la sección 2.1 (que deben citar la especificación), pero muestran el mismo patrón: propuesta de la IA, revisión de Sophia, veredicto con razón. Las entradas 0.1 a 0.10 siguen pendientes de veredicto. Las entradas 0.11 a 0.15 registran los veredictos que Sophia dio por escrito el mismo 18 de octubre al revisar el primer prototipo; la IA los transcribió citando sus palabras y Sophia puede corregir la redacción.
 
 **Prompt de origen (18 oct, Sophia):** "con todo lo que sabes de Íntegro, necesito que armemos un diseño de cómo se vería la página web [...] Se le va a dar un estilo propio [...] no tenemos paleta de colores aún, pero me imagino algo de seguridad que es lo que se vende al final [...] también hay que empezar a armar la arquitectura, como para tener bien las bases."
 
@@ -88,6 +88,16 @@ Estas decisiones son anteriores a la función del assignment, pero son reales y 
 | 0.8 | Mostrar la tabla de planes con los montos de la propuesta inicial (2,000 / 3,000 / 5,000 / 10,000 MXN). | Da realismo al diseño y muestra la estructura por propiedades activas. | Pricing y modelo de ingresos es entregable de Valeria para el 30 de octubre; los montos son "propuesta inicial" (requerimientos). | `[SOPHIA]` | `[SOPHIA]` |
 | 0.9 | Sin iconos ni emojis en las secciones, esquinas poco redondeadas, elementos libres sobre el fondo, animaciones solo al entrar. | Son preferencias que Sophia dio para la landing de otro proyecto; la IA las aplicó por defecto. Las referencias de Airbnb y Wander usan iconos y curvas. | No hay lineamiento de marca de Íntegro todavía. | `[SOPHIA]` | `[SOPHIA]` |
 | 0.10 | Plazos de ejemplo en las políticas de cancelación (Flexible 24 h, Moderada 5 días, Estricta 7 días). | La ficha necesitaba texto; los requerimientos solo nombran las tres políticas. | Reglas de reembolso "fijas", por definir en la revisión legal (semana 3). La ficha lo marca como propuesta. | `[SOPHIA]` | `[SOPHIA]` |
+
+**Segunda revisión (18 de octubre, tras ver el primer prototipo).** Prompt de Sophia: "vamos a modificar el main [...] me gustaría que lo de destino, llegada, salida y huéspedes estuviera arriba [...] hay que poner otros dos para que sean seis [...] anfitrión verificado, precio total visible [...] hay que quitarlo para ponerlo abajo [...] Anfitriones tienen que ser de otra página web. Forzosamente [...] la idea es que en la página principal solo se vean las propiedades."
+
+| N | Qué propuso la IA | Por qué lo propuso | Veredicto de Sophia | Razón (en sus palabras) | Qué cambió |
+|---|---|---|---|---|---|
+| 0.11 | Buscador grande dentro del hero, debajo del titular. | Seguía el patrón de Airbnb (barra bajo la cabecera). | Revisar | "Me gustaría que lo de destino, llegada, salida y huéspedes estuviera arriba [...] Wander, me gusta mucho que la barra buscadora la tiene arriba, no se ve tan grande." | Buscador compacto en la cabecera, una sola línea; el hero queda para la imagen y el titular. |
+| 0.12 | Imagen del hero en una columna lateral 4:5. | Evitar texto sobre foto por legibilidad y peso. | Revisar | "El fondo de pantalla me gusta, o sea, como una imagen, poner una imagen así estaría bastante bien [...] crea un repositorio de imágenes y conéctala." | Hero con foto a lo ancho tipo Wander, velo oscuro para legibilidad; carpeta `web/assets/img/` con `LEEME.md` y nombre fijo `imagen-bienvenida.jpg`. |
+| 0.13 | Sellos de confianza entre el hero y las propiedades. | Poner la promesa de seguridad antes de la oferta. | Revisar | "Hay que quitarlo para ponerlo abajo, yo creo. O ponerlo como en otra página." | Sellos y "cómo funciona" debajo de las propiedades; la portada abre con las propiedades. |
+| 0.14 | Sección de anfitriones, planes y comparativa en la portada. | Una sola página con todo el modelo. | Rechazar | "Anfitriones tienen que ser de otra página web. Forzosamente. La idea es que en la página principal solo se vean las propiedades para que el huésped pueda seleccionarlas [...] Para no revolverlos." | Página nueva `web/anfitriones.html`; en la portada solo queda el botón "Publica tu propiedad". |
+| 0.15 | Cuatro propiedades de muestra en Ciudad de México. | Bastaban para probar el filtro. | Revisar | "Hay que poner otros dos para que sean seis. Se muestren seis." | Dos propiedades más (Polanco y Juárez) en `datos.js`; la portada muestra seis. |
 
 ### 2.1 Entradas durante la construcción de la función
 

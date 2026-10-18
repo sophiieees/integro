@@ -118,6 +118,36 @@ window.INTEGRO_DATOS = {
       reglas: ["Llegada a partir de las 15:00", "Salida antes de las 11:00", "No se permiten fiestas"],
       cancelacion: "Moderada",
       tono: "sanpedro"
+    },
+    {
+      id: 8,
+      titulo: "Departamento con vista en Polanco",
+      zona: "Polanco", ciudad: "Ciudad de México", tipo: "Departamento completo",
+      capacidad: 4, recamaras: 2, camas: 2, banos: 2,
+      precio_noche: 3600, limpieza: 600, total_2_noches: 7800,
+      calificacion: 4.94, resenas: 46,
+      anfitrion: { nombre: "Valentina", nivel: "verificado", responde: "en menos de 1 hora" },
+      chapa: true,
+      servicios: ["Wifi", "Cocina equipada", "Aire acondicionado", "Gimnasio del edificio", "Estacionamiento"],
+      descripcion: "Departamento en piso 12 con vista al Parque Lincoln. Dos recámaras con baño propio, cocina integral y acceso al gimnasio del edificio.",
+      reglas: ["Llegada a partir de las 15:00", "Salida antes de las 12:00", "No se permiten fiestas", "No fumar"],
+      cancelacion: "Estricta",
+      tono: "polanco"
+    },
+    {
+      id: 9,
+      titulo: "Departamento art déco en la Juárez",
+      zona: "Juárez", ciudad: "Ciudad de México", tipo: "Departamento completo",
+      capacidad: 3, recamaras: 1, camas: 2, banos: 1,
+      precio_noche: 1700, limpieza: 350, total_2_noches: 3750,
+      calificacion: 4.88, resenas: 19,
+      anfitrion: { nombre: "Emilio", nivel: "verificado", responde: "en menos de 2 horas" },
+      chapa: false,
+      servicios: ["Wifi", "Cocina", "Lavadora", "Balcón"],
+      descripcion: "Departamento en un edificio art déco de la calle Londres, a dos cuadras del Metro Insurgentes. Una recámara con cama matrimonial y sofá cama en la sala.",
+      reglas: ["Llegada a partir de las 14:00", "Salida antes de las 11:00", "No fumar en interiores"],
+      cancelacion: "Flexible",
+      tono: "juarez"
     }
   ]
 };

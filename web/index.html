@@ -10,59 +10,63 @@
 </head>
 <body>
   <!--
-    Prototipo estático · octubre de 2026.
+    Portada para el huésped · prototipo estático, octubre de 2026.
     Nombre provisional: Íntegro (sujeto a validación ante el IMPI).
-    Las fotos son marcadores: Sophia coloca las imágenes reales.
-    Nada aquí llama a una API; ver docs/arquitectura.md para la versión de producción.
+    Imágenes: Sophia las guarda en assets/img/ con los nombres que indica assets/img/LEEME.md.
+    Mientras no existan, se muestran marcadores.
+    La página del anfitrión es anfitriones.html.
   -->
   <header class="cabecera">
     <div class="contenedor">
       <a class="marca" href="index.html" aria-label="Íntegro, inicio"><span class="marca-punto" aria-hidden="true"></span>Íntegro</a>
-      <nav class="nav-principal" aria-label="Principal">
-        <a href="#resultados">Hospedajes</a>
-        <a href="#como-funciona">Cómo funciona</a>
-        <a href="#anfitriones">Anfitriones</a>
-      </nav>
+
+      <form class="buscador" id="buscador" role="search" aria-label="Buscar hospedaje">
+        <label><span>Destino</span><input type="text" name="destino" list="datalist-ciudades" placeholder="¿A dónde vas?" autocomplete="off"></label>
+        <label><span>Llegada</span><input type="date" name="llegada"></label>
+        <label><span>Salida</span><input type="date" name="salida"></label>
+        <label><span>Huéspedes</span>
+          <select name="huespedes">
+            <option value="0">Cualquiera</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="8">8 o más</option>
+          </select>
+        </label>
+        <button class="btn btn-primario" type="submit">Buscar</button>
+        <datalist id="datalist-ciudades"></datalist>
+      </form>
+
       <div class="cabecera-acciones">
-        <a class="btn btn-secundario btn-publicar-cabecera" href="#anfitriones">Publica tu propiedad</a>
+        <a class="btn btn-secundario solo-escritorio" href="anfitriones.html">Publica tu propiedad</a>
+        <a class="btn-enlace solo-celular" href="anfitriones.html">Anfitriones</a>
         <a class="btn-enlace" href="#">Entrar</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero" id="inicio">
+    <section class="hero sin-imagen" id="inicio">
+      <img class="hero-imagen" src="assets/img/imagen-bienvenida.jpg" alt="" onload="this.parentNode.classList.remove('sin-imagen')" onerror="this.remove()">
+      <div class="hero-contenido">
+        <p class="etiqueta hero-etiqueta">Rentas de corta estancia en México</p>
+        <h1>Hospedaje verificado.<br>Precio total. Cero comisión.</h1>
+        <p class="hero-sub">Cada anfitrión aprueba tres verificaciones antes de publicar. El precio que ves es el que pagas.</p>
+      </div>
+      <p class="hero-marcador">Imagen de bienvenida: guarda tu foto como <code>web/assets/img/imagen-bienvenida.jpg</code> (horizontal, 1920 × 1080 o mayor).</p>
+    </section>
+
+    <section class="seccion" id="resultados">
       <div class="contenedor">
-        <div>
-          <p class="etiqueta hero-etiqueta">Rentas de corta estancia en México</p>
-          <h1>Hospedaje verificado.<br>Precio total.<br>Cero comisión.</h1>
-          <p class="hero-sub">Cada anfitrión aprueba tres verificaciones antes de publicar. El precio que ves es el que pagas. El anfitrión recibe su ingreso íntegro.</p>
+        <div class="seccion-cabecera">
+          <h2>Disponibles en <span data-ciudad>Ciudad de México</span> <span data-periodo>este fin de semana</span></h2>
+          <p class="seccion-nota" data-conteo></p>
         </div>
-        <div class="hero-visual" aria-hidden="true">
-          <div class="marcador-foto"><strong>Imagen principal</strong>Marcador: fotografía de una propiedad real en la ciudad de lanzamiento. Proporción 4:5.</div>
-        </div>
-        <div class="hero-buscador">
-          <form class="buscador" id="buscador" role="search" aria-label="Buscar hospedaje">
-            <label><span>Destino</span><input type="text" name="destino" list="datalist-ciudades" placeholder="Ciudad o zona" autocomplete="off"></label>
-            <label><span>Llegada</span><input type="date" name="llegada"></label>
-            <label><span>Salida</span><input type="date" name="salida"></label>
-            <label><span>Huéspedes</span>
-              <select name="huespedes">
-                <option value="0">Cualquiera</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="8">8 o más</option>
-              </select>
-            </label>
-            <button class="btn btn-primario" type="submit">Buscar</button>
-            <datalist id="datalist-ciudades"></datalist>
-          </form>
-          <p class="buscador-nota">Los totales incluyen la limpieza. Nunca aparece un cargo de servicio al final.</p>
-        </div>
+        <div class="tarjetas" id="tarjetas"></div>
+        <p class="aviso-vacio" id="aviso-vacio" hidden>Todavía no hay propiedades verificadas en esa ciudad. Íntegro abre ciudad por ciudad; la primera se anuncia antes del lanzamiento.</p>
       </div>
     </section>
 
@@ -87,20 +91,9 @@
       </div>
     </section>
 
-    <section class="seccion" id="resultados">
-      <div class="contenedor">
-        <div class="seccion-cabecera">
-          <h2>Disponibles en <span data-ciudad>Ciudad de México</span> <span data-periodo>este fin de semana</span></h2>
-          <p class="seccion-nota" data-conteo></p>
-        </div>
-        <div class="tarjetas" id="tarjetas"></div>
-        <p class="aviso-vacio" id="aviso-vacio" hidden>Todavía no hay propiedades verificadas en esa ciudad. Íntegro abre ciudad por ciudad; la primera se anuncia antes del lanzamiento.</p>
-      </div>
-    </section>
-
     <section class="como-funciona seccion" id="como-funciona">
       <div class="contenedor">
-        <p class="etiqueta">Para huéspedes</p>
+        <p class="etiqueta">Cómo funciona</p>
         <h2>Reservar toma tres pasos</h2>
         <ol class="pasos">
           <li class="paso revelar">
@@ -118,62 +111,15 @@
         </ol>
       </div>
     </section>
-
-    <section class="anfitriones seccion" id="anfitriones">
-      <div class="contenedor">
-        <div>
-          <p class="etiqueta">Para anfitriones</p>
-          <h2>Tu ingreso, íntegro.</h2>
-          <p class="intro">Una membresía mensual fija según tus propiedades activas. Ninguna comisión por reserva. El huésped te paga directo y el dinero llega a tu CLABE.</p>
-          <ul class="beneficios">
-            <li class="revelar"><strong>Publica en minutos</strong><span>Pega el enlace de tu anuncio actual, sube tus fotos y la plataforma redacta título y descripción con ayuda de IA. Tú editas antes de publicar.</span></li>
-            <li class="revelar"><strong>Calendario sincronizado</strong><span>Importa y exporta por iCal con Airbnb, Booking y Vrbo. Solo fechas: tus precios y tus huéspedes no salen de aquí.</span></li>
-            <li class="revelar"><strong>Cobras al confirmar</strong><span>Como anfitrión verificado recibes el pago al confirmar la reserva. Mientras eres nuevo, 24 horas después de la llegada del huésped.</span></li>
-            <li class="revelar"><strong>Chapa inteligente</strong><span>Incluida en comodato en los planes Profesional, Administrador y Empresarial; en renta o compra para el plan Individual.</span></li>
-          </ul>
-          <a class="btn btn-primario" href="#">Publica tu propiedad</a>
-        </div>
-        <div class="planes revelar">
-          <h3>Planes de membresía</h3>
-          <p class="texto-suave">El precio depende del número de propiedades activas. Cambia de plan al instante al agregar o retirar una propiedad.</p>
-          <table class="tabla">
-            <thead><tr><th>Plan</th><th>Propiedades</th><th>Mensualidad</th></tr></thead>
-            <tbody>
-              <tr><td>Individual</td><td>1</td><td>$2,000 MXN</td></tr>
-              <tr class="destacado"><td>Básico</td><td>Hasta 3</td><td>$3,000 MXN</td></tr>
-              <tr><td>Profesional</td><td>Hasta 5</td><td>$5,000 MXN</td></tr>
-              <tr><td>Administrador</td><td>De 6 a 15</td><td>$10,000 MXN</td></tr>
-              <tr><td>Empresarial</td><td>Más de 15</td><td>Cotización</td></tr>
-            </tbody>
-          </table>
-          <p class="tabla-nota">Montos de la propuesta inicial, por confirmar. Tres meses sin costo para anfitriones fundadores. Factura electrónica en cada cobro.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="comparativa seccion" id="comparativa">
-      <div class="contenedor">
-        <p class="etiqueta">Lo que cambia</p>
-        <h2>Frente a las plataformas por comisión</h2>
-        <table class="tabla-comparativa">
-          <thead><tr><th><span class="texto-suave"></span></th><th>Plataformas por comisión</th><th>Íntegro</th></tr></thead>
-          <tbody>
-            <tr><td>Costo para el anfitrión</td><td>Un porcentaje de cada reserva</td><td>Membresía mensual fija</td></tr>
-            <tr><td>Costo para el huésped</td><td>Cargo de servicio al final del proceso</td><td>Ninguno: el total aparece desde la búsqueda</td></tr>
-            <tr><td>Verificación del anfitrión</td><td>Variable; muchas veces opcional</td><td>Identidad, CLABE y tarjeta antes de publicar; documento de la propiedad y geolocalización</td></tr>
-            <tr><td>Cuándo cobra el anfitrión</td><td>Un día después de la llegada o más</td><td>Al confirmar la reserva, si está verificado</td></tr>
-            <tr><td>Entrada a la propiedad</td><td>La coordina cada anfitrión</td><td>Llave digital temporal en la app, con código de respaldo</td></tr>
-          </tbody>
-        </table>
-        <p class="comparativa-nota">Comparación general del modelo, sin cifras de terceros. La validación con datos reales es parte de la investigación de mercado de la semana 2.</p>
-      </div>
-    </section>
   </main>
 
   <footer class="pie">
     <div class="contenedor">
       <p><strong>Íntegro</strong> · nombre provisional, sujeto a validación ante el IMPI · Prototipo de octubre de 2026</p>
-      <nav aria-label="Legal">
+      <nav aria-label="Pie de página">
+        <a href="index.html">Hospedajes</a>
+        <a href="index.html#como-funciona">Cómo funciona</a>
+        <a href="anfitriones.html">Anfitriones</a>
         <a href="#">Términos y condiciones</a>
         <a href="#">Aviso de privacidad</a>
         <a href="#">Reportar un problema</a>

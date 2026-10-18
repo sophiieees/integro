@@ -47,6 +47,8 @@
       "<a class=\"tarjeta revelar\" href=\"propiedad.html?id=" + p.id + "\">" +
         "<div class=\"tarjeta-foto tono-" + escapar(p.tono) + "\">" +
           "<div class=\"marcador-foto\">Foto: " + escapar(p.titulo) + "</div>" +
+          /* La foto real se carga si existe assets/img/propiedad-<id>-1.jpg; si no, se quita y queda el marcador. */
+          "<img src=\"assets/img/propiedad-" + p.id + "-1.jpg\" alt=\"\" loading=\"lazy\" onerror=\"this.remove()\">" +
           insignias(p) +
         "</div>" +
         "<div class=\"tarjeta-cuerpo\">" +
@@ -69,7 +71,7 @@
     contenedor.innerHTML = lista.map(tarjeta).join("");
     if (vacio) vacio.hidden = lista.length > 0;
     if (conteo) conteo.textContent = lista.length === 1 ? "1 propiedad verificada" : lista.length + " propiedades verificadas";
-    observarRevelado();
+    registrarRevelado();
   }
 
   function filtrar(ciudad, huespedes) {
@@ -170,30 +172,54 @@
       el.classList.add("tono-" + p.tono);
       var marcador = el.querySelector(".marcador-foto");
       if (marcador) marcador.textContent = "Foto " + (i + 1) + ": " + (ETIQUETAS_FOTO[i] || "detalle");
+      /* Foto real si existe assets/img/propiedad-<id>-<n>.jpg; si no, queda el marcador. */
+      var img = document.createElement("img");
+      img.alt = "";
+      img.addEventListener("error", function () { img.remove(); });
+      img.src = "assets/img/propiedad-" + p.id + "-" + (i + 1) + ".jpg";
+      el.appendChild(img);
     });
 
     var hoy = new Date().toISOString().slice(0, 10);
     Array.prototype.forEach.call(raiz.querySelectorAll("input[type=date]"), function (i) { i.min = hoy; });
   }
 
-  /* ---------- Revelado al entrar en pantalla (una sola vez) ---------- */
+  /* ---------- Revelado al entrar en pantalla (una sola vez) ----------
+     Comprobación directa de posición al cargar, al hacer scroll y al cambiar
+     de tamaño. Se eligió sobre IntersectionObserver porque el contenido no
+     debe depender de que el observador avise: si algo falla, el elemento
+     se revela igual en cuanto asoma en pantalla. */
 
-  function observarRevelado() {
-    var elementos = document.querySelectorAll(".revelar:not(.visible)");
-    if (!("IntersectionObserver" in window)) {
-      Array.prototype.forEach.call(elementos, function (e) { e.classList.add("visible"); });
-      return;
-    }
-    var observador = new IntersectionObserver(function (entradas, obs) {
-      entradas.forEach(function (entrada) {
-        if (entrada.isIntersecting) {
-          entrada.target.classList.add("visible");
-          obs.unobserve(entrada.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    Array.prototype.forEach.call(elementos, function (e) { observador.observe(e); });
+  var pendientesDeRevelar = [];
+
+  function registrarRevelado() {
+    pendientesDeRevelar = Array.prototype.slice.call(document.querySelectorAll(".revelar:not(.visible)"));
+    revelarVisibles();
   }
+
+  function revelarVisibles() {
+    if (!pendientesDeRevelar.length) return;
+    var alto = window.innerHeight || document.documentElement.clientHeight;
+    pendientesDeRevelar = pendientesDeRevelar.filter(function (el) {
+      var r = el.getBoundingClientRect();
+      var asoma = r.top < alto * 0.94 && r.bottom > 0;
+      if (asoma) el.classList.add("visible");
+      return !asoma;
+    });
+  }
+
+  var revisionProgramada = false;
+  function programarRevision() {
+    if (revisionProgramada) return;
+    revisionProgramada = true;
+    window.requestAnimationFrame(function () {
+      revisionProgramada = false;
+      revelarVisibles();
+    });
+  }
+  window.addEventListener("scroll", programarRevision, { passive: true });
+  window.addEventListener("resize", programarRevision);
+  window.addEventListener("load", programarRevision);
 
   /* ---------- Arranque ---------- */
 
@@ -203,6 +229,6 @@
     iniciarBuscador();
     if (document.getElementById("tarjetas")) pintarTarjetas(filtrar(DATOS.ciudadPorDefecto, 0));
     pintarFicha();
-    observarRevelado();
+    registrarRevelado();
   });
 })();

@@ -10,7 +10,8 @@ Estado al 18 de octubre de 2026: semana 2 de 7 del plan de construcción del MVP
 
 | Ruta | Qué es |
 |---|---|
-| `web/` | Prototipo estático de la interfaz: inicio con buscador y ficha de propiedad. HTML, CSS y JavaScript sin dependencias ni paso de compilación. |
+| `web/` | Prototipo estático de la interfaz: portada del huésped (`index.html`), ficha de propiedad (`propiedad.html`) y página del anfitrión (`anfitriones.html`). HTML, CSS y JavaScript sin dependencias ni paso de compilación. |
+| `web/assets/img/LEEME.md` | Nombres de archivo que esperan las páginas para las fotos (hero y propiedades). Sophia guarda ahí las imágenes. |
 | `web/assets/css/estilos.css` | Hoja de estilos. Los tokens de diseño (paleta, tipografía, radios) viven en `:root` y son el único lugar que cambia cuando llegue la identidad de marca. |
 | `web/assets/js/datos.js` | Datos ficticios de muestra. En producción salen de la API. |
 | `web/assets/js/app.js` | Pinta tarjetas, filtra por ciudad y huéspedes, pinta la ficha. No cotiza ni reserva: eso es trabajo del backend. |

@@ -4,8 +4,9 @@ El MVP técnico habla de 14 pantallas y remite al documento de diseño del MVP p
 
 | # | Pantalla | Para quién | Estado en el prototipo |
 |---|---|---|---|
-| 1 | Inicio con buscador y resultados | Huésped | Hecha: `web/index.html` |
+| 1 | Portada del huésped: buscador compacto en la cabecera, hero con imagen de fondo, seis propiedades, sellos de confianza y cómo funciona | Huésped | Hecha: `web/index.html` |
 | 2 | Ficha de propiedad con precio total y caja de reserva | Huésped | Hecha: `web/propiedad.html` |
+| 2b | Página del anfitrión: beneficios, planes, tres pasos para publicar y comparativa | Anfitrión | Hecha: `web/anfitriones.html` (separada de la portada por decisión de Sophia, 18 oct) |
 | 3 | Resultados con filtros y mapa aproximado | Huésped | Parcial: la cuadrícula de inicio hace de resultados; faltan filtros de precio y servicios y el mapa |
 | 4 | Reserva y pago (tarjeta, transferencia, tienda) | Huésped | Pendiente |
 | 5 | Registro e inicio de sesión con código | Ambos | Pendiente |
@@ -21,4 +22,4 @@ El MVP técnico habla de 14 pantallas y remite al documento de diseño del MVP p
 | 15 | Panel interno (verificaciones, casos, bitácora) | Equipo | Pendiente |
 | 16 | Llave digital y apertura de la chapa | Huésped | Pendiente; depende del SDK (prueba de Shakti, 30 de octubre) |
 
-Secciones informativas ya en el prototipo: sellos de confianza, cómo funciona, para anfitriones con planes, comparativa frente a plataformas por comisión, pie con aviso de seguridad.
+Regla de la portada (Sophia, 18 oct): la página principal es solo para el huésped y muestra propiedades; todo lo del anfitrión vive en `anfitriones.html`. Los sellos de confianza y "cómo funciona" quedan debajo de las propiedades.
