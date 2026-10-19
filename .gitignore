@@ -8,3 +8,7 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+# Recortes temporales del generador del Word
+herramientas/bitacora/salida/
+__pycache__/
+*.pyc

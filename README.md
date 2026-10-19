@@ -19,6 +19,7 @@ Estado al 18 de octubre de 2026: semana 2 de 7 del plan de construcción del MVP
 | `docs/decisiones/` | Registros de decisiones de arquitectura (ADR), numerados y con fuente. |
 | `docs/diseno/` | Sistema de diseño, comparación con la competencia y lista de pantallas. |
 | `PROMPT_LOG.md` | Bitácora de prompts del Assignment 2: especificación, decisiones de aceptar, rechazar o revisar, y validación. |
+| `herramientas/bitacora/` | Fuente única de la bitácora (`bitacora_datos.py`) y los generadores que escriben la sección 2.0 de `PROMPT_LOG.md` y el Word para el profesor. |
 | `index.html` (raíz) | Redirección a `web/index.html` para que GitHub Pages sirva el prototipo sin configuración. |
 | `vercel.json` | Le dice a Vercel que la carpeta publicable es `web/`. |
 
