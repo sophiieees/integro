@@ -199,6 +199,7 @@ PROMPTS = [
             ("0.24", "Separador \" · \" entre datos.", "Convención de Airbnb y Wander.", "Rechazar", "Quita todos los puntos que aparecen en los textos.", "Comas, paréntesis y líneas separadas."),
             ("0.25", "Ubicación y reseñas dentro de la columna de descripción; mapa sin enlace.", "Agrupar el contenido junto a la caja de precio.", "Revisar", "Se pierde mucho espacio entre la descripción y la reserva. Que abarque todo. Redireccionamiento a Google Maps.", "Secciones a lo ancho; mapa y botón abren Google Maps por zona."),
             ("0.26", "Botones verdes en la página de anfitrión.", "Un solo color de botón principal.", "Rechazar", "Publica tu propiedad, ese color verde tampoco me gusta.", "Botones azules (.btn-azul)."),
+            ("0.27", "Textos de apoyo en el prototipo y el repositorio: subtítulo del hero de anfitriones, notas de \"montos por confirmar\" y \"comparación sin cifras\", comentarios HTML explicativos, \"íntegro\" en minúscula en el eslogan y encabezado \"Para el profesor\" en el README.", "Dar contexto a quien lee el prototipo y el repositorio.", "Revisar", "Ediciones directas de Sophia en GitHub, sin prompt: \"Íntegro\" con mayúscula en el eslogan, \"¿Cómo funciona?\" y \"¿Cómo empezar?\" con signos de interrogación, sin notas ni comentarios, y README sin referencias al curso.", "Commits de Sophia 15a6599 a a712ba6; la IA corrigió después la errata \"Ìntegro\" por \"Íntegro\" en anfitriones.html."),
         ],
     },
     # ------------------------------------------------------------------ 5
