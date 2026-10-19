@@ -40,9 +40,9 @@ Tres decisiones gobiernan todo lo demás (detalle en [docs/arquitectura.md](docs
 
 Este repositorio contiene hoy solo la capa de presentación, como prototipo estático. La sección "Del prototipo a producción" de `docs/arquitectura.md` dice qué parte de este código migra a qué pieza del sistema.
 
-## Para el profesor: dónde está cada pieza del Assignment 2
+## Dónde está cada pieza
 
-Íntegro es un producto real en construcción por tres socias; este repositorio es su base técnica. El Assignment 2 agrega una función real dentro de él y documenta cómo se tomó cada decisión con el asistente de IA.
+Íntegro es un producto real en construcción por tres socias; este repositorio es su base técnica.
 
 | Pieza del assignment | Dónde está |
 |---|---|
