@@ -88,8 +88,8 @@ button, input, select { font: inherit; color: inherit; }
 .cabecera .contenedor { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; min-height: 68px; padding-top: 8px; padding-bottom: 8px; }
 .marca { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--fuente-titulos); font-size: 1.45rem; font-weight: 600; color: var(--color-primario); }
 .marca-punto { width: 12px; height: 12px; background: var(--color-acento); transform: rotate(45deg); }
-.enlaces-cabecera { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-left: 12px; }
-.enlaces-cabecera a { text-decoration: none; color: var(--color-primario); font-weight: 600; }
+.enlaces-cabecera { text-align: left; display: flex; flex-wrap: wrap; gap: 8px 24px; margin-left: 12px; }
+.enlaces-cabecera a { text-align: left; text-decoration: none; color: var(--color-primario); font-weight: 600; }
 .enlaces-cabecera a:hover { text-align: left; text-decoration: underline; text-underline-offset: 4px; }
 .cabecera-acciones { margin-left: auto; display: flex; align-items: center; gap: 18px; white-space: nowrap; }
 .solo-celular { display: none; }
