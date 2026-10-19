@@ -4,9 +4,10 @@ El MVP técnico habla de 14 pantallas y remite al documento de diseño del MVP p
 
 | # | Pantalla | Para quién | Estado en el prototipo |
 |---|---|---|---|
-| 1 | Portada del huésped: buscador compacto en la cabecera, hero con imagen de fondo, seis propiedades, sellos de confianza y cómo funciona | Huésped | Hecha: `web/index.html` |
+| 1 | Portada del huésped: cabecera con la marca y "Conviértete en anfitrión", hero con imagen de fondo y el buscador al centro, seis propiedades | Huésped | Hecha: `web/index.html` (primer avance entregable, 18 oct) |
 | 2 | Ficha de propiedad con precio total y caja de reserva | Huésped | Hecha: `web/propiedad.html` |
 | 2b | Página del anfitrión: beneficios, planes, tres pasos para publicar y comparativa | Anfitrión | Hecha: `web/anfitriones.html` (separada de la portada por decisión de Sophia, 18 oct) |
+| 2c | Cómo funciona: cuatro sellos de confianza y tres pasos para reservar | Ambos | Hecha: `web/como-funciona.html` (Sophia prevé que termine dentro de anfitriones) |
 | 3 | Resultados con filtros y mapa aproximado | Huésped | Parcial: la cuadrícula de inicio hace de resultados; faltan filtros de precio y servicios y el mapa |
 | 4 | Reserva y pago (tarjeta, transferencia, tienda) | Huésped | Pendiente |
 | 5 | Registro e inicio de sesión con código | Ambos | Pendiente |
@@ -22,4 +23,4 @@ El MVP técnico habla de 14 pantallas y remite al documento de diseño del MVP p
 | 15 | Panel interno (verificaciones, casos, bitácora) | Equipo | Pendiente |
 | 16 | Llave digital y apertura de la chapa | Huésped | Pendiente; depende del SDK (prueba de Shakti, 30 de octubre) |
 
-Regla de la portada (Sophia, 18 oct): la página principal es solo para el huésped y muestra propiedades; todo lo del anfitrión vive en `anfitriones.html`. Los sellos de confianza y "cómo funciona" quedan debajo de las propiedades.
+Regla de la portada (Sophia, 18 oct): la página principal es solo para el huésped y muestra el buscador y las propiedades, sin texto de venta; todo lo del anfitrión vive en `anfitriones.html` y la explicación del modelo en `como-funciona.html`. El pie de página es verde, igual en todas las páginas, con "Reportar un problema" destacado.

@@ -12,48 +12,42 @@
   <!--
     Portada para el huésped · prototipo estático, octubre de 2026.
     Nombre provisional: Íntegro (sujeto a validación ante el IMPI).
-    Imágenes: Sophia las guarda en assets/img/ con los nombres que indica assets/img/LEEME.md.
-    Mientras no existan, se muestran marcadores.
-    La página del anfitrión es anfitriones.html.
+    La portada solo muestra el buscador sobre la imagen y las propiedades; nada de texto de venta.
+    Imágenes: Sophia las guarda en assets/img/ con los nombres de assets/img/LEEME.md.
+    Otras páginas: propiedad.html (ficha), como-funciona.html, anfitriones.html.
   -->
   <header class="cabecera">
     <div class="contenedor">
       <a class="marca" href="index.html" aria-label="Íntegro, inicio"><span class="marca-punto" aria-hidden="true"></span>Íntegro</a>
-
-      <form class="buscador" id="buscador" role="search" aria-label="Buscar hospedaje">
-        <label><span>Destino</span><input type="text" name="destino" list="datalist-ciudades" placeholder="¿A dónde vas?" autocomplete="off"></label>
-        <label><span>Llegada</span><input type="date" name="llegada"></label>
-        <label><span>Salida</span><input type="date" name="salida"></label>
-        <label><span>Huéspedes</span>
-          <select name="huespedes">
-            <option value="0">Cualquiera</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="8">8 o más</option>
-          </select>
-        </label>
-        <button class="btn btn-primario" type="submit">Buscar</button>
-        <datalist id="datalist-ciudades"></datalist>
-      </form>
-
       <div class="cabecera-acciones">
-        <a class="btn btn-secundario solo-escritorio" href="anfitriones.html">Publica tu propiedad</a>
-        <a class="btn-enlace solo-celular" href="anfitriones.html">Anfitriones</a>
-        <a class="btn-enlace" href="#">Entrar</a>
+        <a class="btn btn-secundario" href="anfitriones.html">Conviértete en anfitrión</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero sin-imagen" id="inicio">
+    <section class="hero sin-imagen" id="inicio" aria-label="Buscar hospedaje">
       <img class="hero-imagen" src="assets/img/imagen-bienvenida.jpg" alt="" onload="this.parentNode.classList.remove('sin-imagen')" onerror="this.remove()">
       <div class="hero-contenido">
-        <h1>Hospedaje verificado.<br>Precio total. Cero comisión.</h1>
-        <p class="hero-sub">Cada anfitrión aprueba tres verificaciones antes de publicar. El precio que ves es el que pagas.</p>
+        <form class="buscador" id="buscador" role="search" aria-label="Buscar hospedaje">
+          <label><span>Destino</span><input type="text" name="destino" list="datalist-ciudades" placeholder="¿A dónde vas?" autocomplete="off"></label>
+          <label><span>Llegada</span><input type="date" name="llegada"></label>
+          <label><span>Salida</span><input type="date" name="salida"></label>
+          <label><span>Huéspedes</span>
+            <select name="huespedes">
+              <option value="0">Cualquiera</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="8">8 o más</option>
+            </select>
+          </label>
+          <button class="btn btn-primario" type="submit">Buscar</button>
+          <datalist id="datalist-ciudades"></datalist>
+        </form>
       </div>
       <p class="hero-marcador">Imagen de bienvenida: guarda tu foto como <code>web/assets/img/imagen-bienvenida.jpg</code> (horizontal, 1920 × 1080 o mayor).</p>
     </section>
@@ -68,60 +62,19 @@
         <p class="aviso-vacio" id="aviso-vacio" hidden>Todavía no hay propiedades verificadas en esa ciudad. Íntegro abre ciudad por ciudad; la primera se anuncia antes del lanzamiento.</p>
       </div>
     </section>
-
-    <section class="sellos" aria-label="Por qué confiar en Íntegro">
-      <div class="contenedor">
-        <div class="sello revelar">
-          <h3>Anfitrión verificado</h3>
-          <p>Identidad con INE y rostro, cuenta CLABE y tarjeta a su nombre. Sin las tres capas no hay anuncio.</p>
-        </div>
-        <div class="sello revelar">
-          <h3>Precio total visible</h3>
-          <p>Noches, limpieza y total desde la primera pantalla. Sin comisión de plataforma para el huésped ni para el anfitrión.</p>
-        </div>
-        <div class="sello revelar">
-          <h3>Pago protegido</h3>
-          <p>Si la propiedad no es lo publicado, tu reporte congela el depósito del anfitrión y se te reembolsa.</p>
-        </div>
-        <div class="sello revelar">
-          <h3>Entrada con tu teléfono</h3>
-          <p>Llave digital por Bluetooth, válida solo durante tu estancia, con código de respaldo por si el celular falla.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="como-funciona seccion" id="como-funciona">
-      <div class="contenedor">
-        <p class="etiqueta">Cómo funciona</p>
-        <h2>Reservar toma tres pasos</h2>
-        <ol class="pasos">
-          <li class="paso revelar">
-            <h3>Busca con el precio completo</h3>
-            <p>Filtra por ciudad, fechas, personas, precio y servicios. Cada ficha muestra el total de tu estancia, no solo el precio por noche.</p>
-          </li>
-          <li class="paso revelar">
-            <h3>Reserva y paga en la plataforma</h3>
-            <p>Tarjeta, transferencia o pago en tienda. La reserva se confirma solo cuando el procesador de pagos confirma el cobro. Íntegro nunca te pedirá pagar fuera.</p>
-          </li>
-          <li class="paso revelar">
-            <h3>Entra con tu teléfono</h3>
-            <p>Recibes una llave digital válida solo en tus fechas. Al terminar, califica al anfitrión; las reseñas se publican al mismo tiempo para ambos.</p>
-          </li>
-        </ol>
-      </div>
-    </section>
   </main>
 
   <footer class="pie">
     <div class="contenedor">
-      <p><strong>Íntegro</strong></p>
+      <div class="pie-fila">
+        <p><strong>Íntegro</strong></p>
+        <a class="btn btn-reportar" href="#">Reportar un problema</a>
+      </div>
       <nav aria-label="Pie de página">
-        <a href="index.html">Hospedajes</a>
-        <a href="index.html#como-funciona">Cómo funciona</a>
+        <a href="como-funciona.html">Cómo funciona</a>
         <a href="anfitriones.html">Anfitriones</a>
         <a href="#">Términos y condiciones</a>
         <a href="#">Aviso de privacidad</a>
-        <a href="#">Reportar un problema</a>
       </nav>
     </div>
   </footer>

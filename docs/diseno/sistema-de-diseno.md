@@ -23,6 +23,7 @@ Propuesta de octubre de 2026. La identidad de marca (nombre definitivo, logotipo
 | `--color-tinta` / `--color-tinta-suave` | `#16232B` / `#5A6872` | Texto principal y secundario |
 | `--color-borde` | `#E2DED5` | Líneas divisorias |
 | `--color-alerta` | `#B8432A` | Errores y avisos de fraude (reservado; aún sin uso en el prototipo) |
+| `--color-pie` | `#124B35` verde profundo | Fondo del pie de página (pedido por Sophia: "el verde que se usa como fondo"); derivado del acento para que lea como verde Íntegro |
 | `--fuente-titulos` | Serif del sistema (Iowan Old Style, Palatino, Georgia) | Títulos, números de paso, nombre de la marca |
 | `--fuente-texto` | Sans del sistema | Todo lo demás |
 | `--radio` / `--radio-chico` | 10 px / 6 px | Cajas y botones. Esquinas discretas a propósito. |
@@ -41,10 +42,12 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 
 | Componente | Dónde | Qué comunica |
 |---|---|---|
-| Cabecera fija con marca, buscador compacto y "Publica tu propiedad" | Portada | Como la cabecera de Wander: la búsqueda siempre a la mano y el anfitrión con un camino visible; sin menú de navegación, los enlaces van en el pie |
-| Buscador de cuatro campos y botón (`.buscador`) | Cabecera de la portada | Destino, llegada, salida, huéspedes. Compacto (una línea de 50 px); en pantallas angostas baja a una segunda fila de la cabecera |
-| Hero con imagen de fondo (`.hero`) | Portada y anfitriones | Foto a lo ancho con velo oscuro y titular centrado; sin imagen, degradado y marcador que dice qué archivo guardar |
-| Sello de confianza (`.sello`) | Portada, debajo de las propiedades | Cuatro promesas con línea superior verde; elementos libres, sin cajas ni iconos |
+| Cabecera fija con la marca y "Conviértete en anfitrión" | Todas | Solo dos elementos: la marca y el camino del anfitrión. Sin menú ni "Entrar" por ahora (PROMPT_LOG 0.20) |
+| Buscador de cuatro campos y botón (`.buscador`) | Centro del hero de la portada | Destino, llegada, salida, huéspedes, sobre la imagen de bienvenida. Es lo único que dice la portada; en celular se apila en dos columnas |
+| Hero con imagen de fondo (`.hero`) | Portada y anfitriones | Foto a lo ancho con velo oscuro. En la portada solo lleva el buscador; en anfitriones lleva titular. Sin imagen, degradado y marcador que dice qué archivo guardar |
+| Encabezado de página interior (`.encabezado-pagina`) | Cómo funciona | Etiqueta, titular de las tres promesas e introducción, sobre el fondo papel |
+| Sello de confianza (`.sello`) | Cómo funciona | Cuatro promesas con línea superior verde; elementos libres, sin cajas ni iconos |
+| Pie de página verde (`.pie`) con botón "Reportar un problema" | Todas | Fondo `--color-pie`, texto claro, enlaces a Cómo funciona, Anfitriones, Términos y Aviso; el reporte es un botón blanco porque es la vía de protección del huésped |
 | Tarjeta de propiedad (`.tarjeta`) | Inicio | Foto, insignias "Anfitrión verificado" y "Chapa inteligente", título, zona, calificación, precio por noche y total de 2 noches sin cargos |
 | Insignia (`.insignia`) y pastilla (`.pastilla`) | Tarjeta y ficha | Estado del anfitrión (verificado o nuevo) y chapa. El rombo verde es la marca de "verificado" en todo el sitio |
 | Pasos numerados (`.pasos`) | Inicio | Cómo reservar, con numerales en serif |
@@ -66,11 +69,11 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 
 | Corte | Qué cambia |
 |---|---|
-| Más de 1080 px | Cabecera en una línea: marca, buscador, botón de anfitrión; cuatro sellos en fila; ficha en dos columnas con caja de precio fija |
-| 720 a 1080 px | El buscador baja a una segunda fila de la cabecera; sellos en dos columnas; ficha en una columna |
-| Menos de 720 px | Cabecera ya no fija; buscador en dos columnas (destino y huéspedes a lo ancho); el botón "Publica tu propiedad" se vuelve el enlace "Anfitriones"; sellos y pasos en una columna |
+| Más de 960 px | Buscador en una línea al centro del hero; cuatro sellos en fila (cómo funciona); ficha en dos columnas con caja de precio fija |
+| 720 a 960 px | Sellos en dos columnas; ficha en una columna; el buscador sigue en una línea |
+| Menos de 720 px | Buscador en dos columnas (destino y huéspedes a lo ancho); en las páginas interiores el botón de anfitrión se oculta y queda el enlace del pie; sellos y pasos en una columna |
 
-Los enlaces a Hospedajes, Cómo funciona y Anfitriones viven en el pie de página en todos los tamaños.
+Los enlaces a Cómo funciona y Anfitriones viven en el pie de página en todos los tamaños.
 
 ## Pendientes de diseño
 

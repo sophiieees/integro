@@ -20,6 +20,7 @@
   --color-borde: #E2DED5;
   --color-alerta: #B8432A;
   --color-alerta-suave: #F7E6E1;
+  --color-pie: #124B35;            /* verde profundo del pie de página (derivado del acento) */
 
   /* Tipografía: serif del sistema para títulos (diferencia frente a Airbnb y Wander), sans del sistema para texto.
      Fuentes del sistema a propósito: el presupuesto de peso de la página de búsqueda es 400 KB. */
@@ -97,7 +98,7 @@ button, input, select { font: inherit; color: inherit; }
 }
 .hero-imagen { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 42, 57, .25) 0%, rgba(10, 42, 57, .6) 100%); }
-.hero-contenido { position: relative; z-index: 1; max-width: 900px; padding: 72px var(--espacio); }
+.hero-contenido { position: relative; z-index: 1; width: 100%; max-width: 1000px; padding: 72px var(--espacio); }
 .hero-etiqueta { color: #9FD9BC; }
 .hero h1 { font-size: clamp(2.1rem, 4.6vw, 3.6rem); margin: 14px 0 16px; color: #fff; text-shadow: 0 2px 14px rgba(0, 0, 0, .3); }
 .hero-sub { font-size: 1.1rem; margin: 0 auto; max-width: 40rem; color: rgba(255, 255, 255, .9); }
@@ -106,22 +107,27 @@ button, input, select { font: inherit; color: inherit; }
 .hero-marcador code { font-family: ui-monospace, Consolas, monospace; }
 .hero.sin-imagen .hero-marcador { display: block; }
 .hero-anfitriones { min-height: clamp(320px, 46vh, 520px); }
+
+/* Encabezado de páginas interiores (cómo funciona) */
+.encabezado-pagina { padding: clamp(40px, 6vw, 72px) 0 clamp(28px, 4vw, 48px); }
+.encabezado-pagina h1 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); margin: 10px 0 14px; max-width: 24ch; }
+.intro-pagina { font-size: 1.1rem; max-width: 42rem; }
 .marcador-foto { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: rgba(255, 255, 255, .75); font-size: .9rem; border: 1px dashed rgba(255, 255, 255, .35); border-radius: inherit; }
 .marcador-foto strong { display: block; font-family: var(--fuente-titulos); font-size: 1.1rem; color: #fff; margin-bottom: 6px; }
 
 /* Buscador ------------------------------------------------------------ */
-/* Vive en la cabecera, compacto (referencia: la barra de Wander). */
+/* Vive al centro del hero, sobre la imagen (referencia: la barra de Wander). */
 .buscador {
-  flex: 1 1 540px; max-width: 780px; margin: 0 auto;
+  width: 100%; max-width: 920px; margin: 0 auto; text-align: left;
   background: var(--color-superficie); color: var(--color-tinta);
-  border: 1px solid var(--color-borde); border-radius: var(--radio); box-shadow: 0 1px 2px rgba(22, 35, 43, .06);
+  border: 1px solid var(--color-borde); border-radius: var(--radio); box-shadow: var(--sombra);
   display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, .8fr) auto; align-items: stretch;
 }
-.buscador label { display: flex; flex-direction: column; padding: 6px 14px; border-right: 1px solid var(--color-borde); min-width: 0; }
-.buscador label span { font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; color: var(--color-tinta-suave); font-weight: 600; }
-.buscador input, .buscador select { border: 0; background: transparent; padding: 0; width: 100%; min-width: 0; font-size: .92rem; }
+.buscador label { display: flex; flex-direction: column; gap: 2px; padding: 10px 18px; border-right: 1px solid var(--color-borde); min-width: 0; }
+.buscador label span { font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; color: var(--color-tinta-suave); font-weight: 600; }
+.buscador input, .buscador select { border: 0; background: transparent; padding: 0; width: 100%; min-width: 0; font-size: .95rem; }
 .buscador input::placeholder { color: #9AA5AD; }
-.buscador .btn { border-radius: 0 calc(var(--radio) - 1px) calc(var(--radio) - 1px) 0; padding: 0 20px; }
+.buscador .btn { border-radius: 0 calc(var(--radio) - 1px) calc(var(--radio) - 1px) 0; padding: 0 26px; }
 
 /* Sellos de confianza ------------------------------------------------- */
 .sellos { background: var(--color-superficie); border-top: 1px solid var(--color-borde); border-bottom: 1px solid var(--color-borde); }
@@ -203,12 +209,16 @@ button, input, select { font: inherit; color: inherit; }
 .comparativa-nota { font-size: .82rem; color: rgba(255, 255, 255, .6); margin-top: 16px; }
 
 /* Pie ----------------------------------------------------------------- */
-.pie { background: var(--color-superficie); border-top: 1px solid var(--color-borde); padding: 40px 0; font-size: .9rem; color: var(--color-tinta-suave); }
-.pie .contenedor { display: flex; flex-wrap: wrap; gap: 16px 40px; align-items: center; justify-content: space-between; }
-.pie nav { display: flex; gap: 20px; }
-.pie nav a { text-decoration: none; }
-.pie nav a:hover { color: var(--color-tinta); text-decoration: underline; }
-.pie-seguridad { width: 100%; border-left: 3px solid var(--color-primario); padding-left: 12px; }
+.pie { background: var(--color-pie); padding: 44px 0 36px; font-size: .9rem; color: rgba(255, 255, 255, .78); }
+.pie .contenedor { display: grid; gap: 22px; }
+.pie-fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; }
+.pie strong { color: #fff; font-family: var(--fuente-titulos); font-size: 1.2rem; }
+.pie nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+.pie nav a { text-decoration: none; color: rgba(255, 255, 255, .85); }
+.pie nav a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.btn-reportar { background: #fff; color: var(--color-pie); border-color: #fff; }
+.btn-reportar:hover { background: var(--color-acento-suave); }
+.pie-seguridad { border-left: 3px solid var(--color-acento); padding-left: 12px; color: rgba(255, 255, 255, .85); }
 
 /* Ficha de propiedad -------------------------------------------------- */
 .ficha { padding-top: 28px; padding-bottom: var(--seccion); }
@@ -277,9 +287,6 @@ button, input, select { font: inherit; color: inherit; }
 }
 
 /* Responsivo ---------------------------------------------------------- */
-@media (max-width: 1080px) {
-  .buscador { order: 3; flex-basis: 100%; max-width: none; }
-}
 @media (max-width: 960px) {
   .sellos .contenedor { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .anfitriones .contenedor { grid-template-columns: 1fr; gap: 36px; }
@@ -290,7 +297,6 @@ button, input, select { font: inherit; color: inherit; }
   .galeria > div:first-child { grid-column: span 2; grid-row: auto; }
 }
 @media (max-width: 720px) {
-  .cabecera { position: static; }
   .solo-escritorio { display: none; }
   .solo-celular { display: inline; }
   .buscador { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -298,10 +304,8 @@ button, input, select { font: inherit; color: inherit; }
   .buscador label:first-child, .buscador label:nth-child(4) { grid-column: span 2; }
   .buscador label:nth-child(2) { border-right: 1px solid var(--color-borde); }
   .buscador .btn { grid-column: span 2; border-radius: 0 0 calc(var(--radio) - 1px) calc(var(--radio) - 1px); padding: 12px; }
-  .hero-contenido { padding: 56px var(--espacio); }
+  .hero-contenido { padding: 40px var(--espacio); }
   .sellos .contenedor { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .pasos { grid-template-columns: minmax(0, 1fr); }
   .lista-dos-columnas { grid-template-columns: minmax(0, 1fr); }
-  .pie .contenedor { flex-direction: column; align-items: flex-start; }
-  .pie nav { flex-wrap: wrap; gap: 10px 18px; }
 }

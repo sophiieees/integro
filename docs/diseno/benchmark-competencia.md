@@ -18,7 +18,7 @@ Referencias que Sophia compartió el 18 de octubre de 2026: la portada de Airbnb
 ## Qué tomamos
 
 - De Airbnb: la estructura de búsqueda por destino, fechas y huéspedes, y la sección "Disponibles en [ciudad] este fin de semana" con tarjetas en cuadrícula.
-- De Wander (decisión de Sophia, 18 oct): la barra de búsqueda compacta dentro de la cabecera, el hero con una foto a lo ancho y el titular encima, y una portada dirigida solo al huésped con la entrada del anfitrión como un botón que lleva a su propia página. También la promesa económica en el hero, el total por estancia en la tarjeta y el verde para "lo que te ahorras".
+- De Wander (decisiones de Sophia, 18 oct): el hero con una foto a lo ancho y una portada dirigida solo al huésped, con la entrada del anfitrión como un botón que lleva a su propia página. A diferencia de Wander, sobre la foto no va un lema sino el buscador: la portada no vende, busca. La promesa (verificado, total, cero comisión) vive en `como-funciona.html`. Se conservan el total por estancia en la tarjeta y el verde para "sin cargos".
 - De ambas: la portada no habla con el anfitrión. Esa conversación vive en `anfitriones.html`.
 
 ## Qué cambiamos
