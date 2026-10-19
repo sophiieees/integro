@@ -228,7 +228,7 @@ for p in PROMPTS:
         parrafo("", "Decisiones de Sophia")
         filas = [("N", "Propuesta de la IA", "Veredicto", "Razón (en palabras de Sophia)")]
         for n, prop, porque, ver, razon, cambio in p["decisiones"]:
-            filas.append((n, prop, ver, razon if ver != "Pendiente" else "(por escribir)"))
+            filas.append((n, prop, ver, razon if razon else "(por escribir)"))
         t = doc.add_table(rows=len(filas), cols=4)
         t.style = "Table Grid"
         t.alignment = WD_TABLE_ALIGNMENT.CENTER

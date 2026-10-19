@@ -18,12 +18,13 @@ Estado al 18 de octubre de 2026: semana 2 de 7 del plan de construcción del MVP
 | `docs/arquitectura.md` | Arquitectura objetivo: módulos, modelo de datos, flujos, infraestructura, seguridad y cómo este prototipo migra a ella. |
 | `docs/decisiones/` | Registros de decisiones de arquitectura (ADR), numerados y con fuente. |
 | `docs/diseno/` | Sistema de diseño, comparación con la competencia y lista de pantallas. |
-| `PROMPT_LOG.md` | Bitácora de prompts del Assignment 2: especificación, decisiones de aceptar, rechazar o revisar, y validación. |
-| `herramientas/bitacora/` | Fuente única de la bitácora (`bitacora_datos.py`) y los generadores que escriben la sección 2.0 de `PROMPT_LOG.md` y el documento de presentación en Word. |
+| `herramientas/bitacora/` | Datos y generador del documento de presentación en Word (`bitacora_datos.py`, `generar_presentacion.py`). |
 | `index.html` (raíz) | Redirección a `web/index.html` para que GitHub Pages sirva el prototipo sin configuración. |
 | `vercel.json` | Le dice a Vercel que la carpeta publicable es `web/`. |
 
 ## Cómo ver el prototipo
+
+Versión publicada: https://integro-ruby.vercel.app (Vercel la actualiza con cada push a `main` y conserva un deploy por commit).
 
 1. Abre `web/index.html` en el navegador con doble clic. No necesita servidor ni instalar nada.
 2. Para verlo en el celular o compartirlo, publica el repositorio en cualquiera de estos servicios, sin paso de compilación:
@@ -51,6 +52,10 @@ Los documentos de negocio viven fuera del repositorio por confidencialidad. Las 
 - Ciberseguridad: amenazas, controles y respuesta (Sophie, semana 2)
 - Mapa de etapas de Íntegro (octubre de 2026)
 - Chapa inteligente de Íntegro (Valeria, 13 de octubre de 2026)
+
+## Historial de versiones
+
+Cada ronda de cambios del prototipo tiene una etiqueta de git (`v0.1-mockup-inicial`, `v0.2-portada-huesped`, `v0.3-primer-avance`, `v0.4-eslogan-y-ficha`) y capturas del estado anterior en [docs/diseno/capturas/historial/](docs/diseno/capturas/historial/). Así se puede ver cómo estaba el sitio antes de cada modificación.
 
 ## Convenciones
 

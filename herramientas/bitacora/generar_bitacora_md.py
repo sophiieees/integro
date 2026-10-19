@@ -51,14 +51,17 @@ def render():
             out.append("| N | Propuesta de la IA | Por qué la propuso | Veredicto | Razón (en palabras de Sophia) | Qué cambió |")
             out.append("|---|---|---|---|---|---|")
             for n, prop, porque, ver, razon, cambio in p["decisiones"]:
-                ver_md = "`[SOPHIA]`" if ver == "Pendiente" else ver
-                razon_md = "`[SOPHIA]`" if ver == "Pendiente" else razon
+                ver_md = ver
+                razon_md = razon if razon else "`[SOPHIA]`"
                 out.append("| %s | %s | %s | %s | %s | %s |" % (n, md_celda(prop), md_celda(porque), ver_md, md_celda(razon_md), md_celda(cambio)))
             out.append("")
     return "\n".join(out)
 
 
 def main():
+    if not os.path.exists(RUTA):
+        print("PROMPT_LOG.md no está en el repositorio (Sophia lo retiró el 18 de octubre de 2026): la bitácora vive en el Word. Nada que hacer.")
+        return
     with io.open(RUTA, "r", encoding="utf-8") as f:
         texto = f.read()
     if INICIO not in texto or FIN not in texto:
