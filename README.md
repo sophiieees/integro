@@ -41,22 +41,6 @@ Tres decisiones gobiernan todo lo demás (detalle en [docs/arquitectura.md](docs
 
 Este repositorio contiene hoy solo la capa de presentación, como prototipo estático. La sección "Del prototipo a producción" de `docs/arquitectura.md` dice qué parte de este código migra a qué pieza del sistema.
 
-## Dónde está cada pieza
-
-Íntegro es un producto real en construcción por tres socias; este repositorio es su base técnica.
-
-| Pieza del assignment | Dónde está |
-|---|---|
-| Funciones candidatas (Pre-Class Work de la Sesión 19) | Se trabajan fuera del repositorio; la elegida y las descartadas se anotan en [PROMPT_LOG.md](PROMPT_LOG.md), sección 1 |
-| Especificación de 3 campos (Paso 1, Checkpoint A) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 1 |
-| Registro de aceptar, rechazar o revisar (Paso 2, Checkpoint B) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 2 |
-| Registro de validación con caso de prueba real (Paso 3) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 3 |
-| Enlaces de deploy y repositorio (Paso 4) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 4 |
-| Por qué la función resuelve el problema (nivel 5) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 5 |
-| Declaración "Uso de IA" | [PROMPT_LOG.md](PROMPT_LOG.md), sección 6 |
-| Código de la función | Ruta anotada en la sección 1 de la bitácora cuando se elija la función |
-| Historial de commits con decisiones | `git log --oneline` |
-
 ## Documentos fuente
 
 Los documentos de negocio viven fuera del repositorio por confidencialidad. Las decisiones registradas en `docs/` citan de cuál salen:
