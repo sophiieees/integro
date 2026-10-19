@@ -4,8 +4,8 @@ El MVP técnico habla de 14 pantallas y remite al documento de diseño del MVP p
 
 | # | Pantalla | Para quién | Estado en el prototipo |
 |---|---|---|---|
-| 1 | Portada del huésped: cabecera con la marca y "Conviértete en anfitrión", hero con imagen de fondo y el buscador al centro, seis propiedades | Huésped | Hecha: `web/index.html` (primer avance entregable, 18 oct) |
-| 2 | Ficha de propiedad con precio total y caja de reserva | Huésped | Hecha: `web/propiedad.html` |
+| 1 | Portada del huésped: cabecera con la marca y el enlace "Conviértete en anfitrión", hero con imagen de fondo, eslogan y el buscador al centro, seis propiedades | Huésped | Hecha: `web/index.html` (primer avance entregable, 18 oct) |
+| 2 | Ficha de propiedad con precio total y caja de reserva; ubicación (enlace a Google Maps con la zona) y reseñas a lo ancho | Huésped | Hecha: `web/propiedad.html` |
 | 2b | Página del anfitrión: beneficios, planes, tres pasos para publicar y comparativa | Anfitrión | Hecha: `web/anfitriones.html` (separada de la portada por decisión de Sophia, 18 oct) |
 | 2c | Cómo funciona: cuatro sellos de confianza y tres pasos para reservar | Ambos | Hecha: `web/como-funciona.html` (Sophia prevé que termine dentro de anfitriones) |
 | 3 | Resultados con filtros y mapa aproximado | Huésped | Parcial: la cuadrícula de inicio hace de resultados; faltan filtros de precio y servicios y el mapa |

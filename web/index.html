@@ -10,18 +10,18 @@
 </head>
 <body>
   <!--
-    Portada para el huésped · prototipo estático, octubre de 2026.
+    Portada para el huésped. Prototipo estático, octubre de 2026.
     Nombre provisional: Íntegro (sujeto a validación ante el IMPI).
-    La portada solo muestra el buscador sobre la imagen y las propiedades; nada de texto de venta.
+    La portada muestra el eslogan y el buscador sobre la imagen, y las propiedades.
     Imágenes: Sophia las guarda en assets/img/ con los nombres de assets/img/LEEME.md.
     Otras páginas: propiedad.html (ficha), como-funciona.html, anfitriones.html.
   -->
   <header class="cabecera">
     <div class="contenedor">
       <a class="marca" href="index.html" aria-label="Íntegro, inicio"><span class="marca-punto" aria-hidden="true"></span>Íntegro</a>
-      <div class="cabecera-acciones">
-        <a class="btn btn-secundario" href="anfitriones.html">Conviértete en anfitrión</a>
-      </div>
+      <nav class="enlaces-cabecera" aria-label="Principal">
+        <a href="anfitriones.html">Conviértete en anfitrión</a>
+      </nav>
     </div>
   </header>
 
@@ -29,6 +29,7 @@
     <section class="hero sin-imagen" id="inicio" aria-label="Buscar hospedaje">
       <img class="hero-imagen" src="assets/img/imagen-bienvenida.jpg" alt="" onload="this.parentNode.classList.remove('sin-imagen')" onerror="this.remove()">
       <div class="hero-contenido">
+        <p class="eslogan">Su lugar, <span class="resalte">íntegro</span>.</p>
         <form class="buscador" id="buscador" role="search" aria-label="Buscar hospedaje">
           <label><span>Destino</span><input type="text" name="destino" list="datalist-ciudades" placeholder="¿A dónde vas?" autocomplete="off"></label>
           <label><span>Llegada</span><input type="date" name="llegada"></label>

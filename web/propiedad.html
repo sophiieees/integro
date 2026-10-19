@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Propiedad · Íntegro</title>
+  <title>Propiedad | Íntegro</title>
   <meta name="description" content="Ficha de una propiedad verificada en Íntegro: precio total, anfitrión verificado y entrada con chapa inteligente.">
   <meta name="theme-color" content="#0F3D52">
   <link rel="stylesheet" href="assets/css/estilos.css">
@@ -13,10 +13,10 @@
   <header class="cabecera">
     <div class="contenedor">
       <a class="marca" href="index.html" aria-label="Íntegro, inicio"><span class="marca-punto" aria-hidden="true"></span>Íntegro</a>
-      <div class="cabecera-acciones">
-        <a class="btn-enlace" href="index.html">Buscar hospedaje</a>
-        <a class="btn btn-secundario solo-escritorio" href="anfitriones.html">Conviértete en anfitrión</a>
-      </div>
+      <nav class="enlaces-cabecera" aria-label="Principal">
+        <a href="index.html">Buscar hospedaje</a>
+        <a href="anfitriones.html">Conviértete en anfitrión</a>
+      </nav>
     </div>
   </header>
 
@@ -82,30 +82,6 @@
           <p data-campo="cancelacion-detalle"></p>
           <p class="nota-chica">Política estandarizada de Íntegro. Los plazos exactos son una propuesta pendiente de la revisión legal.</p>
         </section>
-
-        <section class="bloque">
-          <h2>Ubicación</h2>
-          <p class="texto-suave">Mostramos una zona aproximada de unos 300 metros. La dirección exacta se comparte al confirmar la reserva, para proteger la casa cuando está vacía.</p>
-          <div class="mapa-aproximado" role="img" aria-label="Mapa con la zona aproximada de la propiedad">
-            <div class="mapa-zona"></div>
-            <div class="mapa-leyenda">Zona aproximada · <span data-campo="zona-corta"></span></div>
-          </div>
-        </section>
-
-        <section class="bloque">
-          <h2>Reseñas verificadas</h2>
-          <p class="nota-chica">Solo pueden reseñar quienes completaron una estancia. Huésped y anfitrión califican y las reseñas se publican al mismo tiempo.</p>
-          <div class="resena">
-            <strong>Carla</strong>
-            <span class="texto-suave">Septiembre de 2026 · estancia de 3 noches</span>
-            <p>Tal como en las fotos. Entramos con el teléfono sin coordinar nada y el anfitrión respondió rápido a una duda sobre el agua caliente.</p>
-          </div>
-          <div class="resena">
-            <strong>Rodrigo</strong>
-            <span class="texto-suave">Agosto de 2026 · estancia de 2 noches</span>
-            <p>El total que vi al buscar fue exactamente lo que pagué. Buena ubicación y todo limpio.</p>
-          </div>
-        </section>
       </div>
 
       <aside>
@@ -140,6 +116,33 @@
         </div>
       </aside>
     </div>
+
+    <section class="bloque-ancho" id="ubicacion">
+      <h2>Ubicación</h2>
+      <p class="texto-suave">Mostramos una zona aproximada de unos 300 metros. La dirección exacta se comparte al confirmar la reserva, para proteger la casa cuando está vacía.</p>
+      <a class="mapa-aproximado" data-mapa href="#" target="_blank" rel="noopener" aria-label="Abrir la zona aproximada en Google Maps">
+        <span class="mapa-zona"></span>
+        <span class="mapa-leyenda">Zona aproximada: <span data-campo="zona-corta"></span></span>
+      </a>
+      <p class="ubicacion-acciones"><a class="btn btn-azul" data-mapa href="#" target="_blank" rel="noopener">Ver la zona en Google Maps</a></p>
+    </section>
+
+    <section class="bloque-ancho" id="resenas">
+      <h2>Reseñas verificadas</h2>
+      <p class="nota-chica">Solo pueden reseñar quienes completaron una estancia. Huésped y anfitrión califican y las reseñas se publican al mismo tiempo.</p>
+      <div class="resenas-lista">
+        <div class="resena">
+          <strong>Carla</strong>
+          <span class="texto-suave">Septiembre de 2026, estancia de 3 noches</span>
+          <p>Tal como en las fotos. Entramos con el teléfono sin coordinar nada y el anfitrión respondió rápido a una duda sobre el agua caliente.</p>
+        </div>
+        <div class="resena">
+          <strong>Rodrigo</strong>
+          <span class="texto-suave">Agosto de 2026, estancia de 2 noches</span>
+          <p>El total que vi al buscar fue exactamente lo que pagué. Buena ubicación y todo limpio.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="pie">

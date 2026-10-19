@@ -23,7 +23,8 @@ Propuesta de octubre de 2026. La identidad de marca (nombre definitivo, logotipo
 | `--color-tinta` / `--color-tinta-suave` | `#16232B` / `#5A6872` | Texto principal y secundario |
 | `--color-borde` | `#E2DED5` | Líneas divisorias |
 | `--color-alerta` | `#B8432A` | Errores y avisos de fraude (reservado; aún sin uso en el prototipo) |
-| `--color-pie` | `#124B35` verde profundo | Fondo del pie de página (pedido por Sophia: "el verde que se usa como fondo"); derivado del acento para que lea como verde Íntegro |
+| `--color-pie` | `#FFFFFF` | Fondo del pie de página (Sophia lo prefiere blanco; el verde se probó y se descartó) |
+| `--color-resalte` | `#8CCDF2` azul claro | La palabra "íntegro" del eslogan sobre la foto del hero |
 | `--fuente-titulos` | Serif del sistema (Iowan Old Style, Palatino, Georgia) | Títulos, números de paso, nombre de la marca |
 | `--fuente-texto` | Sans del sistema | Todo lo demás |
 | `--radio` / `--radio-chico` | 10 px / 6 px | Cajas y botones. Esquinas discretas a propósito. |
@@ -42,12 +43,16 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 
 | Componente | Dónde | Qué comunica |
 |---|---|---|
-| Cabecera fija con la marca y "Conviértete en anfitrión" | Todas | Solo dos elementos: la marca y el camino del anfitrión. Sin menú ni "Entrar" por ahora (PROMPT_LOG 0.20) |
-| Buscador de cuatro campos y botón (`.buscador`) | Centro del hero de la portada | Destino, llegada, salida, huéspedes, sobre la imagen de bienvenida. Es lo único que dice la portada; en celular se apila en dos columnas |
+| Cabecera fija con la marca y enlaces de texto (`.enlaces-cabecera`) | Todas | La marca y, junto a ella, "Conviértete en anfitrión" (y "Buscar hospedaje" en las páginas interiores) como texto sin borde. Sin menú ni "Entrar" por ahora (PROMPT_LOG 0.20) |
+| Eslogan (`.eslogan`) | Hero de la portada | "Su lugar, íntegro." en serif blanca con "íntegro" en azul claro; juego de palabras con el nombre |
+| Buscador de cuatro campos y botón (`.buscador`) | Centro del hero de la portada, bajo el eslogan | Destino, llegada, salida, huéspedes, sobre la imagen de bienvenida; en celular se apila en dos columnas |
+| Botón azul (`.btn-azul`) | Página de anfitrión, pie, ficha (Google Maps) | Botón relleno en azul primario; Sophia descartó el verde para los botones del anfitrión. "Buscar" y "Reservar" siguen en verde hasta que ella decida |
 | Hero con imagen de fondo (`.hero`) | Portada y anfitriones | Foto a lo ancho con velo oscuro. En la portada solo lleva el buscador; en anfitriones lleva titular. Sin imagen, degradado y marcador que dice qué archivo guardar |
 | Encabezado de página interior (`.encabezado-pagina`) | Cómo funciona | Etiqueta, titular de las tres promesas e introducción, sobre el fondo papel |
 | Sello de confianza (`.sello`) | Cómo funciona | Cuatro promesas con línea superior verde; elementos libres, sin cajas ni iconos |
-| Pie de página verde (`.pie`) con botón "Reportar un problema" | Todas | Fondo `--color-pie`, texto claro, enlaces a Cómo funciona, Anfitriones, Términos y Aviso; el reporte es un botón blanco porque es la vía de protección del huésped |
+| Pie de página blanco (`.pie`) con botón "Reportar un problema" | Todas | Fondo `--color-pie`, enlaces a Cómo funciona, Anfitriones, Términos y Aviso; el reporte es un botón azul porque es la vía de protección del huésped y debe verse |
+| Secciones a lo ancho de la ficha (`.bloque-ancho`) | Ficha | Ubicación (mapa de zona que abre Google Maps con colonia y ciudad) y reseñas en dos columnas, debajo de la descripción y la caja de precio, para que la columna de texto no deje hueco junto a la caja |
+| Textos sin separador " · " | Todas | Sophia pidió quitar todos los puntos medios: se usan comas, paréntesis y líneas separadas |
 | Tarjeta de propiedad (`.tarjeta`) | Inicio | Foto, insignias "Anfitrión verificado" y "Chapa inteligente", título, zona, calificación, precio por noche y total de 2 noches sin cargos |
 | Insignia (`.insignia`) y pastilla (`.pastilla`) | Tarjeta y ficha | Estado del anfitrión (verificado o nuevo) y chapa. El rombo verde es la marca de "verificado" en todo el sitio |
 | Pasos numerados (`.pasos`) | Inicio | Cómo reservar, con numerales en serif |

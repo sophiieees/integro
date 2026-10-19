@@ -1,4 +1,4 @@
-/* Íntegro · lógica del prototipo
+/* Íntegro, lógica del prototipo
    -------------------------------------------------------------------
    Hace tres cosas y nada más:
      1. Pinta las tarjetas de propiedades desde los datos de muestra.
@@ -25,6 +25,8 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
     });
   }
+
+  function plural(n, uno, varios) { return n + " " + (n === 1 ? uno : varios); }
 
   function fechaCorta(iso) {
     if (!iso) return "";
@@ -53,10 +55,11 @@
         "</div>" +
         "<div class=\"tarjeta-cuerpo\">" +
           "<div class=\"tarjeta-titulo\">" + escapar(p.titulo) + "</div>" +
-          "<div class=\"tarjeta-meta\">" + escapar(p.zona) + ", " + escapar(p.ciudad) + " · " + escapar(p.tipo) + " · " + p.capacidad + " huéspedes</div>" +
-          "<div class=\"tarjeta-calif\">" + p.calificacion.toFixed(2) + " · " + p.resenas + " reseñas verificadas</div>" +
+          "<div class=\"tarjeta-meta\">" + escapar(p.zona) + ", " + escapar(p.ciudad) + "</div>" +
+          "<div class=\"tarjeta-meta\">" + escapar(p.tipo) + " para " + plural(p.capacidad, "huésped", "huéspedes") + "</div>" +
+          "<div class=\"tarjeta-calif\">" + p.calificacion.toFixed(2) + " (" + plural(p.resenas, "reseña verificada", "reseñas verificadas") + ")</div>" +
           "<div class=\"tarjeta-precio\"><strong>" + dinero(p.precio_noche) + "</strong> <span class=\"texto-suave\">por noche</span>" +
-            "<div class=\"tarjeta-total\">Total 2 noches " + dinero(p.total_2_noches) + " · sin cargos de servicio</div>" +
+            "<div class=\"tarjeta-total\">Total 2 noches " + dinero(p.total_2_noches) + ", sin cargos de servicio</div>" +
           "</div>" +
         "</div>" +
       "</a>"
@@ -123,7 +126,7 @@
     var p = DATOS.propiedades.filter(function (x) { return x.id === id; })[0] || DATOS.propiedades[0];
     if (!p) return;
 
-    document.title = p.titulo + " · Íntegro";
+    document.title = p.titulo + " | Íntegro";
 
     var campos = {
       "titulo": p.titulo,
@@ -131,8 +134,8 @@
       "zona": p.zona + ", " + p.ciudad,
       "zona-corta": p.zona,
       "tipo": p.tipo,
-      "capacidad": p.capacidad + " huéspedes · " + p.recamaras + " recámaras · " + p.camas + " camas · " + p.banos + " baños",
-      "calif": p.calificacion.toFixed(2) + " · " + p.resenas + " reseñas verificadas",
+      "capacidad": plural(p.capacidad, "huésped", "huéspedes") + ", " + plural(p.recamaras, "recámara", "recámaras") + ", " + plural(p.camas, "cama", "camas") + ", " + plural(p.banos, "baño", "baños"),
+      "calif": p.calificacion.toFixed(2) + " (" + plural(p.resenas, "reseña verificada", "reseñas verificadas") + ")",
       "anfitrion-nombre": p.anfitrion.nombre,
       "anfitrion-inicial": p.anfitrion.nombre.charAt(0),
       "responde": "Responde " + p.anfitrion.responde,
@@ -182,6 +185,11 @@
 
     var hoy = new Date().toISOString().slice(0, 10);
     Array.prototype.forEach.call(raiz.querySelectorAll("input[type=date]"), function (i) { i.min = hoy; });
+
+    /* El mapa enlaza a Google Maps con la ZONA aproximada (colonia y ciudad), nunca con la dirección exacta:
+       la dirección solo se comparte con reserva confirmada. */
+    var enlaceMapa = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.zona + ", " + p.ciudad);
+    Array.prototype.forEach.call(raiz.querySelectorAll("[data-mapa]"), function (a) { a.href = enlaceMapa; });
   }
 
   /* ---------- Revelado al entrar en pantalla (una sola vez) ----------
