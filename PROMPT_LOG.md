@@ -1,13 +1,10 @@
-# Bitácora de prompts · Assignment 2 · Íntegro
+# Bitácora de prompts Íntegro
 
 | | |
 |---|---|
 | Alumna | Sophia Pérez |
-| Curso | Applied Algorithmic Thinking |
 | Proyecto | Íntegro, plataforma de rentas de corta estancia por suscripción |
 | Asistente de IA | Claude Code (modelo Claude Fable 5.1), dentro de VS Code |
-| Repositorio | (enlace en la sección 4) |
-| Estado | Borrador abierto el 18 de octubre de 2026 |
 
 **Cómo leer este documento.** Los campos marcados con `[SOPHIA]` los escribe la alumna: la elección de la función, los tres campos de la especificación, cada veredicto con su razón y el caso de prueba con el output real. El asistente no los redacta. Las entradas registran lo que la IA propuso, qué campo de la especificación estaba en juego y qué se decidió.
 
