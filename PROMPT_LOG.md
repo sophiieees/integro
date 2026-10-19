@@ -33,7 +33,7 @@ Punto de partida del Assignment 1: `[SOPHIA]` (enlace del repo y deploy del Assi
 
 **Función elegida:** `[SOPHIA]`
 
-**Candidatas consideradas:** ver [docs/assignment-2/funciones-candidatas.md](docs/assignment-2/funciones-candidatas.md). `[SOPHIA]`: anota aquí las 2 o 3 que llevaste a la sesión y por qué descartaste las otras.
+**Candidatas consideradas:** `[SOPHIA]` anota aquí las 2 o 3 que llevaste a la sesión y por qué descartaste las otras.
 
 | Campo | Contenido |
 |---|---|

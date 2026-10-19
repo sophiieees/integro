@@ -18,7 +18,6 @@ Estado al 18 de octubre de 2026: semana 2 de 7 del plan de construcción del MVP
 | `docs/arquitectura.md` | Arquitectura objetivo: módulos, modelo de datos, flujos, infraestructura, seguridad y cómo este prototipo migra a ella. |
 | `docs/decisiones/` | Registros de decisiones de arquitectura (ADR), numerados y con fuente. |
 | `docs/diseno/` | Sistema de diseño, comparación con la competencia y lista de pantallas. |
-| `docs/assignment-2/` | Material del Assignment 2: funciones candidatas y guía de la rúbrica. |
 | `PROMPT_LOG.md` | Bitácora de prompts del Assignment 2: especificación, decisiones de aceptar, rechazar o revisar, y validación. |
 | `index.html` (raíz) | Redirección a `web/index.html` para que GitHub Pages sirva el prototipo sin configuración. |
 | `vercel.json` | Le dice a Vercel que la carpeta publicable es `web/`. |
@@ -47,7 +46,7 @@ Este repositorio contiene hoy solo la capa de presentación, como prototipo est�
 
 | Pieza del assignment | Dónde está |
 |---|---|
-| Funciones candidatas (Pre-Class Work de la Sesión 19) | [docs/assignment-2/funciones-candidatas.md](docs/assignment-2/funciones-candidatas.md) |
+| Funciones candidatas (Pre-Class Work de la Sesión 19) | Se trabajan fuera del repositorio; la elegida y las descartadas se anotan en [PROMPT_LOG.md](PROMPT_LOG.md), sección 1 |
 | Especificación de 3 campos (Paso 1, Checkpoint A) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 1 |
 | Registro de aceptar, rechazar o revisar (Paso 2, Checkpoint B) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 2 |
 | Registro de validación con caso de prueba real (Paso 3) | [PROMPT_LOG.md](PROMPT_LOG.md), sección 3 |
@@ -56,7 +55,6 @@ Este repositorio contiene hoy solo la capa de presentación, como prototipo est�
 | Declaración "Uso de IA" | [PROMPT_LOG.md](PROMPT_LOG.md), sección 6 |
 | Código de la función | Ruta anotada en la sección 1 de la bitácora cuando se elija la función |
 | Historial de commits con decisiones | `git log --oneline` |
-| Cómo se contrasta cada criterio de la rúbrica | [docs/assignment-2/guia-rubrica.md](docs/assignment-2/guia-rubrica.md) |
 
 ## Documentos fuente
 

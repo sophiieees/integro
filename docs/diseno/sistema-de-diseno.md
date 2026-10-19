@@ -55,7 +55,6 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 | Tabla comparativa (`.tabla-comparativa`) | Anfitriones, fondo oscuro | Modelo por comisión frente a Íntegro, sin cifras de terceros |
 | Caja de precio (`.caja-precio`) | Ficha, fija al hacer scroll | Desglose con "Comisión de plataforma $0" en verde; es la pantalla donde la promesa de precio total se cumple |
 | Mapa aproximado (`.mapa-aproximado`) | Ficha | Círculo de zona, sin pin exacto: la ubicación exacta solo con reserva confirmada |
-| Aviso de seguridad en el pie (`.pie-seguridad`) | Ambas | "Íntegro nunca te pedirá pagar fuera de la plataforma" (control del documento de ciberseguridad) |
 
 ## Reglas de estilo aplicadas
 
