@@ -190,6 +190,48 @@
        la dirección solo se comparte con reserva confirmada. */
     var enlaceMapa = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.zona + ", " + p.ciudad);
     Array.prototype.forEach.call(raiz.querySelectorAll("[data-mapa]"), function (a) { a.href = enlaceMapa; });
+
+    iniciarCotizador(raiz, p);
+  }
+
+  /* ---------- Cotizador de reserva (usa cotizador.js) ----------
+     Al cambiar llegada, salida o huéspedes, pinta el desglose real o el aviso.
+     Sin fechas, la caja conserva el ejemplo de 2 noches. */
+
+  function iniciarCotizador(raiz, p) {
+    var cotizar = window.INTEGRO_COTIZAR;
+    var form = raiz.querySelector(".caja-precio form");
+    var desglose = document.getElementById("desglose");
+    var aviso = document.getElementById("aviso-cotizacion");
+    var nota = document.getElementById("nota-cotizacion");
+    if (!cotizar || !form || !desglose) return;
+
+    function pintar() {
+      var llegada = form.llegada.value, salida = form.salida.value;
+      if (!llegada && !salida) return;
+      var r = cotizar(p, llegada, salida, form.huespedes.value);
+      if (nota) nota.hidden = true;
+      if (!r.ok) {
+        aviso.textContent = r.aviso;
+        aviso.hidden = false;
+        desglose.hidden = true;
+        return;
+      }
+      aviso.hidden = true;
+      desglose.hidden = false;
+      var html = r.lineas.map(function (l) {
+        var etiqueta = plural(l.noches, "noche", "noches") + " × " + dinero(l.precio) + (l.concepto === "Tarifa base" ? "" : " (" + escapar(l.concepto) + ")");
+        return "<div><span>" + etiqueta + "</span><span>" + dinero(l.importe) + "</span></div>";
+      }).join("");
+      html += "<div><span>Limpieza</span><span>" + dinero(r.limpieza) + "</span></div>";
+      html += "<div><span>Comisión de plataforma</span><span class=\"cero\">$0</span></div>";
+      html += "<div class=\"total\"><span>Total, " + plural(r.noches, "noche", "noches") + "</span><span>" + dinero(r.total) + "</span></div>";
+      desglose.innerHTML = html;
+    }
+
+    ["llegada", "salida", "huespedes"].forEach(function (nombre) {
+      form[nombre].addEventListener("change", pintar);
+    });
   }
 
   /* ---------- Revelado al entrar en pantalla (una sola vez) ----------

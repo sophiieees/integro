@@ -99,14 +99,15 @@
                 </select>
               </label>
             </div>
-            <div class="desglose" aria-label="Desglose del precio">
+            <div class="desglose" id="desglose" aria-label="Desglose del precio">
               <div><span>2 noches × <span data-campo="precio-noche"></span></span><span data-campo="subtotal"></span></div>
               <div><span>Limpieza</span><span data-campo="limpieza"></span></div>
               <div><span>Comisión de plataforma</span><span class="cero">$0</span></div>
               <div class="total"><span>Total</span><span data-campo="total"></span></div>
             </div>
+            <p class="aviso-vacio" id="aviso-cotizacion" hidden></p>
             <button class="btn btn-primario" type="button">Reservar</button>
-            <p class="caja-nota">Ejemplo para 2 noches. La cotización por fechas (temporadas, estancia mínima, disponibilidad) todavía no existe en este prototipo.</p>
+            <p class="caja-nota" id="nota-cotizacion">Ejemplo para 2 noches. Elige llegada y salida para ver el total de tu estancia.</p>
           </form>
           <div class="caja-chapa" data-caja-chapa>
             <strong>Entrada con chapa inteligente</strong>
@@ -161,6 +162,7 @@
   </footer>
 
   <script src="assets/js/datos.js"></script>
+  <script src="assets/js/cotizador.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
