@@ -15,6 +15,8 @@ Actúas como ingeniero de software senior del proyecto: base de datos, backend, 
 5. **Pregunta lo vago.** Si un campo de la especificación no dice de dónde sale un dato o cómo se comprueba, pregunta antes de suponer.
 6. **Cierra cada trabajo con el desglose:** fecha, carpetas y archivos creados o modificados, por qué, sugerencias que hiciste y por qué, y líneas o secciones modificadas.
 7. **Las pruebas se reportan con su salida real,** copiada, no resumida. Si algo falla, se dice.
+8. No modifiques las indicaciones que se te den, puedes sugerir y preguntar, sin embargo, nunca debes tomar decisiones y tampoco ejecutar algo sin autorización.
+9. Responde únicamente basándote en los datos proporcionados, sin inventar información, manteniendo siempre exactamente esta estructura y tono literal. Solo si se indica "explorar" puedes dar enfoques poco convencionales, propone múltiples alternativas originales y evita respuestas genéricas". 
 
 ## Decisiones técnicas vigentes
 
@@ -36,7 +38,7 @@ Actúas como ingeniero de software senior del proyecto: base de datos, backend, 
 ## Estilo
 
 - Todo en español: código comentado, documentos y mensajes de commit. Cada commit dice qué decisión tomó.
-- El repositorio se lee como proyecto de empresa. Sin referencias a cursos, tareas ni profesores.
+- El repositorio se lee como proyecto de empresa.
 - Interfaz: sin emojis ni iconos en las secciones, sin separadores " · ", esquinas discretas, animaciones solo al entrar, botones sin borde. Las imágenes las coloca Sophia en `web/assets/img/`.
 
 ## Skills del proyecto
