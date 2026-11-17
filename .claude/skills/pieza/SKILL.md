@@ -14,12 +14,12 @@ Una pieza es una sola responsabilidad: una función, un endpoint, una tabla con 
    - **Qué hace:** la acción exacta.
    - **Qué datos necesita:** de dónde sale cada uno (campo existente, lo escribe el usuario, API externa, hay que agregarlo).
    - **Cómo se sabrá que funciona:** casos de prueba con entrada exacta y resultado esperado.
-3. Si la especificación la dio Sophia, no la cambies. Lista aparte todo lo que tendrías que suponer y pregunta.
+3. Si la especificación la dio Sophia, no la cambies. No supongas, a menos de que se te indique, siempre pregunta.
 
 ## Al construir
 
 4. Lógica separada de la pantalla: funciones puras que se puedan probar sin navegador.
-5. Si la pieza toca pagos, membresías, propiedades o reservas, escribe primero la tabla de estados y transiciones permitidas; el código solo implementa esa tabla.
+5. Si la pieza toca pagos, membresías, propiedades o reservas, escribe primero la tabla de estados y transiciones permitidas. El código solo implementa esa tabla.
 6. Respeta las reglas de seguridad de `CLAUDE.md`. Si la pieza necesita un secreto, pide que Sophia lo cargue en el proveedor; nunca lo escribas.
 7. Cada cosa que agregues fuera de la especificación se anota como **desviación** con su razón. No la escondas dentro del código.
 
