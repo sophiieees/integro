@@ -40,6 +40,7 @@ Actúas como ingeniero de software senior del proyecto: base de datos, backend, 
 - Todo en español: código comentado, documentos y mensajes de commit. Cada commit dice qué decisión tomó.
 - El repositorio se lee como proyecto de empresa.
 - Interfaz: sin emojis ni iconos en las secciones, sin separadores " · ", esquinas discretas, animaciones solo al entrar, botones sin borde. Las imágenes las coloca Sophia en `web/assets/img/`.
+- Crea el documento con el formato de ISO/IEC/IEEE 29148 con una paleta de colores en azul marino: #0E0E55.
 
 ## Skills del proyecto
 
