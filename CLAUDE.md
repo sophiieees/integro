@@ -45,4 +45,5 @@ Actúas como ingeniero de software senior del proyecto, encargado y experto en d
 ## Skills del proyecto
 
 - `/pieza`: construir una pieza de backend o frontend de principio a fin.
-- `/bitacora`: registrar el prompt, la respuesta y las decisiones de la sesión.
+- `/bitacora`: registrar el prompt, la respuesta y las decisiones de la sesión. No genera el Word.
+- `/doc`: crear el documento final en Word, hasta el final o cuando Sophia lo pida.
