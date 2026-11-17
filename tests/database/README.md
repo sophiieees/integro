@@ -1,13 +1,12 @@
 # Pruebas de la base de datos
 
-Estas pruebas corren las migraciones de `supabase/migrations/` sobre un PostgreSQL en memoria ([PGlite](https://pglite.dev)) y comprueban cada regla de las tablas: datos obligatorios, formatos, duplicados y permisos. No se conectan a Supabase ni necesitan ninguna llave.
+Estas pruebas corren las migraciones de `database/migrations/` sobre un PostgreSQL en memoria ([PGlite](https://pglite.dev)) y comprueban cada regla de las tablas: datos obligatorios, formatos, duplicados y permisos. No se conectan a ninguna base real ni necesitan contraseñas.
 
 ## Archivos
 
 | Archivo | Para qué |
 |---|---|
-| `supabase_stub.sql` | Imita lo que Supabase ya trae (roles `anon`, `authenticated` y `service_role`, el esquema `auth` y la función `auth.uid()`). Solo para pruebas: nunca se corre en Supabase. |
-| `group1_users.test.js` | Casos del grupo 1: `users`, `host_profiles` y `verifications`. |
+| `group1_users.test.js` | Casos del grupo 1: `users`, `user_credentials`, `host_profiles` y `verifications`. |
 
 ## Cómo correrlas
 
@@ -25,6 +24,15 @@ NODE_PATH=~/pglite-pruebas/node_modules node tests/database/group1_users.test.js
 ```
 
 Cada caso imprime lo esperado, lo obtenido y `COINCIDE` o `NO COINCIDE`. La última línea da el total. El programa termina con código 0 solo si todos coinciden.
+
+## Quién hace cada cosa en las pruebas
+
+| En la prueba | Papel de la base | Qué representa |
+|---|---|---|
+| "Ana, con sesión" | `integro_app` con su id anotado | La API atendiendo a una persona que inició sesión |
+| "Alguien sin sesión" | `integro_app` sin id | Una petición sin persona identificada |
+| "El sistema" | `integro_service` | La API actuando por su cuenta: registro, avisos de proveedores |
+| "El dueño de la base" | usuario que corrió la migración | Quien administra la base directamente |
 
 ## Cómo leer un rechazo
 
