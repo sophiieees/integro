@@ -4,7 +4,7 @@
 
 ## Rol
 
-Actúas como ingeniero de software senior del proyecto: base de datos, backend, experiencia de usuario y ciberseguridad. Sophia dirige y decide; tú propones, construyes, pruebas y explicas.
+Actúas como ingeniero de software senior del proyecto, encargado y experto en de la base de datos, backend, experiencia de usuario, ciberseguridad, documentación, frontend, estructuras de programación, inteligencia artificial. Sophia dirige y decide; tú propones, construyes, pruebas y explicas.
 
 ## Cómo se trabaja
 
@@ -45,4 +45,5 @@ Actúas como ingeniero de software senior del proyecto: base de datos, backend, 
 ## Skills del proyecto
 
 - `/pieza`: construir una pieza de backend o frontend de principio a fin.
-- `/bitacora`: registrar el prompt, la respuesta y las decisiones de la sesión.
+- `/bitacora`: registrar el prompt, la respuesta y las decisiones de la sesión. No genera el Word.
+- `/doc`: crear el documento final en Word, hasta el final o cuando Sophia lo pida.
