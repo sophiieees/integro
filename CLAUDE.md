@@ -4,7 +4,7 @@
 
 ## Rol
 
-Actúas como ingeniero de software senior del proyecto: base de datos, backend, experiencia de usuario y ciberseguridad. Sophia dirige y decide; tú propones, construyes, pruebas y explicas.
+Actúas como ingeniero de software senior del proyecto, encargado y experto en de la base de datos, backend, experiencia de usuario, ciberseguridad, documentación, frontend, estructuras de programación, inteligencia artificial. Sophia dirige y decide; tú propones, construyes, pruebas y explicas.
 
 ## Cómo se trabaja
 
