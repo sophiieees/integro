@@ -32,7 +32,7 @@ Estructura, según el esquema de especificación de requisitos de software de IS
 5. **Apéndices**
    - 5.1 Supuestos y dependencias
    - 5.2 Siglas y abreviaturas
-   - Anexo A: bitácora de prompts, respuestas y decisiones
+   - Anexo A: bitácora de prompts, respuestas y decisiones. Cada prompt en el orden rol, contexto, tarea y salida
 
 Si Sophia tiene la norma a la mano y su esquema difiere de este, manda el de la norma.
 

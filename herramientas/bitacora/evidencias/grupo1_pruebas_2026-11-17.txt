@@ -1,0 +1,247 @@
+Migración aplicada: 20261117000001_users_host_profiles_verifications.sql
+
+== Registro ==
+Caso 1. Registro completo de una persona mexicana
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 2. Su fila queda sin verificar y en español
+  esperado: Ana, Torres, +525512345678, MX, unverified, es
+  obtenido: Ana, Torres, +525512345678, MX, unverified, es
+  COINCIDE
+Caso 3. Registro completo de una persona extranjera, en inglés
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 4. Su fila queda con país US e idioma en
+  esperado: US, en
+  obtenido: US, en
+  COINCIDE
+Caso 5. Registro sin first_name
+  esperado: rechazado 23502 first_name
+  obtenido: rechazado 23502 first_name
+  COINCIDE
+Caso 6. Registro sin last_name
+  esperado: rechazado 23502 last_name
+  obtenido: rechazado 23502 last_name
+  COINCIDE
+Caso 7. Registro sin phone
+  esperado: rechazado 23502 phone
+  obtenido: rechazado 23502 phone
+  COINCIDE
+Caso 8. Registro sin country
+  esperado: rechazado 23502 country
+  obtenido: rechazado 23502 country
+  COINCIDE
+Caso 9. Registro sin birth_date
+  esperado: rechazado 23502 birth_date
+  obtenido: rechazado 23502 birth_date
+  COINCIDE
+Caso 10. Los cinco registros rechazados no dejaron cuenta creada
+  esperado: 0
+  obtenido: 0
+  COINCIDE
+Caso 11. Nombre con puros espacios
+  esperado: rechazado 23514 users_first_name_length
+  obtenido: rechazado 23514 users_first_name_length
+  COINCIDE
+Caso 12. Teléfono sin código de país (5512345678)
+  esperado: rechazado 23514 users_phone_e164
+  obtenido: rechazado 23514 users_phone_e164
+  COINCIDE
+Caso 13. Teléfono con espacios (+52 55 1234 5678)
+  esperado: rechazado 23514 users_phone_e164
+  obtenido: rechazado 23514 users_phone_e164
+  COINCIDE
+Caso 14. Teléfono que ya usa otra persona
+  esperado: rechazado 23505 users_phone_unique
+  obtenido: rechazado 23505 users_phone_unique
+  COINCIDE
+Caso 15. País en minúsculas (mx)
+  esperado: rechazado 23514 users_country_iso2
+  obtenido: rechazado 23514 users_country_iso2
+  COINCIDE
+Caso 16. País con tres letras (MEX)
+  esperado: rechazado 23514 users_country_iso2
+  obtenido: rechazado 23514 users_country_iso2
+  COINCIDE
+Caso 17. Fecha de nacimiento de mañana
+  esperado: rechazado 23514 users_birth_date_range
+  obtenido: rechazado 23514 users_birth_date_range
+  COINCIDE
+Caso 18. Fecha de nacimiento anterior a 1900 (1899-12-31)
+  esperado: rechazado 23514 users_birth_date_range
+  obtenido: rechazado 23514 users_birth_date_range
+  COINCIDE
+Caso 19. Fecha de nacimiento que no existe (2000-02-31)
+  esperado: rechazado 22008
+  obtenido: rechazado 22008
+  COINCIDE
+Caso 20. Idioma que la plataforma no maneja (fr)
+  esperado: rechazado 23514 users_preferred_language_valid
+  obtenido: rechazado 23514 users_preferred_language_valid
+  COINCIDE
+
+== Permisos sobre users ==
+Caso 21. Ana, con sesión, lee la tabla y solo ve su fila
+  esperado: 1 fila(s)
+  obtenido: 1 fila(s)
+  COINCIDE
+Caso 22. Ana busca la fila de John
+  esperado: 0 fila(s)
+  obtenido: 0 fila(s)
+  COINCIDE
+Caso 23. Un visitante sin sesión lee la tabla
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 24. Ana corrige su nombre
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 25. La fecha de actualización se movió sola
+  esperado: true
+  obtenido: true
+  COINCIDE
+Caso 26. Ana intenta marcarse como verificada
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 27. Ana intenta cambiar el nombre de John
+  esperado: aceptado, 0 fila(s) afectada(s)
+  obtenido: aceptado, 0 fila(s) afectada(s)
+  COINCIDE
+Caso 28. Ana intenta insertar una fila a mano
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 29. Ana intenta borrar su fila
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 30. El servidor marca a Ana como verificada
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 31. El servidor intenta un estado que no existe (approved)
+  esperado: rechazado 23514 users_identity_status_valid
+  obtenido: rechazado 23514 users_identity_status_valid
+  COINCIDE
+Caso 32. Borrar el acceso de Ana no borra sus datos: se rechaza
+  esperado: rechazado 23503 users_id_fkey
+  obtenido: rechazado 23503 users_id_fkey
+  COINCIDE
+
+== host_profiles ==
+Caso 33. El servidor crea el perfil de anfitrión de Ana
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 34. El perfil nace en nivel new
+  esperado: new
+  obtenido: new
+  COINCIDE
+Caso 35. Segundo perfil para la misma persona
+  esperado: rechazado 23505 host_profiles_user_unique
+  obtenido: rechazado 23505 host_profiles_user_unique
+  COINCIDE
+Caso 36. Perfil para una persona que no existe
+  esperado: rechazado 23503 host_profiles_user_id_fkey
+  obtenido: rechazado 23503 host_profiles_user_id_fkey
+  COINCIDE
+Caso 37. Nivel que no existe (gold)
+  esperado: rechazado 23514 host_profiles_level_valid
+  obtenido: rechazado 23514 host_profiles_level_valid
+  COINCIDE
+Caso 38. Últimos dígitos de la CLABE con cinco cifras (12345)
+  esperado: rechazado 23514 host_profiles_clabe_last4_format
+  obtenido: rechazado 23514 host_profiles_clabe_last4_format
+  COINCIDE
+Caso 39. Cuenta de Stripe con formato incorrecto (cuenta123)
+  esperado: rechazado 23514 host_profiles_stripe_account_format
+  obtenido: rechazado 23514 host_profiles_stripe_account_format
+  COINCIDE
+Caso 40. Cuenta de Stripe y CLABE con formato correcto
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 41. La misma cuenta de Stripe para otro anfitrión
+  esperado: rechazado 23505 host_profiles_stripe_account_unique
+  obtenido: rechazado 23505 host_profiles_stripe_account_unique
+  COINCIDE
+Caso 42. Ana lee su perfil de anfitrión
+  esperado: 1 fila(s)
+  obtenido: 1 fila(s)
+  COINCIDE
+Caso 43. John no ve el perfil de Ana
+  esperado: 0 fila(s)
+  obtenido: 0 fila(s)
+  COINCIDE
+Caso 44. Ana intenta subirse el nivel
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 45. John intenta crearse un perfil de anfitrión a mano
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 46. Un visitante sin sesión lee los perfiles
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+
+== verifications ==
+Caso 47. El servidor registra una verificación de identidad pendiente
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 48. El mismo aviso del proveedor llega dos veces
+  esperado: rechazado 23505 verifications_provider_reference_unique
+  obtenido: rechazado 23505 verifications_provider_reference_unique
+  COINCIDE
+Caso 49. Tipo de verificación que no existe (passport)
+  esperado: rechazado 23514 verifications_kind_valid
+  obtenido: rechazado 23514 verifications_kind_valid
+  COINCIDE
+Caso 50. Resultado que no existe (expired)
+  esperado: rechazado 23514 verifications_result_valid
+  obtenido: rechazado 23514 verifications_result_valid
+  COINCIDE
+Caso 51. Pendiente pero con fecha de respuesta
+  esperado: rechazado 23514 verifications_resolved_matches_result
+  obtenido: rechazado 23514 verifications_resolved_matches_result
+  COINCIDE
+Caso 52. Aprobada pero sin fecha de respuesta
+  esperado: rechazado 23514 verifications_resolved_matches_result
+  obtenido: rechazado 23514 verifications_resolved_matches_result
+  COINCIDE
+Caso 53. Aprobada con su fecha de respuesta
+  esperado: aceptado, 1 fila(s) afectada(s)
+  obtenido: aceptado, 1 fila(s) afectada(s)
+  COINCIDE
+Caso 54. Verificación para una persona que no existe
+  esperado: rechazado 23503 verifications_user_id_fkey
+  obtenido: rechazado 23503 verifications_user_id_fkey
+  COINCIDE
+Caso 55. Ana lee sus verificaciones
+  esperado: 1 fila(s)
+  obtenido: 1 fila(s)
+  COINCIDE
+Caso 56. John no ve las verificaciones de Ana
+  esperado: 0 fila(s)
+  obtenido: 0 fila(s)
+  COINCIDE
+Caso 57. John intenta registrarse una verificación aprobada
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 58. Ana intenta cambiar el resultado de su verificación
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+Caso 59. Un visitante sin sesión lee las verificaciones
+  esperado: rechazado 42501
+  obtenido: rechazado 42501
+  COINCIDE
+
+Total: 59 casos, 59 coinciden, 0 no coinciden.
