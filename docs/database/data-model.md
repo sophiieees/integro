@@ -96,10 +96,10 @@ Todas las entidades y relaciones, sin atributos. Los atributos están en los dia
 | Atributo derivado | No se guarda: `age`, `nights` y `average_rating` se calculan al consultarlos. |
 | Atributo multivalor | Una tabla aparte con la llave foránea de la entidad y un valor por fila. |
 
-Dos atributos multivalor del diagrama todavía no coinciden con el modelo relacional de la sección 4 y esperan decisión:
+Los dos atributos multivalor del diagrama:
 
-- `phone`: hoy la tabla `users`, ya construida, guarda un solo teléfono. Si se confirma como multivalor, pasa a una tabla `user_phones`.
-- `house_rules`: hoy es una sola columna de `properties`. Como multivalor le corresponde una tabla `property_house_rules`.
+- `phone`: confirmado como multivalor el 17 de noviembre de 2026. Es la tabla `user_phones`; el correo sigue siendo uno solo por persona.
+- `house_rules`: hoy es una sola columna de `properties`. Como multivalor le corresponde una tabla `property_house_rules`; esta decisión sigue pendiente.
 
 ### 2.9 Cómo se regeneran las imágenes
 
@@ -124,6 +124,7 @@ Los diagramas se generan desde `tools/er-diagram/generate.mjs`, que contiene la 
 
 | Uno | Muchos | Llave foránea | Obligatoria | Cómo se lee |
 |---|---|---|---|---|
+| `users` | `user_phones` | `user_phones.user_id → users(id)` | Sí | Una persona registra varios teléfonos; uno es el principal. Sale del atributo multivalor `phone` del diagrama. |
 | `users` | `sessions` | `sessions.user_id → users(id)` | Sí | Una persona puede tener varias sesiones abiertas (celular y computadora). |
 | `users` | `password_resets` | `password_resets.user_id → users(id)` | Sí | Una persona puede pedir recuperar su contraseña varias veces. |
 | `users` | `verifications` | `verifications.user_id → users(id)` | Sí | Una persona pasa por varias verificaciones: identidad, cuenta bancaria, tarjeta. |
@@ -162,9 +163,11 @@ Notación: `tabla(columnas)`. La llave primaria va <ins>subrayada</ins>. `FK` ma
 
 ### Grupo 1. Personas y acceso
 
-Estado: `users`, `user_credentials`, `host_profiles` y `verifications` construidas; `sessions`, `password_resets` y `admins` diseñadas.
+Estado: `users`, `user_credentials`, `user_phones`, `host_profiles` y `verifications` construidas; `sessions`, `password_resets` y `admins` diseñadas.
 
-- **users**(<ins>id</ins>, first_name, last_name, email UK, phone UK, country, birth_date, preferred_language, identity_status)
+- **users**(<ins>id</ins>, first_name, last_name, email UK, country, birth_date, preferred_language, identity_status)
+- **user_phones**(<ins>id</ins>, user_id FK → users(id), phone UK, is_primary, verified_at?)
+  - Cada persona tiene exactamente un teléfono principal. Un teléfono no se repite en toda la plataforma.
 - **user_credentials**(<ins>id</ins>, user_id FK UK → users(id), password_hash)
 - **sessions**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, revoked_at?)
 - **password_resets**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, used_at?)
@@ -225,11 +228,11 @@ Estado: diseñadas.
 - **audit_log**(<ins>id</ins>, actor_id? FK → users(id), action, entity_type, entity_id)
   - Solo se inserta; nunca se edita ni se borra.
 
-## 5. Propuestas incluidas que esperan decisión
+## 5. Decisiones del modelo
 
-Están dibujadas en el diagrama, pero no venían en las tablas autorizadas el 17 de noviembre de 2026.
+Aceptadas por Sophia el 17 de noviembre de 2026.
 
-| # | Propuesta | Por qué |
+| # | Decisión | Por qué |
 |---|---|---|
 | 1 | El titular va en `properties.owner_id` y los coanfitriones en `property_co_hosts` | Así la base garantiza que cada propiedad tiene exactamente un titular. |
 | 2 | Las llaves foráneas de anfitrión apuntan a `host_profiles(user_id)` y no a `users(id)` | Nadie puede ser titular, coanfitrión o tener membresía sin perfil de anfitrión. |
@@ -239,9 +242,50 @@ Están dibujadas en el diagrama, pero no venían en las tablas autorizadas el 17
 | 6 | Columnas de `sessions` y `password_resets` | Se guarda la huella del código, no el código, igual que con las contraseñas. |
 | 7 | `amenities` con `name_es` y `name_en` | La plataforma funciona en español e inglés. |
 | 8 | Nombres `memberships` y `membership_charges` | `docs/arquitectura.md` las llamaba `subscriptions` e `invoices`. |
+| 9 | Teléfono multivalor y correo único | Si la persona pierde, cambia o le roban el teléfono conserva otro con el cual entrar; el correo es uno solo porque con él inicia sesión. |
+| 10 | Entidades débiles: `UserCredential`, `Admin`, `HostProfile`, `Rate`, `Membership`, `PropertyPhoto`, `SeasonalRate` y `CalendarBlock` | Ninguna existe sin su entidad dueña. |
+| 11 | `reviews` es una relación de muchos a muchos con atributos, no una entidad | Una reseña solo existe entre una persona y una reserva. |
 
-## 6. Lo que falta decidir antes de construir
+## 6. Tablas de estados
 
-- **Listas de estados.** `properties.status`, `bookings.status`, `payments.status` y `memberships.status` son máquinas de estados cerradas. Cada una necesita su tabla de estados y cambios permitidos antes de su migración.
-- **Atributos multivalor.** `phone` y `house_rules` (sección 2.8).
+Pagos, membresías, propiedades y reservas son máquinas de estados cerradas: todo cambio que no esté en su tabla está prohibido y tiene su prueba. Las de pagos, membresías y propiedades fueron aceptadas el 17 de noviembre de 2026.
+
+### 6.1 Pagos (`payments.status`)
+
+| De | A | Quién lo dispara |
+|---|---|---|
+| `created` | `pending` | El huésped confirma la reserva y Stripe crea el intento de cobro |
+| `pending` | `paid` | Aviso firmado de Stripe: cobro exitoso |
+| `pending` | `rejected` | Aviso firmado de Stripe: cobro fallido, con el motivo que da Stripe |
+| `pending` | `expired` | 30 minutos sin confirmación |
+| `paid` | `cancelled` | El huésped cancela; aplica la política de cancelación de la propiedad |
+| `paid` | `refunded` | Reembolso ejecutado en Stripe, parcial o total |
+
+### 6.2 Membresías (`memberships.status`)
+
+| Estado | Cuándo | Qué pasa con las propiedades |
+|---|---|---|
+| `active` | Stripe confirma el pago del mes | Visibles |
+| `grace` | El cobro falló; días 1 a 7, con tres reintentos y avisos | Visibles |
+| `suspended` | Día 8 sin pago | Ocultas, con los datos intactos; el anfitrión ve un aviso para pagar |
+| `cancelled` | Día 30 sin pago | Ocultas; si vuelve, paga y se reactiva sin verificarse de nuevo |
+
+Los días (7, 8 y 30) viven en una configuración, no en el código. Falta escribir la tabla de cambios permitidos entre estos estados antes de construir el grupo 5.
+
+### 6.3 Propiedades (`properties.status`)
+
+Estados: `draft` (borrador), `in_review` (en revisión), `active` (activa), `paused` (pausada por el anfitrión), `suspended` (suspendida por la plataforma) y `removed` (retirada).
+
+Una propiedad está activa solo si se cumplen tres cosas a la vez: su verificación está aprobada, la membresía del titular está `active` o `grace`, y el anfitrión no la pausó. En cuanto una falla, la propiedad se oculta sola.
+
+Falta escribir la tabla de cambios permitidos entre estos estados antes de construir el grupo 2.
+
+### 6.4 Reservas (`bookings.status`)
+
+Sin definir. Necesita su lista de estados y su tabla de cambios antes de construir el grupo 3.
+
+## 7. Lo que falta decidir antes de construir
+
+- **Estados de las reservas** y las tablas de cambios permitidos de membresías y propiedades (sección 6).
+- **`house_rules`:** si pasa a una tabla aparte (sección 2.8).
 - **Tablas que no están en este modelo:** calendarios iCal por propiedad, llaves digitales y registro de aperturas de la chapa inteligente, comprobación del correo al registrarse y eventos de uso (búsquedas, clics).
