@@ -397,4 +397,127 @@ PROMPTS = [
             ("8.6", "Transcripción de los prompts 6 a 8 con un rol distinto en cada uno, la tarea antes que el contexto y un punto sobre skills en el prompt 6.", "Formato usado en los prompts 1 a 5.", "Revisar", "El prompt está bien, solo quita lo de las skills (punto 9) y primero dar contexto. Rol único para todas las bitácoras. Especificar que tengo un borrador, que es el paso 1. Pon que me faltaron algunas especificaciones y tengo dudas.", "Rol único de CLAUDE.md, orden rol, contexto, tarea y salida, y prompts 6 a 8 corregidos."),
         ],
     },
+    # ------------------------------------------------------------------ 9
+    {
+        "n": 9,
+        "titulo": "Diagrama entidad-relación y modelo relacional",
+        "fecha": "17 de noviembre de 2026, tarde",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Ya para terminar la arquitectura, falta afinar la base de datos. Ya estoy descargando PostgreSQL. "
+                     "La programación será después, en Python."),
+        "tarea": ("Haz el diagrama entidad-relación y el modelo relacional, con las claves foráneas y el tipo de cada "
+                  "relación: 1 a 1, 1 a muchos, muchos a muchos."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "be24973, en la rama docs/data-model (fusionada a main con el PR #3)",
+            "archivos": [
+                ("docs/database/data-model.md", "diagrama, cardinalidad de cada relación y modelo relacional de 25 tablas en seis grupos."),
+                ("docs/database/img/ (seis imágenes)", "los diagramas en PNG, para verlos fuera de GitHub."),
+                ("docs/arquitectura.md (sección 5)", "aviso de que el modelo vigente es el documento nuevo."),
+            ],
+            "sugerencias": [
+                ("Escribir las tablas de estados de propiedades, reservas, pagos y membresías antes de construir.",
+                 "son máquinas de estados cerradas y su migración depende de esa lista."),
+                ("Dejar fuera del modelo, por ahora, calendarios iCal, chapa inteligente, comprobación del correo y eventos de uso.",
+                 "cada una depende de una decisión que todavía no se toma."),
+            ],
+            "lineas": "data-model.md nuevo completo (427 líneas); arquitectura.md, dos líneas en la sección 5.",
+        },
+        "decisiones": [
+            ("9.1", "Servicios de la propiedad como catálogo aparte, con relación de muchos a muchos.", "Permite filtrar la búsqueda por servicio y traducir sin tocar cada propiedad. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Catálogo aparte, muchos a muchos».", "Tablas amenities y property_amenities."),
+            ("9.2", "Temporadas de precio en una tabla aparte.", "Una lista no cabe en una columna y la base puede impedir fechas encimadas. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Tabla aparte seasonal_rates».", "Tabla seasonal_rates."),
+            ("9.3", "Solo listar como pendientes las tablas extra (sesiones, recuperación de contraseña, iCal, chapa).", "No dibujar lo que todavía no está definido. Campo: qué datos necesita.", "Revisar", "Sophia eligió la opción «Solo sesiones y contraseña».", "Se dibujaron sessions y password_resets; iCal y chapa quedaron pendientes."),
+            ("9.4", "El titular va en properties.owner_id y los coanfitriones en property_co_hosts.", "La base garantiza que cada propiedad tiene exactamente un titular. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupo 2."),
+            ("9.5", "Las llaves foráneas de anfitrión apuntan a host_profiles(user_id) y no a users(id).", "Nadie puede ser titular, coanfitrión o tener membresía sin perfil de anfitrión. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupos 2 y 5."),
+            ("9.6", "conversations sin columna de anfitrión.", "Con coanfitriones, quién escribió queda en cada mensaje. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupo 6."),
+            ("9.7", "calendar_blocks.booking_id.", "Liga el bloqueo con la reserva que lo causó. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupo 3."),
+            ("9.8", "reports.property_id.", "«Reportar este anuncio» ocurre sin reserva. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupo 6."),
+            ("9.9", "Columnas de sessions y password_resets, guardando la huella del código y no el código.", "Mismo criterio que con las contraseñas. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupo 1."),
+            ("9.10", "amenities con nombre en español y en inglés.", "La plataforma funciona en los dos idiomas. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupo 2."),
+            ("9.11", "Nombres memberships y membership_charges en lugar de subscriptions e invoices.", "Son los nombres de las tablas autorizadas el 17 de noviembre. Campo: qué datos necesita.", "Aceptar", "Confirmo los 8 veredictos del modelo relacional.", "Modelo relacional, grupo 5."),
+            ("9.12", "Diagrama entidad-relación dibujado como diagrama de tablas, con notación de pata de gallo.", "Es la forma que GitHub dibuja directamente desde el documento. Campo: cómo se sabrá que funciona.", "Rechazar", "El diagrama entidad-relación no tiene ni siquiera la estructura de un diagrama entidad-relación. Tiene más una estructura de un mapa mental.", "Se rehízo en notación de Chen (prompt 10)."),
+        ],
+    },
+    # ------------------------------------------------------------------ 10
+    {
+        "n": 10,
+        "titulo": "Corrección del diagrama entidad-relación: notación de Chen",
+        "fecha": "17 de noviembre de 2026, tarde",
+        "rol": ROL_PROYECTO,
+        "contexto": ("El modelo relacional me parece que está bien. El diagrama entidad-relación no tiene la estructura "
+                     "de un diagrama entidad-relación: no tiene rombos, ni los diferentes tipos de atributos, ni el ID "
+                     "subrayado. Especifiqué que eras un ingeniero de software senior y que sabías manejar bases de datos."),
+        "tarea": ("Corrige el diagrama entidad-relación. Debe tener: la relación, que es el rombo; el atributo, que es un "
+                  "óvalo; el atributo clave, que es un óvalo y va subrayado; el atributo multivalor, que puede ser el "
+                  "teléfono o el correo; el atributo compuesto, como el nombre; los atributos derivados, que son un óvalo "
+                  "punteado; la entidad fuerte y la entidad débil; las relaciones, si son débiles o fuertes; y, en algunos "
+                  "casos, la relación con atributos. Si tienes dudas, pregúntame."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "57f1e3b, en la rama docs/data-model",
+            "archivos": [
+                ("docs/database/data-model.md (sección 2)", "diagrama entidad-relación en notación de Chen, simbología y reglas para convertirlo al modelo relacional."),
+                ("docs/database/img/chen-*.png y chen-*.svg (siete diagramas)", "simbología, diagrama general y cinco de detalle: personas y acceso, propiedades, reservas y pagos, membresías, y mensajes, reseñas y reportes."),
+                ("tools/er-diagram/generate.mjs y to-png.sh", "generador de los diagramas, para regenerarlos cuando cambie el modelo."),
+            ],
+            "sugerencias": [
+                ("Guardar una huella irreversible y única de la identidad verificada, sin guardar el documento.",
+                 "es lo que detecta a una misma persona con dos cuentas de correo y teléfono distintos; conviene consultarlo por la parte legal."),
+                ("Pasar house_rules a una tabla aparte.", "en el diagrama es un atributo multivalor y hoy es una sola columna."),
+            ],
+            "lineas": ("data-model.md: sección 2 completa y la tabla de muchos a muchos de la sección 3; se retiraron los seis "
+                       "diagramas anteriores."),
+        },
+        "decisiones": [
+            ("10.1", "Un solo teléfono y un solo correo por persona, como estaba construido.", "Es lo que ya guardaba la tabla users. Campo: qué datos necesita.", "Rechazar", "Yo creo que conviene más el teléfono multivalor, correo único, ya que si pierde, le roban o cambia de teléfono. Confirmo el teléfono multivalor y correo único.", "Tabla user_phones (prompt 11)."),
+            ("10.2", "Nombres del diagrama en inglés, iguales a los de las tablas.", "Cada óvalo corresponde a una columna. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Inglés, igual que las tablas».", "Diagramas en inglés."),
+            ("10.3", "Un diagrama general sin atributos y uno por área con todos sus óvalos.", "Son más de 20 entidades y unos 150 atributos. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «General y uno por área».", "Un diagrama general y cinco de detalle."),
+            ("10.4", "Entidades débiles: UserCredential, Admin, HostProfile, Rate, Membership, PropertyPhoto, SeasonalRate y CalendarBlock.", "Ninguna existe sin su entidad dueña. Campo: qué datos necesita.", "Aceptar", "Estoy de acuerdo con las entidades que marcaste como débiles.", "Rectángulo doble y relación de identificación en los diagramas."),
+            ("10.5", "reviews como relación de muchos a muchos con atributos, y no como entidad.", "Una reseña solo existe entre una persona y una reserva. Campo: qué datos necesita.", "Aceptar", "Y con reviews como relación y no como entidad. Está bien.", "Rombo reviews con rating y body; fila en la tabla de muchos a muchos."),
+            ("10.6", "house_rules como atributo multivalor, en una tabla aparte.", "Una propiedad tiene varias reglas. Campo: qué datos necesita.", "Pendiente", "", "Dibujado como multivalor; en el modelo relacional sigue como una columna."),
+            ("10.7", "Huella única de la identidad verificada para detectar cuentas duplicadas de una misma persona.", "Ni el correo ni el teléfono detectan a la misma persona con otros datos. Campo: qué hace.", "Pendiente", "", "Sin cambios."),
+            ("10.8", "Guardar en el repositorio el generador de los diagramas (tools/er-diagram).", "Sin él las imágenes no se pueden regenerar cuando cambie el modelo. Campo: qué hace.", "Pendiente", "", "Carpeta tools/er-diagram."),
+        ],
+    },
+    # ------------------------------------------------------------------ 11
+    {
+        "n": 11,
+        "titulo": "Confirmaciones del modelo y teléfono multivalor",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": "Con todos estos cambios.",
+        "tarea": ("1) Confirmo el teléfono multivalor y correo único. 2) Estoy de acuerdo con las entidades que marcaste "
+                  "como débiles y con reviews como relación y no como entidad. 3) Confirmo los 8 veredictos del modelo "
+                  "relacional y las tablas de estado. 4) Ahora sí puedes aplicar /pieza y /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "0326a37 en la rama docs/data-model; 237226a y el commit de este registro en la rama datos/user-phones",
+            "archivos": [
+                ("docs/database/data-model.md", "decisiones aceptadas, tabla user_phones en el modelo relacional y tablas de estados."),
+                ("database/migrations/20261117000002_user_phones.sql", "tabla user_phones; el teléfono sale de users."),
+                ("tests/database/group1_users.test.js", "pruebas del grupo 1 adaptadas y casos nuevos de teléfonos."),
+                ("herramientas/bitacora/evidencias/grupo1_pruebas_2026-11-17_user_phones.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Poner un límite de teléfonos por persona.", "sin límite, una cuenta podría acaparar números."),
+                ("Escribir las tablas de cambios permitidos de membresías y propiedades y definir los estados de las reservas.",
+                 "faltan antes de construir los grupos 2, 3 y 5."),
+            ],
+            "lineas": ("data-model.md: secciones 2.8, 3, 4 (grupo 1), 5, 6 y 7. Migración nueva completa (116 líneas). "
+                       "group1_users.test.js: registro en una sola operación, casos de teléfono y sección «Teléfonos»."),
+            "pruebas": ("Corridas en un PostgreSQL en memoria (PGlite), no en una base real. Una sola corrida: «Total: 86 "
+                        "casos, 86 coinciden, 0 no coinciden.» Salida completa copiada en "
+                        "herramientas/bitacora/evidencias/grupo1_pruebas_2026-11-17_user_phones.txt."),
+        },
+        "decisiones": [
+            ("11.1", "La IA leyó «confirmo las tablas de estado» como aceptar las propuestas 6.5, 6.6 y 6.8 (membresías, propiedades y estados de pago).", "Eran las tablas de estados propuestas el 16 de noviembre. Campo: qué hace.", "Pendiente", "", "Documentadas en la sección 6 de data-model.md; los veredictos 6.5, 6.6 y 6.8 siguen pendientes hasta que Sophia lo confirme."),
+            ("11.2", "Toda persona tiene exactamente un teléfono principal, revisado al cerrar la operación.", "Sophia decidió que el teléfono es obligatorio desde el registro. Campo: qué hace.", "Pendiente", "", "Regla users_primary_phone_required."),
+            ("11.3", "Los teléfonos los escribe solo el sistema; la persona solo los lee.", "Agregar, comprobar o cambiar un teléfono exige antes verificar un código. Campo: qué hace.", "Pendiente", "", "Permisos de user_phones."),
+            ("11.4", "El sistema sí puede borrar un teléfono.", "Es la baja que pide la persona cuando lo pierde o lo cambia; es la única tabla del grupo 1 donde el sistema borra. Campo: qué hace.", "Pendiente", "", "Permiso de borrado en user_phones."),
+            ("11.5", "Sin límite de teléfonos por persona.", "Sophia no indicó un máximo. Campo: qué datos necesita.", "Pendiente", "", "Sin regla de máximo."),
+        ],
+    },
 ]
