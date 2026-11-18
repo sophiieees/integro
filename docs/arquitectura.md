@@ -78,6 +78,8 @@ Estimación del MVP técnico: 57 días-persona de backend más 6 días de contro
 
 ## 5. Modelo de datos
 
+El modelo vigente, con el diagrama entidad-relación y el modelo relacional, está en `docs/database/data-model.md`. La tabla siguiente es la versión anterior y se conserva como referencia.
+
 Llaves UUID, `created_at` y `updated_at` en todas las tablas, montos en centavos como enteros.
 
 | Tabla | Para qué | Nota de diseño |
