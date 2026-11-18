@@ -23,10 +23,11 @@ const salida = process.argv[2] || ".";
 // k: clave, p: clave parcial, m: multivalor, d: derivado, c: compuesto (partes)
 const a = (n, o = {}) => ({ n, ...o });
 const ENTIDADES = {
-  User: { attrs: [a("id", { k: 1 }), a("name", { c: ["first_name", "last_name"] }), a("email"), a("phone", { m: 1 }), a("country"), a("birth_date"), a("age", { d: 1 }), a("preferred_language"), a("identity_status"), a("identity_fingerprint")] },
+  User: { attrs: [a("id", { k: 1 }), a("name", { c: ["first_name", "last_name"] }), a("email"), a("email_verified_at"), a("phone", { m: 1 }), a("country"), a("birth_date"), a("age", { d: 1 }), a("preferred_language"), a("identity_status"), a("identity_fingerprint")] },
   UserCredential: { debil: 1, attrs: [a("password_hash")] },
-  Session: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("revoked_at")] },
+  Session: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("revoked_at"), a("last_used_at"), a("ip_address"), a("user_agent")] },
   PasswordReset: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("used_at")] },
+  OneTimeCode: { attrs: [a("id", { k: 1 }), a("purpose"), a("channel"), a("destination"), a("code_hash"), a("expires_at"), a("attempts"), a("used_at")] },
   Admin: { debil: 1, attrs: [a("created_at")] },
   HostProfile: { debil: 1, attrs: [a("level"), a("stripe_account_id"), a("clabe_last4")] },
   Verification: { attrs: [a("id", { k: 1 }), a("kind"), a("provider"), a("provider_reference"), a("result"), a("resolved_at")] },
@@ -53,6 +54,7 @@ const RELACIONES = [
   r("has_credential", "has", ["User", "1", 0], ["UserCredential", "1", 1], { ident: 1 }),
   r("opens", "opens", ["User", "1", 0], ["Session", "N", 1]),
   r("requests", "requests", ["User", "1", 0], ["PasswordReset", "N", 1]),
+  r("is_sent", "is sent", ["User", "1", 0], ["OneTimeCode", "N", 1]),
   r("is_admin", "is", ["User", "1", 0], ["Admin", "1", 1], { ident: 1 }),
   r("acts_as", "acts as", ["User", "1", 0], ["HostProfile", "1", 1], { ident: 1 }),
   r("undergoes", "undergoes", ["User", "1", 0], ["Verification", "N", 1]),
@@ -84,13 +86,14 @@ const RELACIONES = [
 
 // Diagramas de detalle: posición de cada entidad en pulgadas (x a la derecha, y hacia arriba).
 // rel: posición fija del rombo cuando el punto medio no sirve. lado: hacia dónde van los
-// atributos de una relación.
+// atributos de una relación. escala: aleja los óvalos de una entidad cuando no caben.
 const DIAGRAMAS = [
   { archivo: "chen-people-access",
-    pos: { User: [0, 0], Session: [-8.6, 4.4], AuditLog: [-8.6, 0], PasswordReset: [-8.6, -4.4],
-           UserCredential: [8.6, 6.3], Admin: [8.6, 2.1], HostProfile: [8.6, -2.1], Verification: [8.6, -6.3], Property: [14.4, -6.3] },
-    detalle: ["User", "UserCredential", "Session", "PasswordReset", "Admin", "HostProfile", "Verification", "AuditLog"],
-    relaciones: ["has_credential", "opens", "requests", "is_admin", "acts_as", "undergoes", "covers", "performs"] },
+    pos: { User: [0, 0], Session: [-9.4, 7.0], OneTimeCode: [-9.4, 2.2], AuditLog: [-9.4, -2.4], PasswordReset: [-9.4, -6.8],
+           UserCredential: [9.4, 6.3], Admin: [9.4, 2.1], HostProfile: [9.4, -2.1], Verification: [9.4, -6.3], Property: [15.2, -6.3] },
+    escala: { User: 1.4 }, rel: { opens: [-6.6, 4.91] },
+    detalle: ["User", "UserCredential", "Session", "PasswordReset", "OneTimeCode", "Admin", "HostProfile", "Verification", "AuditLog"],
+    relaciones: ["has_credential", "opens", "requests", "is_sent", "is_admin", "acts_as", "undergoes", "covers", "performs"] },
   { archivo: "chen-properties",
     pos: { Property: [0, 0], HostProfile: [-10.4, 0], PropertyPhoto: [11.6, 5.4], Rate: [11.6, 1.8], SeasonalRate: [11.6, -1.8], Amenity: [11.6, -5.6] },
     rel: { owns: [-5.6, 1.2], co_hosts: [-5.6, -1.2] }, lado: { co_hosts: [0, -1.1] },
@@ -116,7 +119,7 @@ const rad = (g) => (g * Math.PI) / 180;
 
 // Reparte los atributos alrededor de un centro, evitando las direcciones ocupadas
 // por las líneas hacia los rombos. Devuelve la posición de cada óvalo.
-function repartir(centro, attrs, ocupadas, ventana = 15) {
+function repartir(centro, attrs, ocupadas, ventana = 15, escala = 1) {
   const k = attrs.length;
   const peso = attrs.map((at) => (at.c ? 1.6 + 0.45 * at.c.length : 1));
   const total = peso.reduce((s, x) => s + x, 0);
@@ -130,7 +133,7 @@ function repartir(centro, attrs, ocupadas, ventana = 15) {
   }
   const largo = arcos.reduce((s, [i, f]) => s + (f - i), 0);
   const escalonar = k > 5;
-  const rx = k > 9 ? 1.6 + 0.11 * k : 1.75 + 0.07 * k, ry = k > 9 ? 1.1 + 0.075 * k : 1.2 + 0.055 * k;
+  const rx = escala * (k > 9 ? 1.6 + 0.11 * k : 1.75 + 0.07 * k), ry = escala * (k > 9 ? 1.1 + 0.075 * k : 1.2 + 0.055 * k);
   const posiciones = [];
   let acum = 0, anillo = 1;
   attrs.forEach((at, i) => {
@@ -188,7 +191,7 @@ function dotDetalle(d) {
     if (!d.detalle.includes(e)) continue;
     const ocupadas = rels.filter((x) => x.lados.some(([n]) => n === e))
       .map((x) => grados(posRel[x.id][0] - d.pos[e][0], posRel[x.id][1] - d.pos[e][1]));
-    for (const o of repartir(d.pos[e], ENTIDADES[e].attrs, ocupadas, ocupadas.length <= 4 ? 21 : 15)) {
+    for (const o of repartir(d.pos[e], ENTIDADES[e].attrs, ocupadas, ocupadas.length <= 4 ? 21 : 15, (d.escala && d.escala[e]) || 1)) {
       const id = `${e}.${o.at.n}`;
       ovalo(L, id, o.at, o.x, o.y, e);
       for (const parte of o.partes) ovalo(L, `${id}.${parte.n}`, { n: parte.n }, parte.x, parte.y, id);
