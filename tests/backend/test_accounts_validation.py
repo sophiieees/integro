@@ -5,7 +5,7 @@ Decisiones de Sophia del 17 de noviembre de 2026: todos los datos obligatorios,
 minúscula, número y símbolo.
 """
 
-from datetime import date
+from datetime import date, datetime, timezone
 
 import pytest
 
@@ -13,12 +13,16 @@ from app.modules.accounts.security import generate_code, hash_code, hash_passwor
 from app.modules.accounts.validation import (
     is_adult,
     password_errors,
+    time_zones_by_country,
+    today_in_country,
     validate_registration,
 )
 from app.notifications.console import ConsoleCodeSender
 from app.notifications.whatsapp import WhatsAppCodeSender
 
-TODAY = date(2026, 11, 17)
+# El instante del registro en casi todas las pruebas: mediodía del 17 de
+# noviembre de 2026 en la Ciudad de México. En todo México es 17 de noviembre.
+NOW = datetime(2026, 11, 17, 18, 0, tzinfo=timezone.utc)
 
 VALID_FORM = {
     "first_name": "Ana",
@@ -34,7 +38,7 @@ VALID_FORM = {
 
 def errors_for(**changes) -> list[tuple[str, str]]:
     """Avisos (campo, código) que da el formulario válido con esos cambios."""
-    _, errors = validate_registration({**VALID_FORM, **changes}, TODAY)
+    _, errors = validate_registration({**VALID_FORM, **changes}, NOW)
     return [(error.field, error.code) for error in errors]
 
 
@@ -44,7 +48,7 @@ def errors_for(**changes) -> list[tuple[str, str]]:
 
 
 def test_valid_form_is_accepted_as_written():
-    data, errors = validate_registration(VALID_FORM, TODAY)
+    data, errors = validate_registration(VALID_FORM, NOW)
 
     assert errors == []
     assert data.first_name == "Ana"
@@ -65,9 +69,8 @@ def test_form_is_tidied_before_saving():
             "email": "  Ana@Example.COM ",
             "country": "mx",
             "preferred_language": "EN",
-            "password": " Ejemplo-2026 ",
         },
-        TODAY,
+        NOW,
     )
 
     assert errors == []
@@ -75,13 +78,12 @@ def test_form_is_tidied_before_saving():
     assert data.email == "ana@example.com"
     assert data.country == "MX"
     assert data.preferred_language == "en"
-    # La contraseña no se toca: se guarda como la persona la escribió.
-    assert data.password == " Ejemplo-2026 "
+    assert data.password == "Ejemplo-2026"
 
 
 @pytest.mark.parametrize("language", [None, "", "   "])
 def test_language_defaults_to_spanish(language):
-    data, errors = validate_registration({**VALID_FORM, "preferred_language": language}, TODAY)
+    data, errors = validate_registration({**VALID_FORM, "preferred_language": language}, NOW)
 
     assert errors == []
     assert data.preferred_language == "es"
@@ -90,7 +92,7 @@ def test_language_defaults_to_spanish(language):
 def test_language_missing_from_the_form_defaults_to_spanish():
     form = {key: value for key, value in VALID_FORM.items() if key != "preferred_language"}
 
-    data, errors = validate_registration(form, TODAY)
+    data, errors = validate_registration(form, NOW)
 
     assert errors == []
     assert data.preferred_language == "es"
@@ -113,13 +115,13 @@ def test_each_required_field_empty_is_reported(field, empty):
 def test_each_required_field_missing_is_reported(field):
     form = {key: value for key, value in VALID_FORM.items() if key != field}
 
-    _, errors = validate_registration(form, TODAY)
+    _, errors = validate_registration(form, NOW)
 
     assert [(error.field, error.code) for error in errors] == [(field, "required")]
 
 
 def test_empty_form_reports_every_required_field():
-    _, errors = validate_registration({}, TODAY)
+    _, errors = validate_registration({}, NOW)
 
     assert [(error.field, error.code) for error in errors] == [
         (field, "required") for field in REQUIRED
@@ -184,6 +186,75 @@ def test_oldest_birth_date_allowed():
 
 
 # ---------------------------------------------------------------------------
+# La edad se cuenta con la fecha del país de la persona
+# (decisión de Sophia del 17 de noviembre de 2026, al revisar la pieza)
+# ---------------------------------------------------------------------------
+
+# 18 de noviembre a las 03:00 en hora universal: en la Ciudad de México y en
+# Nueva York todavía es 17; en Madrid y en Tokio ya es 18.
+LATE_IN_MEXICO = datetime(2026, 11, 18, 3, 0, tzinfo=timezone.utc)
+
+
+@pytest.mark.parametrize(
+    "country, today",
+    [
+        ("MX", date(2026, 11, 17)),
+        ("US", date(2026, 11, 17)),
+        ("ES", date(2026, 11, 18)),
+        ("JP", date(2026, 11, 18)),
+        ("ZZ", date(2026, 11, 18)),  # país que no está en la tabla
+        (None, date(2026, 11, 18)),  # sin país
+    ],
+)
+def test_today_depends_on_the_country(country, today):
+    assert today_in_country(country, LATE_IN_MEXICO) == today
+
+
+def test_country_with_several_time_zones_uses_the_most_advanced():
+    # 05:30 en hora universal: en Cancún ya es 18 (00:30) y en la Ciudad de México sigue siendo 17 (23:30).
+    assert today_in_country("MX", datetime(2026, 11, 18, 5, 30, tzinfo=timezone.utc)) == date(2026, 11, 18)
+    # 13:00 en hora universal del 17: en Kamchatka ya es 18 (01:00); en Moscú sigue siendo 17.
+    assert today_in_country("RU", datetime(2026, 11, 17, 13, 0, tzinfo=timezone.utc)) == date(2026, 11, 18)
+
+
+def test_time_zone_table_covers_the_countries():
+    table = time_zones_by_country()
+
+    assert len(table) > 240
+    assert "America/Mexico_City" in table["MX"]
+    assert table["JP"] == ("Asia/Tokyo",)
+
+
+def form_errors_at(now, **changes) -> list[tuple[str, str]]:
+    _, errors = validate_registration({**VALID_FORM, **changes}, now)
+    return [(error.field, error.code) for error in errors]
+
+
+def test_same_birthday_is_rejected_in_mexico_and_accepted_in_spain():
+    """Cumple 18 el 18 de noviembre. En México aún es 17; en España ya es 18."""
+    assert form_errors_at(LATE_IN_MEXICO, birth_date="2008-11-18", country="MX") == [
+        ("birth_date", "under_age")
+    ]
+    assert form_errors_at(LATE_IN_MEXICO, birth_date="2008-11-18", country="ES") == []
+    assert form_errors_at(LATE_IN_MEXICO, birth_date="2008-11-18", country="es") == []
+
+
+def test_birth_date_in_the_future_depends_on_the_country_too():
+    assert form_errors_at(LATE_IN_MEXICO, birth_date="2026-11-18", country="MX") == [
+        ("birth_date", "invalid")
+    ]
+    assert form_errors_at(LATE_IN_MEXICO, birth_date="2026-11-18", country="JP") == [
+        ("birth_date", "under_age")
+    ]
+
+
+def test_missing_country_does_not_add_a_wrong_age_warning():
+    assert form_errors_at(LATE_IN_MEXICO, birth_date="2008-11-18", country=None) == [
+        ("country", "required")
+    ]
+
+
+# ---------------------------------------------------------------------------
 # Caso 4. Contraseña
 # ---------------------------------------------------------------------------
 
@@ -196,14 +267,19 @@ def test_oldest_birth_date_allowed():
         ("Abcd-1x", ["too_short"]),  # 7
         ("ejemplo-2026", ["missing_uppercase"]),
         ("EJEMPLO-2026", ["missing_lowercase"]),
-        ("Ejemplo-dosmil", ["missing_digit"]),
+        ("Ejemplo-dos", ["missing_digit"]),
         ("Ejemplo2026", ["missing_symbol"]),
-        ("Ejemplo 2026", ["missing_symbol"]),  # el espacio no cuenta como símbolo
+        ("Ejemplo 2026", ["has_spaces", "missing_symbol"]),  # el espacio no cuenta como símbolo
+        ("Ejem plo-26", ["has_spaces"]),  # espacio en medio
+        (" Ejemplo-26", ["has_spaces"]),  # espacio al inicio
+        ("Ejemplo-26 ", ["has_spaces"]),  # espacio al final
+        ("Ejemplo-26\t", ["has_spaces"]),  # tabulador
         ("abcdefgh", ["missing_uppercase", "missing_digit", "missing_symbol"]),
         ("12345678", ["missing_uppercase", "missing_lowercase", "missing_symbol"]),
         ("a", ["too_short", "missing_uppercase", "missing_digit", "missing_symbol"]),
-        ("Aa1-" + "x" * 124, []),  # justo 128
-        ("Aa1-" + "x" * 125, ["too_long"]),  # 129
+        ("Aa1-" + "x" * 8, []),  # justo 12
+        ("Aa1-" + "x" * 9, ["too_long"]),  # 13
+        ("Ejemplo-2026-largo", ["too_long"]),  # una contraseña larga ya no se acepta
         ("Contraseña-1", []),  # letras con acento o eñe valen
     ],
 )
@@ -214,6 +290,12 @@ def test_password_rules(password, codes):
 
 def test_weak_password_is_reported_in_the_form():
     assert errors_for(password="Ejemplo2026") == [("password", "missing_symbol")]
+
+
+def test_password_with_spaces_is_rejected_not_trimmed():
+    """Decisión de Sophia: una contraseña no lleva espacios; se avisa, no se le quitan."""
+    assert errors_for(password=" Ejemplo-26") == [("password", "has_spaces")]
+    assert errors_for(password="Ejem plo-26") == [("password", "has_spaces")]
 
 
 # ---------------------------------------------------------------------------

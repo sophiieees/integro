@@ -28,14 +28,14 @@ Corren contra la base real con rollback_pool: todo se deshace al terminar
 cada prueba. Los códigos no se envían: la prueba los lee de un anotador.
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 import pytest
 
 from app.database.transaction import system_transaction
-from app.modules.accounts.router import today_on_the_platform
 from app.modules.accounts.security import hash_code
+from app.modules.accounts.validation import today_in_country
 
 REGISTER = "/api/v1/auth/register"
 VERIFY = "/api/v1/auth/verify-email"
@@ -212,7 +212,8 @@ def test_register_with_empty_body_reports_every_field(api):
 
 
 def years_ago(years: int):
-    today = today_on_the_platform()
+    """La fecha de hace tantos años, contada con la fecha de hoy en México."""
+    today = today_in_country("MX", datetime.now(timezone.utc))
     try:
         return today.replace(year=today.year - years)
     except ValueError:  # hoy es 29 de febrero
@@ -238,6 +239,13 @@ def test_register_turning_18_today_is_accepted(api):
     assert count_users(api, form["email"]) == 1
 
 
+def test_register_accepts_a_guest_from_another_country(api):
+    form = register(api, country="us", preferred_language="en", phone=new_form()["phone"].replace("+52", "+1"))
+
+    saved = one(api, "select country, preferred_language from users where email = %s", form["email"])
+    assert saved == ("US", "en")
+
+
 # --- Caso 4 ----------------------------------------------------------------
 
 
@@ -247,7 +255,9 @@ def test_register_turning_18_today_is_accepted(api):
         ("Abcd-1x", "too_short"),
         ("ejemplo-2026", "missing_uppercase"),
         ("EJEMPLO-2026", "missing_lowercase"),
-        ("Ejemplo-dosmil", "missing_digit"),
+        ("Ejemplo-dos", "missing_digit"),
+        ("Ejemplo-20260", "too_long"),  # 13 caracteres
+        ("Ejem plo-26", "has_spaces"),
         ("Ejemplo2026", "missing_symbol"),
     ],
 )
@@ -261,8 +271,9 @@ def test_register_with_weak_password_is_rejected(api, password, code):
     assert count_users(api, form["email"]) == 0
 
 
-def test_register_with_password_of_exactly_8_is_accepted(api):
+def test_register_with_password_of_exactly_8_and_exactly_12_is_accepted(api):
     register(api, password="Abcde-1x")
+    register(api, password="Abcde-1x2345")
 
 
 # --- Caso 5 ----------------------------------------------------------------
