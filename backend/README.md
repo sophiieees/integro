@@ -44,6 +44,8 @@ Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (conta
 
 Reglas del inicio de sesión (ADR 0014): en cada inicio se piden correo, contraseña y un código que llega al correo; no se recuerdan dispositivos. La sesión se guarda en la base (ADR 0015): la persona recibe una llave y la base guarda solo su huella. La sesión se cierra sola a los 30 días sin uso si la persona es huésped y a los 7 si es anfitriona; cada uso renueva el plazo. Una persona puede tener varias sesiones abiertas a la vez.
 
+Contraseñas incorrectas (ADR 0014): la cuenta nunca se bloquea. A los 3 fallos seguidos contra una cuenta se le avisa a su dueño por correo. A los 6 fallos en 15 minutos desde el mismo dispositivo (dirección IP y navegador), ese dispositivo recibe `429` con el código `try_later` y los segundos que faltan, aunque escriba la contraseña correcta; desde otro dispositivo se entra normal. Cada intento queda en la tabla `login_attempts`.
+
 Una ruta que necesita sesión la pide con `Depends(require_session)`, de `app/api/auth.py`, y abre su transacción con `user_transaction(pool, session.user_id)`.
 
 En modo desarrollo (`EMAIL_DELIVERY=console`) el código no se envía: aparece en la ventana donde corre el servidor, en una línea que empieza con `[MODO DESARROLLO]`.

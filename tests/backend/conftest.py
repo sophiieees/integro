@@ -100,9 +100,13 @@ class RecordingSender:
 
     def __init__(self):
         self.sent = []
+        self.notices = []
 
     def send_code(self, **message):
         self.sent.append(message)
+
+    def send_notice(self, **notice):
+        self.notices.append(notice)
 
     @property
     def last_code(self) -> str:

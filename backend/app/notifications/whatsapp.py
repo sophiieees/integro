@@ -12,3 +12,6 @@ class WhatsAppCodeSender:
         self, *, channel: str, destination: str, code: str, purpose: str, ttl_seconds: int
     ) -> None:
         raise NotImplementedError("El envío por WhatsApp está pendiente (ADR 0014).")
+
+    def send_notice(self, *, channel: str, destination: str, kind: str, details: dict) -> None:
+        raise NotImplementedError("El envío por WhatsApp está pendiente (ADR 0014).")
