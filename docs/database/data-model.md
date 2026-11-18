@@ -131,6 +131,7 @@ Los diagramas se generan desde `tools/er-diagram/generate.mjs`, que contiene la 
 | `users` | `user_phones` | `user_phones.user_id → users(id)` | Sí | Una persona registra varios teléfonos; uno es el principal. Sale del atributo multivalor `phone` del diagrama. |
 | `users` | `sessions` | `sessions.user_id → users(id)` | Sí | Una persona puede tener varias sesiones abiertas (celular y computadora). |
 | `users` | `password_resets` | `password_resets.user_id → users(id)` | Sí | Una persona puede pedir recuperar su contraseña varias veces. |
+| `users` | `login_attempts` | `login_attempts.user_id → users(id)` | No | Una cuenta recibe muchos intentos de inicio de sesión. Vacía cuando el correo que se escribió no tiene cuenta. |
 | `users` | `one_time_codes` | `one_time_codes.user_id → users(id)` | Sí | A una persona se le envían varios códigos de un solo uso: para iniciar sesión, para comprobar su correo y para comprobar un teléfono. |
 | `users` | `verifications` | `verifications.user_id → users(id)` | Sí | Una persona pasa por varias verificaciones: identidad, cuenta bancaria, tarjeta. |
 | `properties` | `verifications` | `verifications.property_id → properties(id)` | No | Una propiedad pasa por varias verificaciones. Vacía cuando se verifica a la persona y no a una propiedad. |
@@ -169,7 +170,7 @@ Notación: `tabla(columnas)`. La llave primaria va <ins>subrayada</ins>. `FK` ma
 
 ### Grupo 1. Personas y acceso
 
-Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verifications`, `sessions`, `password_resets` y `one_time_codes` construidas; `admins` diseñada.
+Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verifications`, `sessions`, `password_resets`, `one_time_codes`, `login_attempts` y `admins` construidas.
 
 - **users**(<ins>id</ins>, first_name, last_name, email UK, email_verified_at?, country, birth_date, preferred_language, identity_status, identity_fingerprint? UK)
   - `email_verified_at` queda vacía hasta que la persona escribe el código que se le envió al correo. La escribe solo el sistema.
@@ -187,7 +188,11 @@ Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verificati
   - `destination` es el correo o el teléfono al que se envió, con el mismo formato que `users.email` y `user_phones.phone`.
   - `code_hash` no es único: un código de seis dígitos se repite entre personas. Solo la lee y la escribe el sistema.
   - En las tres tablas, `token_hash` y `code_hash` son un SHA-256 en hexadecimal (64 caracteres) y el sistema no borra filas: una sesión se cierra con `revoked_at` y un código o una recuperación se gastan con `used_at`.
+- **login_attempts**(<ins>id</ins>, email?, user_id? FK → users(id), succeeded, ip_address?, user_agent?)
+  - Una fila por cada vez que alguien escribe un correo y una contraseña, acierte o no. Sirve para contar los fallos seguidos: un acierto reinicia la cuenta. `user_id` queda vacío si el correo no tiene cuenta, y `email` si lo escrito no tenía forma de correo.
+  - Solo se agregan filas; el sistema no las cambia ni las borra, y la persona no las ve. No lleva `updated_at` porque una fila nunca cambia.
 - **admins**(<ins>id</ins>, user_id FK UK → users(id))
+  - Las altas y las bajas las hace solo el dueño de la base, a mano. El sistema solo lee la tabla; la persona puede leer su propia fila.
 - **host_profiles**(<ins>id</ins>, user_id FK UK → users(id), level, stripe_account_id? UK, clabe_last4?)
 - **verifications**(<ins>id</ins>, user_id FK → users(id), property_id? FK → properties(id), kind, provider, provider_reference, result, resolved_at?)
   - Única la pareja (provider, provider_reference). `property_id` se agrega en el grupo 2.
@@ -272,7 +277,11 @@ Aceptadas por Sophia el 17 de noviembre de 2026.
 | 18 | Fecha de comprobación del correo en `users.email_verified_at` | La base distingue un correo comprobado de uno que no, igual que con los teléfonos. |
 | 19 | La persona lee sus propias sesiones, sin la huella; los códigos y las recuperaciones solo los ve el sistema | Lo mínimo que hace falta para la pantalla de sesiones abiertas. |
 
-Las decisiones 15 a 19 son del 17 de noviembre de 2026, al construir las tablas de acceso a la cuenta.
+| 20 | Cada intento de inicio de sesión se guarda en `login_attempts`, con el correo, la dirección IP y el navegador | La cuenta nunca se bloquea: a los 3 fallos se avisa al dueño y a los 6 quien está intentando espera 15 minutos, por dispositivo y dirección (ADR 0014). Para contar hay que guardar. |
+| 21 | `login_attempts` solo admite filas nuevas | Es un registro: ni el sistema lo cambia ni lo borra. |
+| 22 | Los administradores se dan de alta solo a mano, por el dueño de la base | La API no tiene permiso de escribir en `admins`, ni siquiera actuando como el sistema: quien tome el control de la API no puede hacerse administrador. |
+
+Las decisiones 15 a 19 son del 17 de noviembre de 2026, al construir las tablas de acceso a la cuenta. Las decisiones 20 a 22 son del 18 de noviembre de 2026.
 
 ## 6. Tablas de estados
 
@@ -317,3 +326,4 @@ Sin definir. Necesita su lista de estados y su tabla de cambios antes de constru
 - **Estados de las reservas** y las tablas de cambios permitidos de membresías y propiedades (sección 6).
 - **Huella de identidad:** la revisión legal y comprobar que el proveedor de verificación entrega un dato estable para calcularla.
 - **Tablas que no están en este modelo:** calendarios iCal por propiedad, llaves digitales y registro de aperturas de la chapa inteligente y eventos de uso (búsquedas, clics).
+- **Diagrama de Chen:** falta agregar `login_attempts` y regenerar las imágenes de la sección 2.

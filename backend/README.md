@@ -120,6 +120,17 @@ Add-Content .env "EMAIL_DELIVERY=console"
 
 Cada variable va una sola vez. Si `CODE_HASH_SECRET=` quedó vacía por haber copiado la plantilla, esa línea se borra en el Bloc de notas.
 
+### 5. Dar de alta a un administrador
+
+La API no puede crear ni quitar administradores: las altas y las bajas las hace el dueño de la base, a mano. La persona debe tener ya su cuenta. En pgAdmin, sobre la base `integro` y con el usuario `postgres`:
+
+```sql
+insert into admins (user_id)
+select id from users where email = 'correo-de-la-persona';
+```
+
+Debe contestar `INSERT 0 1`. Si contesta `INSERT 0 0`, ese correo no tiene cuenta. Para quitarla: `delete from admins where user_id = (select id from users where email = 'correo-de-la-persona');`.
+
 ## Arrancar el servidor
 
 Con el entorno virtual activo, desde `backend/`:
@@ -144,7 +155,7 @@ Con el entorno virtual activo, desde `backend/`:
 python -m pytest ..\tests\backend -v -rs
 ```
 
-Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py` y `test_account_access_tables.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las de `test_account_access_tables.py` comprueban las tablas de `database/migrations/20261117000003_sessions_codes_password_resets.sql`; si esa migración no se ha corrido en la base, se omiten y la salida lo dice. Las del registro (`test_accounts_registration.py`) llaman a las rutas de verdad, también dentro de una transacción que se deshace, y leen el código de un anotador en lugar de enviarlo. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
+Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py` y `test_account_access_tables.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las de `test_account_access_tables.py` comprueban las tablas de `database/migrations/20261117000003_sessions_codes_password_resets.sql`; si esa migración no se ha corrido en la base, se omiten y la salida lo dice. Las de `test_login_attempts_admins_tables.py` comprueban las tablas de `database/migrations/20261118000004_login_attempts_admins.sql` y también se omiten si esa migración no se ha corrido. Las del registro (`test_accounts_registration.py`) llaman a las rutas de verdad, también dentro de una transacción que se deshace, y leen el código de un anotador en lugar de enviarlo. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
 
 ## Si algo falla
 
