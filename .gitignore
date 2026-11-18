@@ -4,6 +4,8 @@ node_modules/
 # Secretos: nunca en el repositorio (ver docs/arquitectura.md, sección Seguridad)
 .env
 .env.*
+# La plantilla sí se sube: trae los nombres de las variables, sin contraseña
+!.env.example
 # Sistema
 .DS_Store
 Thumbs.db
@@ -12,3 +14,6 @@ Thumbs.db
 herramientas/bitacora/salida/
 __pycache__/
 *.pyc
+# Backend en Python: entorno virtual y caché de las pruebas
+.venv/
+.pytest_cache/

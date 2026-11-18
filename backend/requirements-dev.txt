@@ -1,0 +1,8 @@
+# Lo que hace falta para desarrollar y correr las pruebas. Incluye lo de
+# requirements.txt. No se instala en producción.
+-r requirements.txt
+
+# Corredor de pruebas. Publicada el 27 de octubre de 2026.
+pytest==9.2.0
+# Cliente HTTP que usa el cliente de pruebas de FastAPI. Publicada el 6 de diciembre de 2024.
+httpx==0.28.1

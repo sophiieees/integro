@@ -1,0 +1,18 @@
+# Dependencias del backend de Íntegro. Versiones exactas: ninguna se actualiza
+# sola. Regla de docs/arquitectura.md, sección 7, punto 9: no se usa una versión
+# publicada hace menos de 14 días. Fechas comprobadas en PyPI el 17 de noviembre
+# de 2026.
+
+# Framework de la API (ADR 0012). Publicada el 23 de octubre de 2026.
+fastapi==0.162.0
+# Servidor que ejecuta la aplicación. Publicada el 25 de septiembre de 2026.
+uvicorn[standard]==0.54.0
+# Conexión a PostgreSQL con SQL directo. Publicada el 18 de septiembre de 2026.
+psycopg[binary]==3.3.6
+# Grupo de conexiones de psycopg. Publicada el 22 de septiembre de 2026.
+psycopg-pool==3.3.3
+# Lectura y validación de las variables de entorno. Publicada el 28 de octubre de 2026.
+pydantic-settings==2.16.2
+# Esquemas de entrada y de respuesta. FastAPI la instala sola, pero tomaría la
+# 2.14.3, que tiene 11 días. Se fija la anterior, publicada el 29 de octubre de 2026.
+pydantic==2.14.2
