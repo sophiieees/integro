@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from app.api.v1.router import router as api_v1_router
 from app.core.config import Settings, load_settings
 from app.database.connection import create_pool
+from app.notifications import create_code_sender
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -23,6 +24,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI):
         application.state.settings = settings or load_settings()
+        application.state.code_sender = create_code_sender(application.state.settings)
         pool = create_pool(application.state.settings)
         # wait=False: la API arranca aunque la base esté apagada. Así
         # /api/v1/health sigue respondiendo y /api/v1/health/database avisa.

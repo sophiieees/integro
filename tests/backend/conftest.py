@@ -3,9 +3,11 @@
 import socket
 import sys
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
 
 # Las pruebas viven en tests/backend/ y el código en backend/. Se agrega esa
 # carpeta a la ruta de Python para poder escribir "from app...".
@@ -14,14 +16,25 @@ sys.path.insert(0, str(BACKEND_DIRECTORY))
 
 from app.core.config import ENV_FILE, Settings, load_settings  # noqa: E402
 from app.database.connection import create_pool  # noqa: E402
+from app.main import create_app  # noqa: E402
 
-DATABASE_VARIABLES = (
+SETTINGS_VARIABLES = (
     "DATABASE_HOST",
     "DATABASE_PORT",
     "DATABASE_NAME",
     "DATABASE_USER",
     "DATABASE_PASSWORD",
+    "CODE_HASH_SECRET",
+    "EMAIL_DELIVERY",
+    "CODE_LENGTH",
+    "CODE_TTL_SECONDS",
+    "CODE_MAX_ATTEMPTS",
+    "CODE_RESEND_WAIT_SECONDS",
+    "CODE_MAX_PER_HOUR",
 )
+
+# Llave inventada, solo para pruebas que no usan la configuración real.
+TEST_CODE_HASH_SECRET = "llave-inventada-para-las-pruebas-0123456789"
 
 
 @pytest.fixture
@@ -42,6 +55,8 @@ def settings_without_database(closed_port: int) -> Settings:
         database_name="integro",
         database_user="integro_api",
         database_password="clave-inventada-para-la-prueba",
+        code_hash_secret=TEST_CODE_HASH_SECRET,
+        email_delivery="console",
     )
 
 
@@ -80,9 +95,45 @@ def rollback_pool(real_pool):
             yield SingleConnectionPool(connection)
 
 
+class RecordingSender:
+    """En lugar de enviar el código lo anota, para que la prueba pueda leerlo."""
+
+    def __init__(self):
+        self.sent = []
+
+    def send_code(self, **message):
+        self.sent.append(message)
+
+    @property
+    def last_code(self) -> str:
+        return self.sent[-1]["code"]
+
+
+@dataclass
+class Api:
+    """La API completa para una prueba: cliente, base que se deshace y códigos enviados."""
+
+    client: TestClient
+    pool: SingleConnectionPool
+    sender: RecordingSender
+    settings: Settings
+
+
+@pytest.fixture
+def api(rollback_pool):
+    """La API real sobre la base real, con todo lo que escriba deshecho al terminar."""
+    settings = load_settings()
+    application = create_app(settings)
+    with TestClient(application) as client:
+        sender = RecordingSender()
+        application.state.pool = rollback_pool
+        application.state.code_sender = sender
+        yield Api(client=client, pool=rollback_pool, sender=sender, settings=settings)
+
+
 @pytest.fixture
 def clean_environment(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
-    """Quita las variables DATABASE_* para que la prueba ponga las suyas."""
-    for variable in DATABASE_VARIABLES:
+    """Quita las variables de configuración para que la prueba ponga las suyas."""
+    for variable in SETTINGS_VARIABLES:
         monkeypatch.delenv(variable, raising=False)
     return monkeypatch
