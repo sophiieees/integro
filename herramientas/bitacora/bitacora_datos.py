@@ -606,7 +606,7 @@ PROMPTS = [
             ("13.5", "Registrar como ADR las decisiones de FastAPI y de PostgreSQL propio.", "La arquitectura pedía dejarlas por escrito. Campo: qué hace.", "Aceptar", "Sí, está bien que registremos como ADR las dos decisiones de fondo.", "ADR 0012 y 0013."),
             ("13.6", "ADR 0014 con la decisión del inicio de sesión, que Sophia no había pedido como registro.", "El otro chat no ve esta conversación. Campo: qué hace.", "Aceptar", "Sophia fusionó el PR #9 sin cambios.", "ADR 0014."),
             ("13.7", "Regla 10 de los dos chats en CLAUDE.md y un párrafo en la skill /doc, que Sophia no había pedido como cambio de archivo.", "Sophia dijo que el documento debía especificar que se hicieron dos chats. Campo: qué hace.", "Aceptar", "Sophia fusionó el PR #8 sin cambios.", "CLAUDE.md y doc/SKILL.md."),
-            ("13.8", "Consecuencias del inicio de sesión: tabla de códigos de un solo uso, fecha de comprobación del correo, proveedores de SMS, WhatsApp y correo, y contraseña más código para lo que mueve dinero.", "Sin ellas las tres formas no se pueden construir ni quedan protegidas. Campo: qué datos necesita.", "Pendiente", "", "Anotadas como pendientes en el ADR 0014."),
+            ("13.8", "Consecuencias del inicio de sesión: tabla de códigos de un solo uso, fecha de comprobación del correo, proveedores de SMS, WhatsApp y correo, y contraseña más código para lo que mueve dinero.", "Sin ellas las tres formas no se pueden construir ni quedan protegidas. Campo: qué datos necesita.", "Revisar", "Sí, correo y WhatsApp van a ser las fuentes, SMS está fuera. Todo se mantiene igual, excepto lo de 10 minutos, se reduce a 5.", "Resuelto por partes en el prompt 16: decisiones 16.3, 16.4 y 16.21 a 16.25."),
         ],
     },
     # ------------------------------------------------------------------ 14
@@ -739,6 +739,107 @@ PROMPTS = [
             ("15.7", "El id se acepta como UUID o como texto que sea un UUID, en mayúsculas o minúsculas.", "El id va a llegar como texto desde la sesión y así se valida en un solo lugar. Campo: qué datos necesita.", "Aceptar", "«Los demás quedan en revisión.» Después del detalle: «Y desviación 3. Acepto.»", "Sin cambios en el código."),
             ("15.8", "Modificar backend/README.md: sección de los dos papeles y párrafo de las pruebas.", "Ya no era cierto que ninguna prueba escribe en la base. Campo: qué hace.", "Aceptar", "Ese está bien, lo apruebo.", "backend/README.md."),
             ("15.9", "El modo visitante, para ver la portada y las propiedades sin cuenta, se construye junto con la tabla de propiedades y no ahora.", "Hoy solo existen tablas privadas y no hay nada público que mostrar. Campo: qué hace.", "Aceptar", "Para el visitante, ya entendí. Acepto la propuesta A y entonces está bien también que no vea nada, por así decirlo.", "Queda como requisito del grupo 2: las propiedades publicadas las ve cualquiera, sin cuenta."),
+        ],
+    },
+    # ------------------------------------------------------------------ 16
+    {
+        "n": 16,
+        "titulo": "Tablas de acceso a la cuenta y cierre del veredicto 13.8",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": ("El comando /pieza llegó sin texto. Ya corrí las pruebas, todas salieron bien; todas pasaron. Aún "
+                     "no nos metemos en el tema legal: es más práctico tener la arquitectura y después modificar los "
+                     "términos y condiciones, que sale mucho más rápido. De momento no tenemos número de WhatsApp. "
+                     "Quiero tener un medio de respaldo, como los programas que dan la opción de correo o WhatsApp. El "
+                     "correo tiene que llegar forzosamente."),
+        "tarea": ("1) /pieza. 2) Acepto todas tus sugerencias de las desviaciones. 3) /bitacora. 4) Las sugerencias sí "
+                  "las leí y me gustaron, por eso las acepté; se quedan con veredicto. Lo de avisar a Valeria lo pongo "
+                  "aparte para ella, porque se encarga de la parte legal. 5) ¿Con proveedores te refieres a por cuál "
+                  "medio enviamos el mensaje de confirmación: correo, SMS o WhatsApp? Escucho tus sugerencias del "
+                  "veredicto 13.8 y qué otra cosa queda por resolver. 6) Correo y WhatsApp van a ser los dos medios y el "
+                  "SMS queda fuera. Primero el correo, que queda al 100 %. WhatsApp queda pendiente porque no tengo el "
+                  "teléfono y lo tengo que platicar con mis socias; puedes hacer la arquitectura o dejar las carpetas en "
+                  "esqueleto. 7) El punto 3 lo acepto y el punto 4 lo acepto totalmente. 8) El código es de 6 dígitos, "
+                  "vence en 5 minutos, tiene cinco intentos, 60 segundos entre envíos y máximo 5 por hora."),
+        "salida": ("No se indicó para la pieza; se aplicó el desglose de cierre de CLAUDE.md. Para lo conversado del "
+                   "veredicto 13.8: colocarlo en la bitácora, redactado en limpio."),
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "ae124d9 (rama datos/account-access, PR #15, fusionado por Sophia en f585a6d)",
+            "archivos": [
+                ("database/migrations/20261117000003_sessions_codes_password_resets.sql", "crea sessions, password_resets y one_time_codes, agrega users.email_verified_at y pone los permisos."),
+                ("tests/backend/test_account_access_tables.py", "los 12 casos aceptados y sus límites: 82 pruebas contra la base real."),
+                ("tests/backend/people.py", "la función que crea a las personas de prueba, compartida entre archivos."),
+                ("tests/backend/test_transaction.py", "toma esa función de people.py."),
+                ("docs/database/data-model.md", "modelo relacional del grupo 1, decisiones 15 a 19 y pendientes."),
+                ("backend/README.md", "una frase sobre las pruebas nuevas."),
+                ("herramientas/bitacora/evidencias/backend_account_access_pruebas_2026-11-17.txt", "salida real de las pruebas."),
+                ("Fuera del repositorio: la migración corrida en la base integro", "la corrió Sophia en pgAdmin."),
+            ],
+            "sugerencias": [
+                ("Registrar un ADR «sesiones en la base, no JWT» y corregir esa línea en docs/arquitectura.md.",
+                 "la arquitectura sigue diciendo JWT."),
+                ("Regenerar el diagrama de Chen en su propia pieza de documentación.",
+                 "faltan one_time_codes y los atributos nuevos de users y sessions."),
+                ("Avisar a Valeria de que ahora se guardan la IP y el navegador de cada sesión.",
+                 "son datos personales y van en el aviso de privacidad."),
+                ("Calcular la huella de los códigos de seis dígitos con una llave secreta del servidor.",
+                 "un millón de combinaciones se adivina rápido si alguien roba la base."),
+                ("Vaciar email_verified_at cuando cambie el correo.",
+                 "un correo nuevo no está comprobado."),
+                ("Una tarea de limpieza más adelante.",
+                 "el sistema no borra, así que las sesiones y los códigos vencidos se acumulan."),
+                ("Para el 13.8: correo y WhatsApp, con el SMS fuera por ahora.",
+                 "costo aproximado por mensaje, consultado el 17 de noviembre de 2026 y por confirmar en las páginas oficiales: correo 0.0001 USD, WhatsApp de autenticación a un número de México 0.0085 USD (otras fuentes dicen hasta 0.02) y SMS a México 0.18 USD. La tabla ya admite sms, así que agregarlo después no necesita otra migración."),
+                ("Para el 13.8: primero correo y después WhatsApp, pidiendo desde ahora la plantilla a Meta.",
+                 "el correo no necesita la aprobación de nadie; la plantilla de WhatsApp sí."),
+                ("Para el 13.8: modo desarrollo mientras no haya proveedor contratado.",
+                 "el código se escribe en la ventana del servidor y el registro y el inicio de sesión se pueden construir y probar sin gastar."),
+                ("Para el 13.8: contraseña más código, obligatorio, para cambiar el correo, el teléfono o la contraseña, para cambiar la cuenta bancaria, para todo lo que mueve dinero y para anfitriones y panel de administración.",
+                 "si se puede entrar solo con un código, la cuenta queda tan protegida como el medio por el que llega."),
+                ("Para el 13.8: límites de los códigos como valores de configuración: 6 dígitos, 10 minutos, 5 intentos, 60 segundos entre envíos y máximo 5 por hora.",
+                 "así se pueden cambiar sin tocar el código."),
+            ],
+            "lineas": ("Migración y test_account_access_tables.py: completos, nuevos. data-model.md: una fila en «Uno a "
+                       "muchos» (sección 3), el grupo 1 de la sección 4, las filas 15 a 19 de la sección 5 y dos líneas "
+                       "de la sección 7. test_transaction.py: las importaciones y la función create_person, que salió "
+                       "del archivo. backend/README.md: el párrafo de «Correr las pruebas»."),
+            "pruebas": ("Todas en la computadora de Sophia, no en una versión publicada. La IA verificó primero la "
+                        "migración en un PostgreSQL 18.7 temporal: la primera corrida dio «1 failed, 126 passed» por un "
+                        "error de la prueba, no de la migración; corregida, «82 passed in 0.87s» y, con la batería "
+                        "completa, «166 passed, 1 deselected». Contra la base real antes de la migración: «85 passed, 82 "
+                        "skipped». Las pruebas del grupo 1 en PGlite, con las tres migraciones: «Total: 86 casos, 86 "
+                        "coinciden, 0 no coinciden.» Sophia corrió la migración en pgAdmin y reportó: «ya corrí las "
+                        "pruebas, todas salieron bien. Todas pasaron». Después la IA corrió la batería completa contra "
+                        "la base real: «167 passed, 1 warning in 47.84s», con 0 filas guardadas. Salida completa copiada "
+                        "en herramientas/bitacora/evidencias/backend_account_access_pruebas_2026-11-17.txt."),
+        },
+        "decisiones": [
+            ("16.1", "Como /pieza llegó sin texto, construir la pieza 2 del orden aceptado en 15.1: las tablas que faltan de Cuentas.", "Era la siguiente del orden. Campo: qué hace.", "Aceptar", "Sophia respondió las preguntas de la pieza y fusionó el PR #15.", "Migración 20261117000003."),
+            ("16.2", "La sesión se guarda en la tabla sessions, no en un pase firmado (JWT).", "docs/arquitectura.md decía JWT y data-model.md diseñaba sessions; cerrar sesión solo es real si la sesión está en la base. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Tabla sessions».", "Tabla sessions; decisión 15 de data-model.md."),
+            ("16.3", "Tabla aparte one_time_codes para los códigos cortos; password_resets se queda como estaba diseñada.", "El inicio de sesión del ADR 0014 envía códigos y hay que guardar su huella. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Sí, tabla aparte».", "Tabla one_time_codes; primera parte del veredicto 13.8."),
+            ("16.4", "Guardar la fecha de comprobación del correo en users.email_verified_at.", "La base no distinguía un correo comprobado de uno que no. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Sí, users.email_verified_at».", "Columna nueva en users; segunda parte del veredicto 13.8."),
+            ("16.5", "Construir sessions solo con lo diseñado, sin IP ni navegador.", "Son datos personales y convenía que Valeria los revisara antes. Campo: qué datos necesita.", "Rechazar", "Sophia eligió la opción «Sí, IP, navegador y último uso».", "sessions lleva ip_address, user_agent y last_used_at."),
+            ("16.6", "La persona lee sus propias sesiones, sin la huella; los códigos y las recuperaciones solo los ve el sistema.", "Es lo mínimo para la pantalla de sesiones abiertas. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Sí, solo las suyas y sin la huella».", "Permisos de la migración."),
+            ("16.7", "Pruebas de las tablas nuevas en Python contra la base real, dentro de la batería de pytest.", "El ADR 0012 dejó pendiente si se unificaban con las de JavaScript. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Python contra la base real».", "tests/backend/test_account_access_tables.py; las pruebas del grupo 1 en JavaScript se quedan."),
+            ("16.8", "Doce casos de prueba para sessions, password_resets, one_time_codes y users.email_verified_at.", "El prompt no traía casos. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí, esos casos».", "82 pruebas."),
+            ("16.9", "Actualizar en esta pieza el texto de data-model.md y dejar el diagrama de Chen para una pieza aparte.", "El diagrama es otra responsabilidad. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «El texto del modelo ahora; el diagrama aparte».", "data-model.md, secciones 3, 4, 5 y 7."),
+            ("16.10", "Verificar la migración en un PostgreSQL 18.7 temporal en lugar de una base en memoria.", "Es el mismo motor que el de Sophia y prueba más. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todas tus sugerencias de las desviaciones.", "Sin cambios en el código."),
+            ("16.11", "Reglas de las tablas que no estaban en la especificación: fechas no anteriores a la creación, formato de la huella, navegador de 500 caracteres como máximo, canal según el propósito y huella de código no única.", "Protegen los datos aunque la API tenga un error. Campo: qué datos necesita.", "Aceptar", "Acepto todas tus sugerencias de las desviaciones.", "Reglas de la migración."),
+            ("16.12", "El sistema no borra en ninguna de las tres tablas.", "Sophia lo confirmó para sessions y la IA lo aplicó igual a password_resets y one_time_codes. Campo: qué hace.", "Aceptar", "Acepto todas tus sugerencias de las desviaciones.", "Permisos de la migración."),
+            ("16.13", "Casos de prueba de más, y pruebas que se omiten con un aviso si falta correr la migración.", "La skill /pieza pide probar los límites. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todas tus sugerencias de las desviaciones.", "82 pruebas para 12 casos."),
+            ("16.14", "Archivos tocados fuera de la migración: people.py, test_transaction.py y backend/README.md.", "Para compartir las personas de prueba y dejar el README al día. Campo: qué hace.", "Aceptar", "Acepto todas tus sugerencias de las desviaciones.", "Tres archivos."),
+            ("16.15", "Registrar un ADR «sesiones en la base, no JWT» y corregir docs/arquitectura.md.", "La arquitectura sigue diciendo JWT. Campo: qué hace.", "Aceptar", "Sí leí todo y además me gustó, entonces por eso los acepté.", "Queda como pieza de documentación."),
+            ("16.16", "Regenerar el diagrama de Chen en su propia pieza.", "Faltan one_time_codes y los atributos nuevos. Campo: qué hace.", "Aceptar", "Sí leí todo y además me gustó, entonces por eso los acepté.", "Queda como pieza de documentación."),
+            ("16.17", "Avisar a Valeria de que se guardan la IP y el navegador de cada sesión.", "Son datos personales y van en el aviso de privacidad. Campo: qué datos necesita.", "Aceptar", "Eso lo tengo que poner como por aparte para ella, porque se encarga de la parte legal. Yo creo que es más práctico tener la arquitectura y después modificar lo de términos y condiciones.", "El aviso lo da Sophia por separado; lo legal se ajusta después de la arquitectura."),
+            ("16.18", "Calcular la huella de los códigos con una llave secreta del servidor.", "Un código de seis dígitos se adivina rápido si alguien roba la base. Campo: qué datos necesita.", "Aceptar", "Sí leí todo y además me gustó, entonces por eso los acepté.", "Se aplica en la pieza de inicio de sesión."),
+            ("16.19", "Vaciar email_verified_at cuando cambie el correo.", "Un correo nuevo no está comprobado. Campo: qué hace.", "Aceptar", "Sí leí todo y además me gustó, entonces por eso los acepté.", "Se aplica al construir el cambio de correo."),
+            ("16.20", "Una tarea de limpieza de sesiones y códigos vencidos, más adelante.", "El sistema no borra y las filas se acumulan. Campo: qué hace.", "Aceptar", "Sí leí todo y además me gustó, entonces por eso los acepté.", "Queda como pieza futura."),
+            ("16.21", "Veredicto 13.8: enviar los códigos por correo y por WhatsApp, con el SMS fuera por ahora.", "El SMS a México cuesta unas 20 veces lo que WhatsApp y el correo es casi gratis. Campo: qué datos necesita.", "Aceptar", "Sí, correo y WhatsApp van a ser las fuentes, SMS está fuera.", "Dos medios: correo y WhatsApp. Hay que corregir el ADR 0014, que decía «SMS o correo»."),
+            ("16.22", "Veredicto 13.8: primero correo y después WhatsApp, pidiendo desde ahora la plantilla a Meta.", "El correo no necesita la aprobación de nadie. Campo: qué hace.", "Revisar", "Primero el correo, sí. El correo tiene que llegar forzosamente. WhatsApp lo vamos a dejar un poco pendiente, pero puedes hacer la arquitectura o dejar como las carpetas en esqueleto. No tengo el teléfono ahorita; lo tengo que platicar con mis socias.", "El correo queda firme. WhatsApp queda pendiente de que Sophia lo platique con sus socias; no se pide la plantilla todavía y la arquitectura lo deja previsto."),
+            ("16.23", "Veredicto 13.8: modo desarrollo mientras no haya proveedor: el código se escribe en la ventana del servidor.", "Permite construir y probar sin gastar ni abrir cuentas. Campo: cómo se sabrá que funciona.", "Aceptar", "El punto 3 lo acepto.", "Se aplica en las piezas de registro e inicio de sesión."),
+            ("16.24", "Veredicto 13.8: contraseña más código, obligatorio, para cambiar el correo, el teléfono o la contraseña, para cambiar la cuenta bancaria, para todo lo que mueve dinero y para anfitriones y panel de administración.", "Una cuenta a la que se entra solo con un código queda tan protegida como el medio por el que llega. Campo: qué hace.", "Aceptar", "El punto 4 lo acepto totalmente.", "Regla para las piezas que siguen."),
+            ("16.25", "Veredicto 13.8: códigos de 6 dígitos que vencen en 10 minutos, con 5 intentos, 60 segundos entre envíos y máximo 5 por hora.", "Valores de configuración, propuestos por la IA. Campo: qué datos necesita.", "Revisar", "Todo se mantiene igual, excepto lo de 10 minutos, se reduce a 5.", "6 dígitos, 5 minutos, 5 intentos, 60 segundos entre envíos y máximo 5 por hora."),
         ],
     },
 ]
