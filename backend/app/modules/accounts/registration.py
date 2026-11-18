@@ -13,12 +13,21 @@ from psycopg_pool import ConnectionPool
 
 from app.core.config import Settings
 from app.database.transaction import system_transaction
-from app.modules.accounts.security import generate_code, hash_code, hash_password, same_hash
+from app.modules.accounts.codes import (
+    CHANNEL_EMAIL,
+    CodeCheck,
+    SendLimit,
+    check_code,
+    create_code,
+    send_limit,
+    void_previous_codes,
+)
+from app.modules.accounts.security import hash_password
 from app.modules.accounts.validation import RegistrationData
 from app.notifications.sender import CodeSender
 
 PURPOSE = "verify_email"
-CHANNEL = "email"
+CHANNEL = CHANNEL_EMAIL
 
 # Regla de la base que se rompe cuando el dato ya existe, y campo del formulario.
 UNIQUE_RULES = {
@@ -66,29 +75,6 @@ class ResendResult:
     retry_after_seconds: int | None = None
 
 
-def _create_code(connection, user_id, email: str, settings: Settings) -> str:
-    """Guarda la huella de un código nuevo y devuelve el código para enviarlo."""
-    code = generate_code(settings.code_length)
-    connection.execute(
-        "insert into one_time_codes (user_id, purpose, channel, destination, code_hash, expires_at) "
-        "values (%s, %s, %s, %s, %s, now() + make_interval(secs => %s))",
-        (
-            user_id,
-            PURPOSE,
-            CHANNEL,
-            email,
-            hash_code(
-                code,
-                secret=settings.code_hash_secret.get_secret_value(),
-                purpose=PURPOSE,
-                destination=email,
-            ),
-            settings.code_ttl_seconds,
-        ),
-    )
-    return code
-
-
 def register_account(
     pool: ConnectionPool, data: RegistrationData, settings: Settings, sender: CodeSender
 ) -> None:
@@ -121,7 +107,7 @@ def register_account(
                 "insert into user_credentials (user_id, password_hash) values (%s, %s)",
                 (user_id, password_hash),
             )
-            code = _create_code(connection, user_id, data.email, settings)
+            code = create_code(connection, user_id, PURPOSE, data.email, settings)
     except psycopg.errors.UniqueViolation as error:
         field = UNIQUE_RULES.get(error.diag.constraint_name)
         if field is None:
@@ -156,36 +142,14 @@ def verify_email(pool: ConnectionPool, email: str, code: str, settings: Settings
         if verified_at is not None:
             return VerifyResult(VerifyOutcome.ALREADY_VERIFIED)
 
-        row = connection.execute(
-            "select id, code_hash, attempts, expires_at > now() from one_time_codes "
-            "where user_id = %s and purpose = %s and used_at is null "
-            "order by created_at desc, id desc limit 1 for update",
-            (user_id, PURPOSE),
-        ).fetchone()
-        if row is None:
-            return VerifyResult(VerifyOutcome.INVALID_CODE)
-        code_id, code_hash, attempts, alive = row
-        if not alive:
+        checked = check_code(connection, user_id, PURPOSE, email, code, settings)
+        if checked.outcome is CodeCheck.EXPIRED:
             return VerifyResult(VerifyOutcome.CODE_EXPIRED)
-        if attempts >= settings.code_max_attempts:
+        if checked.outcome is CodeCheck.TOO_MANY_ATTEMPTS:
             return VerifyResult(VerifyOutcome.TOO_MANY_ATTEMPTS)
+        if checked.outcome is CodeCheck.INVALID:
+            return VerifyResult(VerifyOutcome.INVALID_CODE, attempts_left=checked.attempts_left)
 
-        written = hash_code(
-            code.strip(),
-            secret=settings.code_hash_secret.get_secret_value(),
-            purpose=PURPOSE,
-            destination=email,
-        )
-        if not same_hash(written, code_hash):
-            connection.execute(
-                "update one_time_codes set attempts = attempts + 1 where id = %s", (code_id,)
-            )
-            return VerifyResult(
-                VerifyOutcome.INVALID_CODE,
-                attempts_left=settings.code_max_attempts - attempts - 1,
-            )
-
-        connection.execute("update one_time_codes set used_at = now() where id = %s", (code_id,))
         connection.execute("update users set email_verified_at = now() where id = %s", (user_id,))
         return VerifyResult(VerifyOutcome.VERIFIED)
 
@@ -207,25 +171,14 @@ def resend_code(
             return ResendResult(ResendOutcome.NOTHING_TO_SEND)
         user_id = user[0]
 
-        seconds_since_last, sent_last_hour = connection.execute(
-            "select extract(epoch from now() - max(created_at)), "
-            "count(*) filter (where created_at > now() - interval '1 hour') "
-            "from one_time_codes where user_id = %s and purpose = %s",
-            (user_id, PURPOSE),
-        ).fetchone()
-        if seconds_since_last is not None and seconds_since_last < settings.code_resend_wait_seconds:
-            wait = settings.code_resend_wait_seconds - int(seconds_since_last)
-            return ResendResult(ResendOutcome.WAIT, retry_after_seconds=max(wait, 1))
-        if sent_last_hour >= settings.code_max_per_hour:
+        limit = send_limit(connection, user_id, PURPOSE, settings)
+        if limit.outcome is SendLimit.WAIT:
+            return ResendResult(ResendOutcome.WAIT, retry_after_seconds=limit.retry_after_seconds)
+        if limit.outcome is SendLimit.HOURLY_LIMIT:
             return ResendResult(ResendOutcome.HOURLY_LIMIT)
 
-        # Los códigos anteriores dejan de servir: se dan por gastados.
-        connection.execute(
-            "update one_time_codes set used_at = now() "
-            "where user_id = %s and purpose = %s and used_at is null",
-            (user_id, PURPOSE),
-        )
-        code = _create_code(connection, user_id, email, settings)
+        void_previous_codes(connection, user_id, PURPOSE)
+        code = create_code(connection, user_id, PURPOSE, email, settings)
 
     sender.send_code(
         channel=CHANNEL,

@@ -9,10 +9,14 @@ ponga junto a su campo:
 from datetime import datetime, timezone
 from typing import Any, Literal
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from app.api.auth import require_session
+from app.database.transaction import user_transaction
+from app.modules.accounts.login import LoginOutcome, SessionOutcome, finish_login, start_login
+from app.modules.accounts.sessions import CurrentSession
 from app.modules.accounts.registration import (
     AlreadyRegistered,
     ResendOutcome,
@@ -187,3 +191,147 @@ def resend(body: ResendCodeRequest, request: Request):
             [FieldError("email", "hourly_limit", "Ya pediste demasiados códigos. Intenta más tarde.")],
         )
     return ResendCodeResponse(status="sent")
+
+
+# ---------------------------------------------------------------------------
+# Inicio de sesión y sesión (ADR 0014)
+# ---------------------------------------------------------------------------
+
+
+class LoginRequest(BaseModel):
+    email: Any = Field(default=None, examples=["ana@example.com"])
+    password: Any = Field(default=None, examples=["Ejemplo-2026"])
+
+
+class LoginResponse(BaseModel):
+    status: Literal["code_required"]
+
+
+class LoginVerifyRequest(BaseModel):
+    email: Any = Field(default=None, examples=["ana@example.com"])
+    code: Any = Field(default=None, examples=["123456"])
+
+
+class SessionResponse(BaseModel):
+    token: str
+    token_type: Literal["Bearer"]
+    expires_at: datetime
+
+
+class MeResponse(BaseModel):
+    id: str
+    first_name: str
+    last_name: str
+    email: str
+    country: str
+    preferred_language: str
+    is_host: bool
+    session_expires_at: datetime
+
+
+def wait_response(seconds: int | None) -> JSONResponse:
+    return error_response(
+        429,
+        [FieldError("email", "wait", f"Espera {seconds} segundos para pedir otro código.")],
+        retry_after=seconds,
+    )
+
+
+@router.post(
+    "/login",
+    response_model=LoginResponse,
+    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse},
+               422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    summary="Iniciar sesión, paso 1: correo y contraseña",
+)
+def login(body: LoginRequest, request: Request):
+    """Comprueba el correo y la contraseña y envía un código al correo.
+    Todavía no abre la sesión: falta escribir el código en /auth/login/verify."""
+    values, errors = required_text(body, ("email", "password"))
+    if errors:
+        return error_response(422, errors)
+    state = request.app.state
+    result = start_login(state.pool, values["email"], values["password"], state.settings, state.code_sender)
+
+    if result.outcome is LoginOutcome.CODE_SENT:
+        return LoginResponse(status="code_required")
+    if result.outcome is LoginOutcome.EMAIL_NOT_VERIFIED:
+        return error_response(
+            403,
+            [FieldError("email", "email_not_verified", "Comprueba tu correo antes de iniciar sesión.")],
+        )
+    if result.outcome is LoginOutcome.WAIT:
+        return wait_response(result.retry_after_seconds)
+    if result.outcome is LoginOutcome.HOURLY_LIMIT:
+        return error_response(
+            429,
+            [FieldError("email", "hourly_limit", "Ya pediste demasiados códigos. Intenta más tarde.")],
+        )
+    return error_response(
+        401,
+        [FieldError("credentials", "invalid_credentials", "El correo o la contraseña no son correctos.")],
+    )
+
+
+@router.post(
+    "/login/verify",
+    response_model=SessionResponse,
+    responses={400: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    summary="Iniciar sesión, paso 2: el código",
+)
+def login_verify(body: LoginVerifyRequest, request: Request):
+    """Comprueba el código y entrega la llave de la sesión. La llave se manda
+    después en cada petición, en el encabezado Authorization: Bearer."""
+    values, errors = required_text(body, ("email", "code"))
+    if errors:
+        return error_response(422, errors)
+    state = request.app.state
+    result = finish_login(
+        state.pool,
+        values["email"],
+        values["code"],
+        state.settings,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+
+    if result.outcome is SessionOutcome.OPENED:
+        return SessionResponse(token=result.token, token_type="Bearer", expires_at=result.expires_at)
+    if result.outcome is SessionOutcome.CODE_EXPIRED:
+        return error_response(
+            400, [FieldError("code", "code_expired", "El código venció. Inicia sesión de nuevo.")]
+        )
+    if result.outcome is SessionOutcome.TOO_MANY_ATTEMPTS:
+        return error_response(
+            400,
+            [FieldError("code", "too_many_attempts", "Demasiados intentos. Inicia sesión de nuevo.")],
+        )
+    extra = {} if result.attempts_left is None else {"attempts_left": result.attempts_left}
+    return error_response(
+        400, [FieldError("code", "invalid_code", "El código no es correcto.")], **extra
+    )
+
+
+@router.get(
+    "/me",
+    response_model=MeResponse,
+    responses={401: {"model": ErrorResponse}},
+    summary="Quién soy: los datos de la persona con sesión",
+)
+def me(request: Request, session: CurrentSession = Depends(require_session)):
+    """Devuelve los datos de quien tiene la sesión. Los lee como esa persona,
+    así que la base solo le deja ver su propia fila."""
+    with user_transaction(request.app.state.pool, session.user_id) as connection:
+        row = connection.execute(
+            "select id, first_name, last_name, email, country, preferred_language from users"
+        ).fetchone()
+    return MeResponse(
+        id=str(row[0]),
+        first_name=row[1],
+        last_name=row[2],
+        email=row[3],
+        country=row[4],
+        preferred_language=row[5],
+        is_host=session.is_host,
+        session_expires_at=session.expires_at,
+    )
