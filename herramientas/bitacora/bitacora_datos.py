@@ -1164,4 +1164,67 @@ PROMPTS = [
             ("21.10", "Incluir login_attempts en la tarea de limpieza futura.", "Crece con cada intento y nunca se borra. Campo: qué hace.", "Pendiente", "", ""),
         ],
     },
+    # ------------------------------------------------------------------ 22
+    {
+        "n": 22,
+        "titulo": "Contraseñas incorrectas, como el ADR 0014",
+        "fecha": "18 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("La tabla login_attempts ya estaba en la base (prompt 21) y el ADR 0014 fijaba los números: aviso a "
+                     "los 3 fallos y espera de 15 minutos a los 6, sin bloquear nunca la cuenta. Después: ya fusioné el PR."),
+        "tarea": ("1) /pieza: contraseñas incorrectas, como el ADR 0014. 2) Acepto las sugerencias y las desviaciones. "
+                  "3) /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "18 de noviembre de 2026",
+            "commits": "2fe3626 (rama api/accounts-wrong-passwords, PR #28, fusionado por Sophia en b4b8abc)",
+            "archivos": [
+                ("backend/app/modules/accounts/attempts.py", "anota cada intento, cuenta los fallos de la cuenta y decide si el dispositivo tiene que esperar."),
+                ("backend/app/modules/accounts/login.py", "el primer paso del inicio de sesión revisa la espera, anota el intento y dispara el aviso."),
+                ("backend/app/modules/accounts/router.py", "pasa la dirección y el navegador, y responde 429 cuando toca esperar."),
+                ("backend/app/notifications/ (sender.py, console.py y whatsapp.py)", "el emisor también envía avisos; en modo desarrollo salen en la ventana del servidor."),
+                ("backend/app/core/config.py y backend/.env.example", "los tres números (3, 6 y 15) como configuración."),
+                ("docs/decisiones/0014-inicio-de-sesion-con-contrasena-y-codigo.md", "cómo se cuenta el aviso y cómo se cuenta la espera."),
+                ("tests/backend/test_accounts_wrong_passwords.py y conftest.py", "los diez casos aceptados y sus límites: 37 pruebas."),
+                ("backend/README.md", "un párrafo con las reglas."),
+                ("herramientas/bitacora/evidencias/backend_wrong_passwords_pruebas_2026-11-18.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Traducir el aviso al inglés cuando se contrate el envío real de correos.",
+                 "la plataforma es bilingüe y el texto está solo en español."),
+                ("Un freno adicional por cuenta más adelante, como un CAPTCHA tras muchos fallos.",
+                 "quien cambie de dirección en cada intento no llega a 6 fallos desde un mismo dispositivo; el dueño sí recibe el aviso y el código al correo sigue protegiendo la entrada."),
+            ],
+            "lineas": ("Nuevos completos: attempts.py y test_accounts_wrong_passwords.py. login.py: la función start_login "
+                       "completa, dos constantes y las importaciones. router.py: la llamada a start_login y la respuesta "
+                       "429 try_later. notifications/: el método send_notice. config.py: tres campos. .env.example: dos "
+                       "bloques de variables opcionales. ADR 0014: cuatro viñetas en «Contraseñas incorrectas», una "
+                       "consecuencia y una línea en «Cambios». conftest.py: el anotador guarda también los avisos."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben se deshace. IA: «553 passed, 1 warning in 103.44s» y 0 filas guardadas. "
+                        "Recorrido de la IA con el servidor de verdad y guardado real, en un PostgreSQL temporal: los "
+                        "fallos 1 a 6 desde el celular, 401 «invalid_credentials»; al tercero salió en la ventana del "
+                        "servidor «Hubo 3 intentos fallidos de entrar a tu cuenta», con la fecha, el navegador y la "
+                        "dirección, y fue el único aviso; después, la contraseña correcta desde el celular, 429 "
+                        "«try_later» con «retry_after: 900»; y la contraseña correcta desde la computadora, 200 "
+                        "«code_required». Sophia confirmó que corrió la batería y que dijo «553 passed». Salida completa "
+                        "copiada en herramientas/bitacora/evidencias/backend_wrong_passwords_pruebas_2026-11-18.txt."),
+        },
+        "decisiones": [
+            ("22.1", "El aviso se cuenta por cuenta y la espera por dispositivo: 3 fallos seguidos contra una cuenta, vengan de donde vengan; y 6 fallos en 15 minutos desde el mismo dispositivo y dirección, contra la cuenta que sea.", "El ADR decía «por dispositivo y dirección» para la espera y «al dueño de la cuenta» para el aviso, sin decir cómo contar. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Aviso por cuenta, espera por dispositivo».", "attempts.py y ADR 0014."),
+            ("22.2", "El aviso al dueño dice que hubo intentos fallidos, con la fecha, el navegador y la dirección.", "Para que la persona reconozca si fue ella. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Que hubo intentos fallidos, con fecha, navegador y dirección».", "send_notice en notifications/."),
+            ("22.3", "Diez casos de prueba para las contraseñas incorrectas.", "El prompt no traía casos. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí, esos casos».", "37 pruebas."),
+            ("22.4", "Entrar bien no reinicia la cuenta del dispositivo, solo la de la cuenta.", "Si lo hiciera, alguien con una cuenta propia entraría a la suya cada cinco fallos y seguiría probando contraseñas ajenas sin esperar. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "seconds_to_wait en attempts.py."),
+            ("22.5", "Solo se avisa a un correo ya comprobado.", "Una cuenta sin comprobar podría tener el correo de otra persona. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "start_login en login.py."),
+            ("22.6", "El aviso sale una vez por racha: en el tercer fallo, no en los siguientes.", "Para no llenar el correo del dueño. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "note_failure en attempts.py."),
+            ("22.7", "El tercer fallo responde igual que cualquier otro.", "Quien intenta no debe enterarse de que se avisó al dueño. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Sin cambios en la respuesta 401."),
+            ("22.8", "El mismo navegador desde otra dirección cuenta como otro dispositivo.", "Es la consecuencia de definir dispositivo como dirección más navegador. Campo: qué datos necesita.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Origin en attempts.py."),
+            ("22.9", "Si lo escrito no tiene forma de correo, el intento se anota sin ese texto.", "Para no guardar lo que alguien haya pegado ahí. Campo: qué datos necesita.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "email_for_record en attempts.py."),
+            ("22.10", "El texto del aviso lo redactó la IA y está solo en español.", "El prompt no daba el texto. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "failed_logins_text en console.py."),
+            ("22.11", "Tocar el ADR 0014 para dejar escrito cómo se cuenta.", "El ADR es el registro de la decisión y no decía cómo contar. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "ADR 0014, sección «Contraseñas incorrectas»."),
+            ("22.12", "Casos de prueba de más y un recorrido con guardado real en un PostgreSQL temporal.", "Las pruebas deshacen todo y faltaba ver el guardado de verdad. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Sin cambios."),
+            ("22.13", "Traducir el aviso al inglés cuando se contrate el envío real de correos.", "La plataforma es bilingüe. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Queda para la pieza del envío real de correos."),
+            ("22.14", "Un freno adicional por cuenta más adelante, como un CAPTCHA tras muchos fallos.", "Quien cambie de dirección en cada intento no llega a 6 fallos desde un mismo dispositivo. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Queda como pieza futura."),
+        ],
+    },
 ]
