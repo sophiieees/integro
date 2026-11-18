@@ -900,4 +900,84 @@ PROMPTS = [
             ("17.11", "Corregir docs/diseno/pantallas.md.", "Lista la pantalla 5 como «Registro e inicio de sesión con código». Campo: qué hace.", "Pendiente", "", ""),
         ],
     },
+    # ------------------------------------------------------------------ 18
+    {
+        "n": 18,
+        "titulo": "Registro de cuentas con comprobación de correo",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Ya revisé las dos imágenes y ya fusioné los PRs. Podemos platicar un poquito de los requerimientos "
+                     "antes de programar. Después: ya se hizo la prueba y ya se fusionaron los PRs. Como también "
+                     "recibimos cuentas de extranjeros, la edad no se calcula solo con la fecha de la Ciudad de México. "
+                     "En una contraseña no tiene que haber espacios. Los mensajes están en español, pero las etiquetas y "
+                     "los nombres de las carpetas deben ir en inglés."),
+        "tarea": ("1) Continuar con el punto número 3, que es la verificación de identidad y el perfil del anfitrión: "
+                  "qué se busca y qué se reserva. Una vez terminado vamos con el punto número 4. 2) Desviación 1: la "
+                  "edad no se calcula solo con la fecha de la Ciudad de México. 3) Desviación 2: máximo 128 caracteres "
+                  "es demasiado para una contraseña; máximo 12 caracteres, y sin espacios. 4) Desviación 3: en inglés "
+                  "está bien. 5) Del punto 4 al 9, lo apruebo."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": ("fde3900 (rama api/accounts-registration, PR #19, fusionado por Sophia en 12c54b8). Revisión: "
+                        "1e21e53 y a065928 (rama api/registration-review)"),
+            "archivos": [
+                ("backend/app/modules/accounts/validation.py", "reglas del formulario: datos obligatorios, 18 años, contraseña y formatos."),
+                ("backend/app/modules/accounts/security.py", "convierte la contraseña con Argon2id y calcula la huella del código con la llave secreta."),
+                ("backend/app/modules/accounts/registration.py", "crea la cuenta, comprueba el código y envía otro, con sus límites."),
+                ("backend/app/modules/accounts/router.py", "las tres rutas: /auth/register, /auth/verify-email y /auth/resend-code."),
+                ("backend/app/notifications/", "envío de códigos: modo desarrollo listo y WhatsApp en esqueleto."),
+                ("backend/app/core/config.py y backend/.env.example", "la llave de los códigos, el modo de envío y los límites."),
+                ("backend/requirements.txt", "argon2-cffi 25.1.0 y, en la revisión, tzdata 2026.6."),
+                ("tests/backend/test_accounts_validation.py y test_accounts_registration.py", "pruebas de las reglas y de las tres rutas."),
+                ("tests/backend/conftest.py, test_config.py y test_health.py", "variables nuevas y acceso a la API para las pruebas."),
+                ("backend/README.md", "rutas nuevas, reglas del registro y cómo generar la llave."),
+                ("herramientas/bitacora/evidencias/backend_accounts_registration_pruebas_2026-11-17.txt", "salida real de las pruebas."),
+                ("Fuera del repositorio: backend/.env", "Sophia agregó la llave de los códigos y el modo de envío; la llave se generó sin mostrarla."),
+            ],
+            "sugerencias": [
+                ("Límite de intentos de registro y CAPTCHA.", "la arquitectura ya lo pedía."),
+                ("Revisar la contraseña contra listas de contraseñas filtradas.", "también lo pide la arquitectura."),
+                ("Validar el país contra la lista real de códigos ISO.", "hoy solo se revisa que sean dos letras."),
+                ("Permitir contraseñas de hasta 64 caracteres.", "con máximo 12 se rechazan las contraseñas largas y las de los gestores de contraseñas; las guías de seguridad piden permitir al menos 64."),
+                ("Contar la edad con la fecha más adelantada del mundo.", "no depende del país y nunca rechaza a quien ya cumplió 18 donde vive."),
+            ],
+            "lineas": ("Nuevos completos: modules/accounts/ (cinco archivos), notifications/ (cuatro) y los dos archivos de "
+                       "pruebas. config.py: siete campos. main.py y api/v1/router.py: dos líneas cada uno. conftest.py: "
+                       "lista de variables, llave de prueba y el acceso api. test_config.py: dos variables y seis pruebas. "
+                       "test_health.py: una comprobación. README.md: tablas de estructura y de rutas, y el paso 4. En la "
+                       "revisión: validation.py (fecha por país, máximo 12 y aviso de espacios), router.py (ya no fija la "
+                       "Ciudad de México), requirements.txt y las pruebas de edad y de contraseña."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben se deshace. Primera entrega, IA: «387 passed, 1 warning in 59.14s» y 0 filas "
+                        "guardadas. Recorrido de la IA con el servidor de verdad y guardado real, en un PostgreSQL temporal: "
+                        "contraseña sin símbolo, 422; datos válidos, 201 y el código en la ventana del servidor; el mismo "
+                        "correo, 409; código incorrecto, 400 con «attempts_left: 4»; pedir otro enseguida, 429 con "
+                        "«retry_after: 60»; código correcto, 200; el mismo código otra vez, 409. Sophia: «Bien, ya se hizo "
+                        "la prueba». Después de las dos revisiones, IA: «407 passed, 1 warning in 60.10s» y 0 filas "
+                        "guardadas. Salida completa copiada en "
+                        "herramientas/bitacora/evidencias/backend_accounts_registration_pruebas_2026-11-17.txt."),
+        },
+        "decisiones": [
+            ("18.1", "Aclarar que el punto 3 del módulo de Cuentas es el registro, y construirlo antes de la verificación de identidad, el perfil del anfitrión, la búsqueda y las reservas.", "Hay dos numeraciones parecidas, la de los módulos del backend y la de las piezas de Cuentas, y los módulos siguientes necesitan una persona con cuenta. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Registro de la cuenta».", "Se construyó el registro."),
+            ("18.2", "Edad mínima de 18 años cumplidos para crear una cuenta.", "Rentar y cobrar son contratos y pagos. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Sí, 18 años cumplidos».", "Regla under_age en validation.py."),
+            ("18.3", "Contraseña de mínimo 12 caracteres, sin exigir símbolos.", "Es lo que recomiendan las guías actuales: importa el largo. Campo: qué datos necesita.", "Rechazar", "Sophia eligió la opción «Mínimo 8 con mayúscula, minúscula, número y símbolo».", "Reglas de la contraseña en validation.py."),
+            ("18.4", "La cuenta no puede iniciar sesión hasta comprobar el correo con el código.", "Evita cuentas con correos ajenos o mal escritos. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Nada: primero comprueba el correo».", "Rutas /auth/verify-email y /auth/resend-code."),
+            ("18.5", "Un solo registro para huésped y anfitrión; el perfil de anfitrión se crea después, en el módulo de Verificación.", "Es una sola tabla de personas y un perfil de anfitrión aparte. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Un solo registro; el perfil de anfitrión después».", "El registro no toca host_profiles."),
+            ("18.6", "La pieza incluye crear la cuenta, escribir el código y pedir otro, con once casos de prueba.", "Con solo crear la cuenta no se podría probar el registro completo. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí: registro con comprobación de correo».", "Tres rutas y sus pruebas."),
+            ("18.7", "Calcular la edad con la fecha de la Ciudad de México.", "Hacía falta fijar qué fecha es hoy y la plataforma es mexicana. Campo: qué datos necesita.", "Revisar", "Como también recibimos cuentas de extranjeras, yo creo que la edad no se calcula solo con la fecha de Ciudad de México. Después Sophia eligió la opción «La fecha del país que eligió en el registro»; la IA recomendaba la fecha más adelantada del mundo.", "Commit 1e21e53: la edad se cuenta con la fecha del país de la persona."),
+            ("18.8", "Contraseña de máximo 128 caracteres, sin contar el espacio como símbolo y sin recortarle espacios.", "El tope evita textos enormes y recortar cambiaría la contraseña que la persona cree tener. Campo: qué datos necesita.", "Revisar", "Máximo 128 caracteres se me hace demasiado por una contraseña. Máximo 12 caracteres. Y en una contraseña no tiene que haber espacios. Después Sophia eligió «Máximo 12, como dije», con el aviso de la IA de que se rechazan las contraseñas largas, y «Rechazarla con un aviso».", "Commit a065928: contraseña de 8 a 12 caracteres; con espacios se rechaza con aviso."),
+            ("18.9", "Avisos con la forma errors, con field, code y message; los mensajes en español.", "Para que el formulario ponga cada aviso junto a su campo. Campo: qué hace.", "Aceptar", "En inglés está bien. Los mensajes están en español, pero las etiquetas y los nombres de la carpeta deben ir en inglés.", "Sin cambios: nombres y códigos en inglés, mensajes en español."),
+            ("18.10", "Comprobar o reenviar con un correo sin cuenta responde igual que si la tuviera; el registro sí avisa que el correo ya existe.", "Para no revelar qué correos tienen cuenta más de lo necesario. Campo: qué hace.", "Aceptar", "El punto 4, lo que la API nos revela, lo apruebo.", "Sin cambios."),
+            ("18.11", "Antes de guardar: correo en minúsculas, país en mayúsculas y espacios recortados a los lados.", "Son los formatos que exige la base. Campo: qué datos necesita.", "Aceptar", "Limpieza de datos antes de guardar. También lo apruebo.", "Sin cambios."),
+            ("18.12", "Variables de configuración nuevas: la llave de los códigos y el modo de envío, obligatorias, y los cinco límites con sus valores decididos por defecto.", "La llave es un secreto y el modo de envío no debe elegirse solo. Campo: qué datos necesita.", "Aceptar", "Prácticamente del punto 4 al 9 lo apruebo.", "Sin cambios."),
+            ("18.13", "Al pedir otro código los anteriores se dan por gastados, y la huella del código incluye para qué es y a qué correo va.", "Un código viejo no debe servir y la misma cifra no debe valer para otra persona. Campo: qué hace.", "Aceptar", "Prácticamente del punto 4 al 9 lo apruebo.", "Sin cambios."),
+            ("18.14", "Cambiar dos pruebas anteriores: la que exigía que solo existieran las dos rutas de comprobación y las de configuración.", "Ya hay más rutas y más variables. Campo: cómo se sabrá que funciona.", "Aceptar", "Prácticamente del punto 4 al 9 lo apruebo.", "Sin cambios."),
+            ("18.15", "Casos de prueba de más y un recorrido con guardado real en un PostgreSQL temporal.", "Las pruebas deshacen todo y faltaba ver el guardado de verdad. Campo: cómo se sabrá que funciona.", "Aceptar", "Prácticamente del punto 4 al 9 lo apruebo.", "Sin cambios."),
+            ("18.16", "Al contar la edad por país: si el país tiene varios husos horarios se toma el más adelantado; si el país no está en la tabla, la hora más adelantada del planeta. Los husos salen de la tabla pública que trae tzdata.", "Sophia eligió la fecha del país y faltaba decidir qué hacer con los países de varios husos. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("18.17", "Límite de intentos de registro y CAPTCHA.", "La arquitectura ya lo pedía. Campo: qué hace.", "Pendiente", "", ""),
+            ("18.18", "Revisar la contraseña contra listas de contraseñas filtradas.", "También lo pide la arquitectura. Campo: qué hace.", "Pendiente", "", ""),
+            ("18.19", "Validar el país contra la lista real de códigos ISO.", "Hoy solo se revisa que sean dos letras. Campo: qué datos necesita.", "Pendiente", "", ""),
+        ],
+    },
 ]
