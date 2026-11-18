@@ -11,6 +11,7 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/main.py` | Punto de entrada. Construye la aplicación y abre y cierra el grupo de conexiones. |
 | `app/core/config.py` | Lee y valida las variables de entorno. Si falta una, el backend no arranca y dice cuál. |
 | `app/database/connection.py` | Grupo de conexiones a PostgreSQL con psycopg 3 y la comprobación de que la base responde. |
+| `app/database/transaction.py` | Transacciones con papel: como el sistema o como una persona con sesión. Todo acceso a las tablas pasa por aquí. |
 | `app/api/v1/router.py` | Reúne las rutas de la versión 1. Cada módulo agrega aquí las suyas. |
 | `app/api/v1/health.py` | Las dos rutas de comprobación. |
 | `app/modules/` | Módulos de dominio. Vacío: cada módulo crea su carpeta en su pieza. |
@@ -27,6 +28,17 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `GET /api/v1/health` | `200 {"status": "ok"}`. No toca la base de datos. |
 | `GET /api/v1/health/database` | `200 {"status": "ok", "database": "integro", "port": 5433, "server_version": "18.x"}` si la base responde. `503 {"status": "unavailable"}` si no, sin el motivo ni datos de conexión. |
 | `GET /docs` | Documentación OpenAPI que FastAPI genera a partir del código. |
+
+## Con qué papel se habla con la base
+
+La API entra a PostgreSQL como `integro_api`, que por sí solo no puede leer ninguna tabla. En cada transacción elige un papel (ADR 0013):
+
+| Función de `app/database/transaction.py` | Papel en la base | Qué alcanza |
+|---|---|---|
+| `system_transaction(pool)` | `integro_service` | Todo lo que el sistema puede leer y escribir: registro, inicio de sesión, avisos de proveedores. |
+| `user_transaction(pool, user_id)` | `integro_app`, con el id anotado en `app.user_id` | Solo las filas de esa persona. Sin un id válido se rechaza antes de tocar la base. |
+
+El papel y el id duran lo que dura la transacción. Al terminar, con éxito o con error, la conexión vuelve al grupo como `integro_api` y sin persona anotada: una petición nunca hereda la identidad de otra.
 
 ## Preparar el entorno, una sola vez
 
@@ -98,7 +110,7 @@ Con el entorno virtual activo, desde `backend/`:
 python -m pytest ..\tests\backend -v -rs
 ```
 
-Las pruebas no escriben en la base. Una sola usa la base real, la que comprueba `integro` en el puerto 5433; si no existe `backend/.env` esa prueba se omite y la salida lo dice. Las demás apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
+Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
 
 ## Si algo falla
 
