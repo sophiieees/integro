@@ -23,7 +23,7 @@ const salida = process.argv[2] || ".";
 // k: clave, p: clave parcial, m: multivalor, d: derivado, c: compuesto (partes)
 const a = (n, o = {}) => ({ n, ...o });
 const ENTIDADES = {
-  User: { attrs: [a("id", { k: 1 }), a("name", { c: ["first_name", "last_name"] }), a("email"), a("phone", { m: 1 }), a("country"), a("birth_date"), a("age", { d: 1 }), a("preferred_language"), a("identity_status")] },
+  User: { attrs: [a("id", { k: 1 }), a("name", { c: ["first_name", "last_name"] }), a("email"), a("phone", { m: 1 }), a("country"), a("birth_date"), a("age", { d: 1 }), a("preferred_language"), a("identity_status"), a("identity_fingerprint")] },
   UserCredential: { debil: 1, attrs: [a("password_hash")] },
   Session: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("revoked_at")] },
   PasswordReset: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("used_at")] },
