@@ -1,5 +1,5 @@
 /* Pruebas del grupo 1 de la base de datos: users, user_credentials,
-  host_profiles, verifications.
+  user_phones, host_profiles, verifications.
   Corre la migración real sobre un PostgreSQL en memoria (PGlite) y comprueba
   cada regla: datos obligatorios, formatos, duplicados y permisos.
   No se conecta a ninguna base real. Cómo correrlas: tests/database/README.md.
@@ -72,14 +72,36 @@ async function como(papel, id, sql, parametros) {
 
 const sistema = (sql, parametros) => como(SISTEMA, null, sql, parametros);
 
-// Simula el registro: el sistema guarda a la persona con los datos del formulario.
+// Corre varias instrucciones como una sola operación: si una se rechaza, no
+// queda ninguna. Las reglas que se revisan al cerrar la operación (como tener
+// un teléfono principal) se revisan aquí.
+async function operacion(papel, id, pasos) {
+  await db.exec("begin");
+  try {
+    await db.query("select set_config('app.user_id', $1, true)", [id || ""]);
+    await db.exec(`set local role ${papel}`);
+    let filas = 0;
+    for (const [sql, parametros] of pasos) filas += (await db.query(sql, parametros)).affectedRows || 0;
+    await db.exec("commit");
+    return `aceptado, ${filas} fila(s) afectada(s)`;
+  } catch (e) {
+    await db.exec("rollback");
+    return `rechazado ${e.code} ${e.constraint || e.column || ""}`.trim();
+  }
+}
+
+// Simula el registro: el sistema guarda, en una sola operación, a la persona
+// con los datos del formulario y su teléfono como principal.
 function registrar(datos) {
-  const columnas = Object.keys(datos);
+  const { phone, ...persona } = datos;
+  const fila = { ...persona, id: persona.id || crypto.randomUUID() };
+  const columnas = Object.keys(fila);
   const marcas = columnas.map((_, i) => `$${i + 1}`);
-  return sistema(
-    `insert into public.users (${columnas.join(", ")}) values (${marcas.join(", ")})`,
-    columnas.map((c) => datos[c])
-  );
+  const pasos = [[`insert into public.users (${columnas.join(", ")}) values (${marcas.join(", ")})`, columnas.map((c) => fila[c])]];
+  if (phone !== undefined) {
+    pasos.push(["insert into public.user_phones (user_id, phone, is_primary) values ($1, $2, true)", [fila.id, phone]]);
+  }
+  return operacion(SISTEMA, null, pasos);
 }
 
 // Lectura directa para comprobar un valor guardado (como dueño de la base).
@@ -97,13 +119,16 @@ async function main() {
   console.log("");
 
   console.log("== Registro ==");
-  comparar("Registro completo de una persona mexicana",
-    "aceptado, 1 fila(s) afectada(s)", await registrar(DATOS_ANA));
+  comparar("Registro completo de una persona mexicana (persona y teléfono)",
+    "aceptado, 2 fila(s) afectada(s)", await registrar(DATOS_ANA));
   comparar("Su fila queda sin verificar y en español",
-    "Ana, Torres, ana@example.com, +525512345678, MX, unverified, es",
-    await valor("select first_name, last_name, email, phone, country, identity_status, preferred_language from public.users where id = $1", [ANA]));
+    "Ana, Torres, ana@example.com, MX, unverified, es",
+    await valor("select first_name, last_name, email, country, identity_status, preferred_language from public.users where id = $1", [ANA]));
+  comparar("Su teléfono queda como principal y sin comprobar",
+    "+525512345678, true, true",
+    await valor("select phone, is_primary, verified_at is null from public.user_phones where user_id = $1", [ANA]));
   comparar("Registro completo de una persona extranjera, en inglés",
-    "aceptado, 1 fila(s) afectada(s)", await registrar(DATOS_JOHN));
+    "aceptado, 2 fila(s) afectada(s)", await registrar(DATOS_JOHN));
   comparar("Su fila queda con país US e idioma en",
     "US, en", await valor("select country, preferred_language from public.users where id = $1", [JOHN]));
 
@@ -114,11 +139,15 @@ async function main() {
     return datos;
   };
 
-  for (const campo of ["first_name", "last_name", "email", "phone", "country", "birth_date"]) {
+  for (const campo of ["first_name", "last_name", "email", "country", "birth_date"]) {
     const datos = variante({});
     delete datos[campo];
     comparar(`Registro sin ${campo}`, `rechazado 23502 ${campo}`, await registrar(datos));
   }
+  const sinTelefono = variante({});
+  delete sinTelefono.phone;
+  comparar("Registro sin teléfono",
+    "rechazado 23514 users_primary_phone_required", await registrar(sinTelefono));
   comparar("Nombre con puros espacios",
     "rechazado 23514 users_first_name_length", await registrar(variante({ first_name: "   " })));
   comparar("Correo con mayúsculas (Otra@Example.com)",
@@ -128,11 +157,11 @@ async function main() {
   comparar("Correo que ya usa otra persona",
     "rechazado 23505 users_email_unique", await registrar(variante({ email: DATOS_ANA.email })));
   comparar("Teléfono sin código de país (5512345678)",
-    "rechazado 23514 users_phone_e164", await registrar(variante({ phone: "5512345678" })));
+    "rechazado 23514 user_phones_phone_e164", await registrar(variante({ phone: "5512345678" })));
   comparar("Teléfono con espacios (+52 55 1234 5678)",
-    "rechazado 23514 users_phone_e164", await registrar(variante({ phone: "+52 55 1234 5678" })));
+    "rechazado 23514 user_phones_phone_e164", await registrar(variante({ phone: "+52 55 1234 5678" })));
   comparar("Teléfono que ya usa otra persona",
-    "rechazado 23505 users_phone_unique", await registrar(variante({ phone: DATOS_ANA.phone })));
+    "rechazado 23505 user_phones_phone_unique", await registrar(variante({ phone: DATOS_ANA.phone })));
   comparar("País en minúsculas (mx)",
     "rechazado 23514 users_country_iso2", await registrar(variante({ country: "mx" })));
   comparar("País con tres letras (MEX)",
@@ -165,6 +194,41 @@ async function main() {
     "rechazado 42501", await como(PERSONA, ANA, "update public.user_credentials set password_hash = $2 where user_id = $1", [ANA, HASH]));
 
   console.log("");
+  console.log("== Teléfonos (user_phones) ==");
+  const PRINCIPAL = DATOS_ANA.phone;
+  const RESPALDO = "+525587654321";
+  comparar("El sistema agrega a Ana un teléfono de respaldo",
+    "aceptado, 1 fila(s) afectada(s)", await sistema("insert into public.user_phones (user_id, phone) values ($1, $2)", [ANA, RESPALDO]));
+  comparar("Un segundo teléfono principal para Ana",
+    "rechazado 23505 user_phones_one_primary", await sistema("insert into public.user_phones (user_id, phone, is_primary) values ($1, '+525511112222', true)", [ANA]));
+  comparar("Teléfono para una persona que no existe",
+    "rechazado 23503 user_phones_user_id_fkey", await sistema("insert into public.user_phones (user_id, phone) values ($1, '+525533334444')", [NADIE]));
+  comparar("El sistema marca el teléfono principal como comprobado",
+    "aceptado, 1 fila(s) afectada(s)", await sistema("update public.user_phones set verified_at = now() where phone = $1", [PRINCIPAL]));
+  comparar("Ana, con sesión, lee sus teléfonos",
+    "2 fila(s)", await como(PERSONA, ANA, "select phone from public.user_phones"));
+  comparar("John no ve los teléfonos de Ana",
+    "0 fila(s)", await como(PERSONA, JOHN, "select phone from public.user_phones where user_id = $1", [ANA]));
+  comparar("Alguien sin sesión lee los teléfonos y no ve ninguno",
+    "0 fila(s)", await como(PERSONA, null, "select phone from public.user_phones"));
+  comparar("Ana intenta agregarse un teléfono directo en la tabla",
+    "rechazado 42501", await como(PERSONA, ANA, "insert into public.user_phones (user_id, phone) values ($1, '+525555556666')", [ANA]));
+  comparar("Ana intenta marcar como comprobado su teléfono de respaldo",
+    "rechazado 42501", await como(PERSONA, ANA, "update public.user_phones set verified_at = now() where phone = $1", [RESPALDO]));
+  comparar("El sistema intenta borrar el teléfono principal sin dejar otro principal",
+    "rechazado 23514 users_primary_phone_required", await sistema("delete from public.user_phones where phone = $1", [PRINCIPAL]));
+  comparar("El sistema intenta quitar la marca de principal sin poner otro",
+    "rechazado 23514 users_primary_phone_required", await sistema("update public.user_phones set is_primary = false where phone = $1", [PRINCIPAL]));
+  comparar("Ana pierde su teléfono: en una sola operación el de respaldo pasa a principal y el perdido se da de baja",
+    "aceptado, 3 fila(s) afectada(s)", await operacion(SISTEMA, null, [
+      ["update public.user_phones set is_primary = false where phone = $1", [PRINCIPAL]],
+      ["update public.user_phones set is_primary = true where phone = $1", [RESPALDO]],
+      ["delete from public.user_phones where phone = $1", [PRINCIPAL]],
+    ]));
+  comparar("Ana queda con un solo teléfono, que es el principal",
+    "1, +525587654321, true", await valor("select count(*), min(phone), bool_and(is_primary) from public.user_phones where user_id = $1", [ANA]));
+
+  console.log("");
   console.log("== Permisos sobre users ==");
   comparar("Ana, con sesión, lee la tabla y solo ve su fila",
     "1 fila(s)", await como(PERSONA, ANA, "select id from public.users"));
@@ -183,7 +247,7 @@ async function main() {
   comparar("Ana intenta cambiar el nombre de John",
     "aceptado, 0 fila(s) afectada(s)", await como(PERSONA, ANA, "update public.users set first_name = 'X' where id = $1", [JOHN]));
   comparar("Ana intenta insertar una fila a mano",
-    "rechazado 42501", await como(PERSONA, ANA, "insert into public.users (first_name, last_name, email, phone, country, birth_date) values ('A', 'B', 'ab@example.com', '+525500000003', 'MX', '1990-01-01')"));
+    "rechazado 42501", await como(PERSONA, ANA, "insert into public.users (first_name, last_name, email, country, birth_date) values ('A', 'B', 'ab@example.com', 'MX', '1990-01-01')"));
   comparar("Ana intenta borrar su fila",
     "rechazado 42501", await como(PERSONA, ANA, "delete from public.users where id = $1", [ANA]));
   comparar("El sistema marca a Ana como verificada",
@@ -193,7 +257,7 @@ async function main() {
   comparar("El sistema intenta borrar a Ana: no tiene permiso de borrar",
     "rechazado 42501", await sistema("delete from public.users where id = $1", [ANA]));
   comparar("Ni el dueño de la base puede borrar a Ana mientras tenga datos ligados",
-    "rechazado 23503 user_credentials_user_id_fkey", await ejecutar("delete from public.users where id = $1", [ANA]));
+    "rechazado 23503", (await ejecutar("delete from public.users where id = $1", [ANA])).split(" ").slice(0, 2).join(" "));
 
   console.log("");
   console.log("== host_profiles ==");
