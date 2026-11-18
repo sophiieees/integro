@@ -53,6 +53,9 @@ Todas las entidades y relaciones, sin atributos. Los atributos están en los dia
 - Atributo multivalor: `phone`.
 - Atributo derivado: `age`, que se calcula con `birth_date`.
 - `identity_fingerprint`: huella irreversible de la identidad verificada. No es el documento ni permite reconstruirlo.
+- `email_verified_at`: fecha en que la persona comprobó su correo. Vacía mientras no lo haya hecho.
+- `Session`, `PasswordReset` y `OneTimeCode` son entidades fuertes: cada una tiene su clave `id` y se relaciona con `User` de uno a muchos, con participación total, porque ninguna existe sin una persona.
+- `OneTimeCode`: los códigos de un solo uso que se le envían a la persona (relación `is sent`). `Session` guarda además desde dónde se abrió la sesión: `ip_address`, `user_agent` y `last_used_at`.
 
 ### 2.4 Propiedades
 
@@ -314,4 +317,3 @@ Sin definir. Necesita su lista de estados y su tabla de cambios antes de constru
 - **Estados de las reservas** y las tablas de cambios permitidos de membresías y propiedades (sección 6).
 - **Huella de identidad:** la revisión legal y comprobar que el proveedor de verificación entrega un dato estable para calcularla.
 - **Tablas que no están en este modelo:** calendarios iCal por propiedad, llaves digitales y registro de aperturas de la chapa inteligente y eventos de uso (búsquedas, clics).
-- **Diagrama de Chen:** falta agregar `one_time_codes` y los atributos nuevos de `users` y `sessions`, y regenerar las imágenes de la sección 2.
