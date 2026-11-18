@@ -609,4 +609,77 @@ PROMPTS = [
             ("13.8", "Consecuencias del inicio de sesión: tabla de códigos de un solo uso, fecha de comprobación del correo, proveedores de SMS, WhatsApp y correo, y contraseña más código para lo que mueve dinero.", "Sin ellas las tres formas no se pueden construir ni quedan protegidas. Campo: qué datos necesita.", "Pendiente", "", "Anotadas como pendientes en el ADR 0014."),
         ],
     },
+    # ------------------------------------------------------------------ 14
+    {
+        "n": 14,
+        "titulo": "Esqueleto del backend en FastAPI conectado a integro",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Revisa la documentación que ya se encuentra en diseño y arquitectura de la carpeta de Íntegro; el "
+                     "esqueleto del backend también lo tienes en el documento. Todas las carpetas vienen en inglés. Revisa "
+                     "el CLAUDE.md. En la parte de backend va el database; la base de datos está en PostgreSQL. Tienes toda "
+                     "la información de la estructura de la base de datos en el repositorio de GitHub. Todas las pruebas "
+                     "las vamos a hacer tanto tú como yo."),
+        "tarea": ("1) Crea el esqueleto del backend en Python con FastAPI, conectado a la base integro en el puerto 5433. "
+                  "2) Cuando termines, ponme los pasos para configurar el entorno virtual. 3) Vamos a hacer una prueba de "
+                  "que responde. 4) Si tienes dudas, pregúntame."),
+        "salida": ("Los pasos para configurar el entorno virtual y una prueba de que responde, hecha tanto por la IA como "
+                   "por Sophia. Para lo demás se aplicó el desglose de cierre de CLAUDE.md."),
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "a2ea7a2 (rama api/backend-skeleton, PR #11, fusionado por Sophia en f0a095d)",
+            "archivos": [
+                ("backend/app/main.py", "punto de entrada: construye la aplicación y abre y cierra el grupo de conexiones."),
+                ("backend/app/core/config.py", "lee y valida las cinco variables DATABASE_* de backend/.env o del entorno."),
+                ("backend/app/database/connection.py", "grupo de conexiones con psycopg 3 y la consulta que pregunta a la base su nombre, su puerto y su versión."),
+                ("backend/app/api/v1/health.py y router.py", "las dos rutas de comprobación, bajo /api/v1."),
+                ("backend/app/modules/", "carpeta de los módulos de dominio, vacía: cada módulo crea la suya en su pieza."),
+                ("backend/requirements.txt y requirements-dev.txt", "dependencias con versión exacta; las de pruebas van aparte."),
+                ("backend/.env.example", "plantilla de las variables de entorno, sin contraseña."),
+                ("backend/README.md", "estructura, rutas, pasos del entorno virtual y qué hacer si algo falla."),
+                ("tests/backend/conftest.py, test_health.py y test_config.py", "40 casos de prueba en Python."),
+                (".gitignore", "la plantilla .env.example sí se sube; el entorno virtual y la caché de las pruebas no."),
+                ("herramientas/bitacora/evidencias/backend_skeleton_pruebas_2026-11-17.txt", "salida real de las pruebas."),
+                ("Fuera del repositorio: usuario integro_api en PostgreSQL 18 y archivo backend/.env", "los creó Sophia; la contraseña no pasó por el chat ni por el repositorio."),
+            ],
+            "sugerencias": [
+                ("Restringir /api/v1/health/database antes de producción.",
+                 "muestra la versión y el puerto de la base sin sesión, y eso le sirve a un atacante."),
+                ("Agregar un archivo de bloqueo completo cuando entre la integración continua.",
+                 "hoy solo están fijadas las dependencias directas; las que ellas instalan, no."),
+                ("Decidir si se cambia httpx por httpx2.",
+                 "las pruebas muestran un aviso de que httpx quedará obsoleto para el cliente de pruebas; hoy funciona."),
+                ("Agregar la fila de backend/ al README de la raíz.",
+                 "sigue diciendo que el repositorio solo tiene la capa de presentación; la IA no lo tocó porque es texto de Sophia."),
+                ("Que la siguiente pieza sea el cambio de papel por transacción: elegir integro_app o integro_service y anotar app.user_id.",
+                 "todos los módulos lo usan, empezando por Cuentas."),
+            ],
+            "lineas": (".gitignore: líneas 7 y 8 (plantilla) y 17 a 19 (entorno virtual y caché), nuevas. Todo lo demás "
+                       "son archivos nuevos: backend/ completo y tests/backend/ completo."),
+            "pruebas": ("Todas corrieron en la computadora de Sophia, contra PostgreSQL 18 en el puerto 5433, no en una "
+                        "versión publicada. Primera corrida de la IA, sin backend/.env: «39 passed, 1 skipped, 1 warning»; "
+                        "la omitida era la de la base real. Servidor real arrancado por la IA con una contraseña inventada: "
+                        "GET /api/v1/health dio 200, GET /api/v1/health/database dio 503 y GET /docs dio 200. Sophia abrió "
+                        "/api/v1/health/database en el navegador y obtuvo primero «status: unavailable»; el registro de "
+                        "PostgreSQL decía «El usuario «integro_api» no tiene una contraseña asignada». Después de asignarla "
+                        "en pgAdmin obtuvo «status: ok, database: integro, port: 5433, server_version: 18.7». Segunda "
+                        "corrida de la IA, ya con la base real: «40 passed, 1 warning in 46.97s». Corrida de Sophia: «40 "
+                        "pruebas passed». Salida completa copiada en "
+                        "herramientas/bitacora/evidencias/backend_skeleton_pruebas_2026-11-17.txt."),
+        },
+        "decisiones": [
+            ("14.1", "La carpeta backend/ va en la raíz; database/migrations/ no se mueve y dentro de backend/ va solo el código de conexión.", "La documentación no dibuja el árbol de carpetas del backend y «en la parte de backend va el database» se podía leer de dos formas. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «database/ se queda en la raíz».", "Carpeta backend/ nueva; las migraciones siguen en database/migrations/."),
+            ("14.2", "El esqueleto deja modules/ vacío y cada módulo crea su carpeta en su propia pieza.", "Regla 2 de CLAUDE.md: nunca toda la estructura de golpe. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Solo la base».", "backend/app/modules/ solo con su archivo de inicio."),
+            ("14.3", "La API se conecta con un usuario nuevo, integro_api, miembro de integro_app e integro_service; la contraseña vive solo en backend/.env.", "La migración del grupo 1 dice que el usuario de conexión se crea aparte, fuera del repositorio. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Crear integro_api».", "Sophia creó el usuario en pgAdmin y escribió la contraseña en backend/.env."),
+            ("14.4", "psycopg 3 con SQL directo como librería para hablar con PostgreSQL.", "El ADR 0012 fija FastAPI pero no la librería de la base de datos. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «psycopg 3».", "backend/app/database/connection.py y requirements.txt."),
+            ("14.5", "«Responde» son dos rutas: /api/v1/health, que no toca la base, y /api/v1/health/database, que comprueba la conexión.", "El prompt pedía una prueba de que responde, sin decir qué debía contestar. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Dos direcciones».", "backend/app/api/v1/health.py y sus casos de prueba."),
+            ("14.6", "Modificar .gitignore: subir la plantilla .env.example e ignorar .venv/ y .pytest_cache/.", "La regla .env.* hacía que git ignorara la plantilla. Campo: qué datos necesita.", "Aceptar", "Apruebo todas.", ".gitignore, cinco líneas nuevas."),
+            ("14.7", "Configuración sin valores por defecto, con un error que nombra la variable que falta sin mostrar valores.", "Así el backend nunca se conecta por descuido a otra base, y el error original de la librería imprimía la contraseña. Campo: qué datos necesita.", "Aceptar", "Apruebo todas.", "backend/app/core/config.py y tests/backend/test_config.py."),
+            ("14.8", "Librerías que Sophia no nombró: uvicorn, pydantic-settings, pytest y httpx.", "Hacen falta para ejecutar la aplicación, leer el archivo .env y correr las pruebas. Campo: qué hace.", "Aceptar", "Apruebo todas.", "requirements.txt y requirements-dev.txt."),
+            ("14.9", "Fijar fastapi 0.162.0, psycopg 3.3.6, pydantic-settings 2.16.2 y pydantic 2.14.2 en lugar de las versiones más nuevas.", "Las más recientes tenían menos de 14 días publicadas (docs/arquitectura.md, sección 7, punto 9). Campo: qué hace.", "Aceptar", "Apruebo todas.", "Versiones exactas en requirements.txt, con su fecha de publicación."),
+            ("14.10", "Grupo de conexiones síncrono, de 1 a 5 conexiones y 3 segundos de espera.", "La variante asíncrona de psycopg no funciona en Windows con el ciclo de eventos por defecto; los números los eligió la IA. Campo: qué hace.", "Aceptar", "Apruebo todas.", "Constantes de backend/app/database/connection.py."),
+            ("14.11", "Dejar en backend/README.md el SQL que crea integro_api, sin contraseña.", "La migración dice que ese usuario se crea fuera del repositorio; el SQL no lleva ningún secreto y sirve a quien instale el proyecto. Campo: qué datos necesita.", "Aceptar", "Apruebo todas.", "backend/README.md, paso 1."),
+            ("14.12", "Casos de prueba que Sophia no pidió: límites de la configuración, rutas que no existen (404), métodos no permitidos (405) y un grupo de conexiones simulado.", "La skill /pieza pide probar los límites además de los casos de la especificación. Campo: cómo se sabrá que funciona.", "Aceptar", "Apruebo todas.", "tests/backend/test_health.py y test_config.py."),
+        ],
+    },
 ]
