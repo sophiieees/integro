@@ -28,7 +28,7 @@ Clientes                      Servicios externos
 │ ia · chapa (llaves digitales)                     │──▶│ Correo, SMS, mapas     │
 │                                                   │──▶│ PAC para CFDI          │
 │ Tareas programadas: cobros, reintentos, iCal      │──▶│ Modelo de IA (API)     │
-│ Autenticación JWT · roles · límite de peticiones  │──▶│ Chapa inteligente (SDK)│
+│ Sesión en la base · roles · límite de peticiones  │──▶│ Chapa inteligente (SDK)│
 └──────┬───────────────┬───────────────┬────────────┘   └────────────────────────┘
        │               │               │
 ┌──────▼─────┐  ┌──────▼─────┐  ┌──────▼──────────┐
@@ -40,6 +40,8 @@ Clientes                      Servicios externos
 ```
 
 Lo punteado (app móvil) no se construye en el MVP, pero la API y el modelo de datos lo dejan listo. El módulo `chapa` no estaba en el MVP técnico original: entra con el documento de chapa inteligente del 13 de octubre (ADR 0011).
+
+La sesión se guarda en la base de datos y no en un JWT, como decía la versión de octubre de este documento (ADR 0015). Por eso la ruta `/auth/refresh` de la sección 4 ya no aplica. Cómo entra una persona a su cuenta y por dónde le llegan los códigos está en el ADR 0014.
 
 ## 3. Tecnología propuesta
 
