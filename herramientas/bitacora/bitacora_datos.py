@@ -895,9 +895,9 @@ PROMPTS = [
             ("17.6", "En docs/arquitectura.md cambiar solo lo del JWT y avisar en un párrafo que /auth/refresh ya no aplica.", "Era lo aceptado en 16.15; el resto del documento se deja para otra pieza. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "Dos cambios en arquitectura.md."),
             ("17.7", "Cambiar el código del generador de diagramas: opción escala, columnas más separadas y posición fija del rombo opens.", "User ya tiene once atributos y ocho relaciones y los óvalos se encimaban. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "tools/er-diagram/generate.mjs."),
             ("17.8", "Nombre de la relación, «is sent», y OneTimeCode como entidad fuerte.", "Igual que Session y PasswordReset: tiene su clave id. Campo: qué datos necesita.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "Diagrama de personas y acceso."),
-            ("17.9", "Decidir si el código enviado sustituye al segundo factor TOTP o si se suman.", "Hay que saberlo antes del inicio de sesión de anfitriones. Campo: qué hace.", "Pendiente", "", ""),
-            ("17.10", "Una pieza para poner al día docs/arquitectura.md completa.", "Todavía dice «NestJS o FastAPI» y PostgreSQL 16. Campo: qué hace.", "Pendiente", "", ""),
-            ("17.11", "Corregir docs/diseno/pantallas.md.", "Lista la pantalla 5 como «Registro e inicio de sesión con código». Campo: qué hace.", "Pendiente", "", ""),
+            ("17.9", "Decidir si el código enviado sustituye al segundo factor TOTP o si se suman.", "Hay que saberlo antes del inicio de sesión de anfitriones. Campo: qué hace.", "Aceptar", "No sustituye la aplicación de códigos TOTP, se suma, porque cuando el cliente pasa de usuario interesado en rentar una propiedad a host se deben tomar otras medidas como TOTP.", "ADR 0014, sección «Anfitriones: la aplicación de códigos se suma»."),
+            ("17.10", "Una pieza para poner al día docs/arquitectura.md completa.", "Todavía dice «NestJS o FastAPI» y PostgreSQL 16. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Aceptar los seis».", ""),
+            ("17.11", "Corregir docs/diseno/pantallas.md.", "Lista la pantalla 5 como «Registro e inicio de sesión con código». Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Aceptar los seis».", ""),
         ],
     },
     # ------------------------------------------------------------------ 18
@@ -974,10 +974,62 @@ PROMPTS = [
             ("18.13", "Al pedir otro código los anteriores se dan por gastados, y la huella del código incluye para qué es y a qué correo va.", "Un código viejo no debe servir y la misma cifra no debe valer para otra persona. Campo: qué hace.", "Aceptar", "Prácticamente del punto 4 al 9 lo apruebo.", "Sin cambios."),
             ("18.14", "Cambiar dos pruebas anteriores: la que exigía que solo existieran las dos rutas de comprobación y las de configuración.", "Ya hay más rutas y más variables. Campo: cómo se sabrá que funciona.", "Aceptar", "Prácticamente del punto 4 al 9 lo apruebo.", "Sin cambios."),
             ("18.15", "Casos de prueba de más y un recorrido con guardado real en un PostgreSQL temporal.", "Las pruebas deshacen todo y faltaba ver el guardado de verdad. Campo: cómo se sabrá que funciona.", "Aceptar", "Prácticamente del punto 4 al 9 lo apruebo.", "Sin cambios."),
-            ("18.16", "Al contar la edad por país: si el país tiene varios husos horarios se toma el más adelantado; si el país no está en la tabla, la hora más adelantada del planeta. Los husos salen de la tabla pública que trae tzdata.", "Sophia eligió la fecha del país y faltaba decidir qué hacer con los países de varios husos. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("18.17", "Límite de intentos de registro y CAPTCHA.", "La arquitectura ya lo pedía. Campo: qué hace.", "Pendiente", "", ""),
-            ("18.18", "Revisar la contraseña contra listas de contraseñas filtradas.", "También lo pide la arquitectura. Campo: qué hace.", "Pendiente", "", ""),
-            ("18.19", "Validar el país contra la lista real de códigos ISO.", "Hoy solo se revisa que sean dos letras. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("18.16", "Al contar la edad por país: si el país tiene varios husos horarios se toma el más adelantado; si el país no está en la tabla, la hora más adelantada del planeta. Los husos salen de la tabla pública que trae tzdata.", "Sophia eligió la fecha del país y faltaba decidir qué hacer con los países de varios husos. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Aceptar los seis».", ""),
+            ("18.17", "Límite de intentos de registro y CAPTCHA.", "La arquitectura ya lo pedía. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Aceptar los seis».", ""),
+            ("18.18", "Revisar la contraseña contra listas de contraseñas filtradas.", "También lo pide la arquitectura. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Aceptar los seis».", ""),
+            ("18.19", "Validar el país contra la lista real de códigos ISO.", "Hoy solo se revisa que sean dos letras. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Aceptar los seis».", ""),
+        ],
+    },
+    # ------------------------------------------------------------------ 19
+    {
+        "n": 19,
+        "titulo": "Estado de la plataforma y reglas del inicio de sesión",
+        "fecha": "18 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Se retoma el trabajo del día anterior. WhatsApp todavía no existe: de ese punto solo se deja la base "
+                     "de la arquitectura, que puede estar vacía, solo la carpeta."),
+        "tarea": ("1) ¿En qué parte nos quedamos ayer de la plataforma y qué falta? Detalla cada uno y, si tienes dudas "
+                  "que se deban resolver antes de la implementación, dime. 2) Respuestas a las dudas. Uno: el usuario "
+                  "entra con correo, contraseña y código al correo, de momento. Dos: solo se pide iniciar sesión en un "
+                  "dispositivo nuevo, con correo, contraseña y código al correo; también cuando se cierra sesión se vuelve "
+                  "a solicitar. Tres: creo que lo mejor sería un mes de inactividad, ¿o es mucho?, ¿qué me sugieres? "
+                  "Cuatro: no se bloquea, pero se solicita otro factor, como una llamada o un mensaje de WhatsApp; si "
+                  "falla los 3 intentos permitidos se aplica el aviso y otro factor, y si vuelve a fallar otros 3 se pide "
+                  "intentarlo más tarde, unos 15 minutos después. Cinco: el código no sustituye a la aplicación de códigos "
+                  "TOTP, se suma, porque cuando el cliente pasa de interesado en rentar una propiedad a anfitrión se deben "
+                  "tomar otras medidas, como el TOTP. Seis: para recuperar la contraseña se manda al correo una liga que "
+                  "dura unos 5 minutos, y al cambiarla se debe volver a iniciar sesión. Siete: el teléfono queda sin "
+                  "comprobar hasta que exista WhatsApp. 3) Actualiza lo pendiente: 18.16, 18.17, 18.18, 18.19, 17.10 y 17.11."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "18 de noviembre de 2026",
+            "commits": "7b2eb9f y el commit de este registro, en la rama docs/adr-login-rules",
+            "archivos": [
+                ("docs/decisiones/0014-inicio-de-sesion-con-contrasena-y-codigo.md",
+                 "reglas del inicio de sesión mientras no haya WhatsApp, duración de la sesión, contraseñas incorrectas, TOTP para anfitriones y recuperación de contraseña."),
+                ("herramientas/bitacora/bitacora_datos.py", "prompt 19 y veredictos 17.9 a 17.11 y 18.16 a 18.19."),
+            ],
+            "sugerencias": [
+                ("Orden de lo que falta: inicio de sesión y sesiones, cerrar sesión, recuperar contraseña, envío real de los códigos, Verificación, Propiedades, Búsqueda y cotización, Reservas, Pagos y membresías, mensajes y panel, frontend y documentación de cierre.",
+                 "es el orden aceptado en 13.1 y 15.1, con lo ya construido descontado."),
+                ("Subir el máximo de la contraseña de 12 a 64 caracteres.",
+                 "un máximo de 12 impide usar contraseñas generadas por un gestor, que suelen ser más largas."),
+            ],
+            "lineas": ("ADR 0014: línea de estado, cinco secciones nuevas dentro de «Decisión», cuatro líneas de «Consecuencias», "
+                       "la fuente y una entrada en «Cambios». bitacora_datos.py: siete veredictos y el prompt 19."),
+            "pruebas": ("No hay pruebas automáticas: no cambió código de la aplicación. El estado de la plataforma se leyó "
+                        "del repositorio: tres migraciones, tres rutas de registro en /api/v1/auth y, según la bitácora del "
+                        "prompt 18, «407 passed» contra la base real de Sophia."),
+        },
+        "decisiones": [
+            ("19.1", "Sesión de 30 días sin uso para huéspedes, 7 para anfitriones y 30 minutos en el panel de administración.", "Sophia preguntó si un mes era mucho; quien maneja dinero conviene que dure menos. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «30 días huésped, 7 anfitrión».", "ADR 0014, sección «Cuánto dura una sesión»."),
+            ("19.2", "La espera de 15 minutos se aplica a quien está intentando, por dispositivo y dirección, y no a la cuenta completa.", "Si se aplica a la cuenta, cualquiera que conozca el correo puede dejar fuera al dueño. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «A quien está intentando».", "ADR 0014, sección «Contraseñas incorrectas»."),
+            ("19.3", "Liga de recuperación de 15 minutos en lugar de los 5 que dijo Sophia.", "Un correo puede tardar en llegar y la persona todavía tiene que abrirlo y escribir la contraseña nueva. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «15 minutos».", "ADR 0014, sección «Recuperar la contraseña»."),
+            ("19.4", "Leer la respuesta dos como: cada inicio de sesión pide correo, contraseña y código, sin recordar dispositivos.", "Sophia dijo que también se pide después de cerrar sesión; recordar dispositivos necesitaría una tabla más. Campo: qué hace.", "Pendiente", "", "ADR 0014, sección «Cómo se inicia sesión mientras no haya WhatsApp»."),
+            ("19.5", "El otro factor por llamada o WhatsApp espera a tener proveedor; hoy, a los 3 fallos hay aviso y el código al correo se sigue pidiendo.", "No hay proveedor de llamadas ni de WhatsApp contratado. Campo: qué hace.", "Pendiente", "", "ADR 0014, sección «Contraseñas incorrectas»."),
+            ("19.6", "Escribir las reglas en el ADR 0014 sin que Sophia lo pidiera.", "El otro chat no ve esta conversación. Campo: qué hace.", "Pendiente", "", "Rama docs/adr-login-rules."),
+            ("19.7", "Una tabla para contar los intentos fallidos por dispositivo y dirección, y más adelante la del secreto TOTP.", "Sin guardarlos no se pueden contar. Campo: qué datos necesita.", "Pendiente", "", "Anotadas en las consecuencias del ADR 0014; sin diseñar."),
+            ("19.8", "Subir el máximo de la contraseña de 12 a 64 caracteres.", "Un máximo de 12 impide las contraseñas de un gestor. Campo: cómo se sabrá que funciona.", "Pendiente", "", "Sin cambios."),
         ],
     },
 ]
