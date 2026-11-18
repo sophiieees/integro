@@ -1103,4 +1103,65 @@ PROMPTS = [
             ("20.16", "Los administradores se dan de alta solo a mano en pgAdmin; la API nunca puede crearlos ni quitarlos.", "Si alguien toma el control de la API no puede hacerse administrador. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Solo a mano, en pgAdmin».", "Permisos de la tabla admins en la migración siguiente."),
         ],
     },
+    # ------------------------------------------------------------------ 21
+    {
+        "n": 21,
+        "titulo": "Tablas de intentos de inicio de sesión y de administradores",
+        "fecha": "18 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Viene de la nota del prompt 20: comenzar la implementación de lo que la pieza del inicio de sesión "
+                     "dejó fuera. Ya corrí la migración, pasaron las 516 pruebas y ya puse el PR. Después, al volver a "
+                     "correr la migración en pgAdmin: «ERROR: la relación «login_attempts» ya existe. SQL state: 42P07»."),
+        "tarea": ("1) Acepto todas las desviaciones. 2) ¿Con esto terminamos el punto cuatro? 3) /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "18 de noviembre de 2026",
+            "commits": "35fa5cb (rama datos/login-attempts-admins, PR #25, fusionado por Sophia en 78cd634)",
+            "archivos": [
+                ("database/migrations/20261118000004_login_attempts_admins.sql", "crea login_attempts y admins con sus permisos."),
+                ("tests/backend/test_login_attempts_admins_tables.py", "los casos aceptados y sus límites: 34 pruebas."),
+                ("docs/database/data-model.md", "las dos tablas en el modelo relacional y las decisiones 20 a 22."),
+                ("backend/README.md", "cómo dar de alta a un administrador en pgAdmin."),
+                ("herramientas/bitacora/evidencias/backend_login_attempts_admins_pruebas_2026-11-18.txt", "salida real de las pruebas."),
+                ("Fuera del repositorio: la migración corrida en la base integro", "la corrió Sophia en pgAdmin."),
+            ],
+            "sugerencias": [
+                ("Regenerar el diagrama de Chen con login_attempts, en su pieza de documentación.",
+                 "el diagrama quedó sin la tabla nueva."),
+                ("Avisar a la parte legal de que también se guardan la IP y el navegador de los intentos fallidos.",
+                 "son datos personales y van en el aviso de privacidad."),
+                ("Incluir login_attempts en la tarea de limpieza futura.",
+                 "crece con cada intento y nunca se borra."),
+                ("El punto cuatro todavía no termina: faltan la pieza de contraseñas incorrectas y la del panel con el tope de sesión.",
+                 "son las que usan las dos tablas nuevas; después siguen cerrar sesión y recuperar contraseña."),
+            ],
+            "lineas": ("Migración y archivo de pruebas: completos, nuevos. data-model.md: una fila en «Uno a muchos», el "
+                       "grupo 1 de la sección 4, las filas 20 a 22 de la sección 5 y una línea en la sección 7. "
+                       "backend/README.md: el paso 5 y una frase en «Correr las pruebas»."),
+            "pruebas": ("En la computadora de Sophia, no en una versión publicada. En un PostgreSQL 18.7 temporal, IA: «34 "
+                        "passed in 0.34s» y, con la batería completa, «515 passed, 1 deselected»; como dueño de la base, "
+                        "dar de alta a una administradora dio 1 fila y repetirla dio «duplicate key value violates unique "
+                        "constraint admins_user_unique». Contra la base real antes de la migración: «482 passed, 34 "
+                        "skipped». Grupo 1 en PGlite con las cuatro migraciones: «Total: 86 casos, 86 coinciden, 0 no "
+                        "coinciden.» Sophia reportó: «Ya corrí la migración, pasaron las 516 pruebas». La corrida de la IA "
+                        "enseguida dio «482 passed, 34 skipped»: las tablas todavía no se veían en la base integro "
+                        "(login_attempts=no, admins=no), y la IA no dio la pieza por cerrada. Sophia volvió a correr la "
+                        "migración y obtuvo «ERROR: la relación «login_attempts» ya existe. SQL state: 42P07», porque para "
+                        "entonces ya estaba aplicada. La IA volvió a revisar: login_attempts=sí, admins=sí, y la batería "
+                        "completa dio «516 passed, 1 warning in 68.32s». Salida completa copiada en "
+                        "herramientas/bitacora/evidencias/backend_login_attempts_admins_pruebas_2026-11-18.txt."),
+        },
+        "decisiones": [
+            ("21.1", "Diez casos de prueba para login_attempts y admins, y las dos tablas en una sola migración.", "Para que Sophia la corra una sola vez en pgAdmin. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí, esos casos».", "Migración 20261118000004 y 34 pruebas."),
+            ("21.2", "login_attempts no lleva updated_at, aunque las demás tablas sí.", "Una fila nunca cambia: solo se agregan. Campo: qué datos necesita.", "Aceptar", "Acepto todas.", "Columnas de login_attempts."),
+            ("21.3", "Un intento se anota aunque no se sepa el correo ni la dirección.", "Si lo escrito no tenía forma de correo, el intento cuenta igual para quien lo hizo. Campo: qué datos necesita.", "Aceptar", "Acepto todas.", "email, ip_address y user_agent pueden quedar vacíos."),
+            ("21.4", "Un intento correcto debe tener persona.", "No puede haber un acierto de una cuenta que no existe. Campo: qué datos necesita.", "Aceptar", "Acepto todas.", "Regla login_attempts_success_has_user."),
+            ("21.5", "La persona puede leer su propia fila de admins.", "Para saber si ella misma es administradora; no ve a las demás. Campo: qué hace.", "Aceptar", "Acepto todas.", "Regla admins_select_own."),
+            ("21.6", "Los casos 9 y 10 no están en la batería automática: se comprobaron a mano en el PostgreSQL temporal.", "Dar de alta a un administrador solo puede hacerlo el dueño de la base, y las pruebas corren con el usuario de la API. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todas.", "Salida de esos casos en el archivo de evidencia."),
+            ("21.7", "Actualizar el texto de data-model.md ahora y dejar el diagrama de Chen para su pieza.", "Igual que en la migración anterior. Campo: qué hace.", "Aceptar", "Acepto todas.", "data-model.md, secciones 3, 4, 5 y 7."),
+            ("21.8", "Regenerar el diagrama de Chen con login_attempts.", "El diagrama quedó sin la tabla nueva. Campo: qué hace.", "Pendiente", "", ""),
+            ("21.9", "Avisar a la parte legal de que también se guardan la IP y el navegador de los intentos fallidos.", "Son datos personales. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("21.10", "Incluir login_attempts en la tarea de limpieza futura.", "Crece con cada intento y nunca se borra. Campo: qué hace.", "Pendiente", "", ""),
+        ],
+    },
 ]
