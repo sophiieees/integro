@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from app.api.v1.router import router as api_v1_router
 from app.core.config import Settings, load_settings
 from app.database.connection import create_pool
+from app.api.auth import NotAuthenticated, not_authenticated_response
 from app.notifications import create_code_sender
 
 
@@ -42,6 +43,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     application.include_router(api_v1_router)
+    # Toda ruta que pida sesión responde igual cuando no la hay: 401.
+    application.add_exception_handler(NotAuthenticated, not_authenticated_response)
     return application
 
 

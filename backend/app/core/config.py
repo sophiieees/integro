@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     code_resend_wait_seconds: int = Field(default=60, ge=0)
     code_max_per_hour: int = Field(default=5, ge=1)
 
+    # Días sin uso que aguanta una sesión antes de cerrarse sola (ADR 0014).
+    # El anfitrión maneja dinero y propiedades, por eso la suya dura menos.
+    session_idle_days_guest: int = Field(default=30, ge=1)
+    session_idle_days_host: int = Field(default=7, ge=1)
+
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:
     """Lee y valida la configuración.

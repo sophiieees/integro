@@ -11,6 +11,7 @@ import hmac
 import secrets
 
 from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
 
 _password_hasher = PasswordHasher()
 
@@ -18,6 +19,39 @@ _password_hasher = PasswordHasher()
 def hash_password(password: str) -> str:
     """Convierte la contraseña con Argon2id. El resultado empieza con $argon2id$."""
     return _password_hasher.hash(password)
+
+
+# Contraseña convertida que no es de nadie. Cuando el correo no tiene cuenta se
+# compara contra ella, para tardar lo mismo que con una cuenta real y que el
+# tiempo de respuesta no revele qué correos existen.
+_NOBODY_HASH = _password_hasher.hash(secrets.token_hex(16))
+
+
+def verify_password(password: str, password_hash: str | None) -> bool:
+    """Dice si la contraseña escrita corresponde a la guardada.
+
+    Con password_hash en None (el correo no tiene cuenta) hace el mismo
+    trabajo y responde que no.
+    """
+    try:
+        _password_hasher.verify(password_hash or _NOBODY_HASH, password)
+    except (VerificationError, InvalidHashError):
+        return False
+    return password_hash is not None
+
+
+def generate_session_token() -> str:
+    """Llave de sesión al azar (256 bits). Es lo que recibe la persona."""
+    return secrets.token_urlsafe(32)
+
+
+def hash_session_token(token: str) -> str:
+    """Huella de la llave de sesión (SHA-256 en hexadecimal). Es lo que se guarda.
+
+    La llave tiene 256 bits al azar, así que no hace falta una llave secreta
+    como con los códigos de seis dígitos.
+    """
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 def generate_code(length: int) -> str:
