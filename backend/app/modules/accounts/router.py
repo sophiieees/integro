@@ -251,10 +251,26 @@ def login(body: LoginRequest, request: Request):
     if errors:
         return error_response(422, errors)
     state = request.app.state
-    result = start_login(state.pool, values["email"], values["password"], state.settings, state.code_sender)
+    result = start_login(
+        state.pool,
+        values["email"],
+        values["password"],
+        state.settings,
+        state.code_sender,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
 
     if result.outcome is LoginOutcome.CODE_SENT:
         return LoginResponse(status="code_required")
+    if result.outcome is LoginOutcome.TRY_LATER:
+        minutes = -(-result.retry_after_seconds // 60)
+        wait = "1 minuto" if minutes == 1 else f"{minutes} minutos"
+        return error_response(
+            429,
+            [FieldError("credentials", "try_later", f"Demasiados intentos. Intenta de nuevo en {wait}.")],
+            retry_after=result.retry_after_seconds,
+        )
     if result.outcome is LoginOutcome.EMAIL_NOT_VERIFIED:
         return error_response(
             403,

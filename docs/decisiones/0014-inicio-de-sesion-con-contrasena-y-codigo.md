@@ -61,6 +61,13 @@ La cuenta nunca se bloquea.
 2. Si falla otros 3 intentos, se le pide intentarlo más tarde, 15 minutos después.
 3. Esa espera se aplica a quien está intentando, por dispositivo y dirección, y no a la cuenta completa. Así nadie que conozca el correo de otra persona puede dejarla fuera a propósito.
 
+Cómo se cuenta cada cosa:
+
+- **El aviso se cuenta por cuenta.** Son 3 fallos seguidos contra una misma cuenta, vengan de donde vengan. Entrar bien reinicia esa cuenta de fallos. El aviso sale una vez por racha, por correo, y dice cuántos intentos hubo, la fecha y la hora, el navegador y la dirección; nunca una contraseña. Solo se avisa a un correo ya comprobado.
+- **La espera se cuenta por dispositivo.** Un dispositivo es la pareja de dirección IP y navegador. Son 6 fallos en 15 minutos desde el mismo dispositivo, contra la cuenta que sea, y ese dispositivo espera 15 minutos para cualquier cuenta. Mientras espera no se mira la contraseña ni se anotan sus intentos, así que la espera no se alarga.
+- **Los fallos de hace más de 15 minutos no cuentan,** ni para el aviso ni para la espera.
+- **Los tres números son valores de configuración:** fallos para el aviso, fallos para la espera y minutos.
+
 ### Anfitriones: la aplicación de códigos se suma
 El código enviado no sustituye a la aplicación de códigos (TOTP) que pedía la arquitectura: se suman. Cuando una persona pasa de huésped a anfitrión se toman otras medidas, y el TOTP es una de ellas.
 
@@ -72,7 +79,7 @@ El código enviado no sustituye a la aplicación de códigos (TOTP) que pedía l
 - **Tablas.** Ya están construidas `one_time_codes`, que guarda la huella de cada código, para qué es, por dónde salió, a dónde se envió, cuándo vence, cuántos intentos lleva y si ya se usó, y `users.email_verified_at`, la fecha en que se comprobó el correo. La de los teléfonos ya existía en `user_phones.verified_at`. La tabla admite el canal `sms`, así que agregarlo después no necesita otra migración.
 - **Empresa que envía.** Falta elegir quién envía los correos y, cuando se decida, los mensajes de WhatsApp. Cada una necesita su cuenta y sus llaves, que viven en variables de entorno.
 - **Segundo factor de la arquitectura.** El TOTP para anfitriones y panel se suma al código enviado. Su secreto se guarda cifrado con AES-256-GCM, en una tabla que todavía no está diseñada; se construye con el paso de huésped a anfitrión.
-- **Intentos fallidos.** Contar los fallos por dispositivo y dirección necesita guardarlos. Esa tabla todavía no está diseñada y entra con la pieza del inicio de sesión, con la autorización de Sophia.
+- **Intentos fallidos.** Cada intento, fallido o correcto, se guarda en la tabla `login_attempts`, que solo admite filas nuevas. Guarda la dirección IP y el navegador, que son datos personales.
 - **Duración por tipo de persona.** La sesión de anfitrión se distingue porque la persona tiene perfil de anfitrión.
 - **Avisos que no son códigos.** `docs/arquitectura.md` menciona avisos por correo y SMS. Esta decisión cubre solo los códigos de acceso; los avisos se deciden con su módulo.
 - **Pendiente.** El otro factor por WhatsApp o por llamada, y el tope de días de una sesión aunque se use a diario.
@@ -83,3 +90,4 @@ Decisiones de Sophia del 17 y del 18 de noviembre de 2026. Bitácora, decisiones
 ## Cambios
 - 17 de noviembre de 2026, noche: se decidieron los canales (correo y WhatsApp, sin SMS), la regla de contraseña más código y los límites de los códigos. La versión anterior decía "por SMS o a su correo" en la forma 1 y "por WhatsApp" en la forma 2, y dejaba todas las consecuencias como propuestas pendientes.
 - 18 de noviembre de 2026: se decidieron las reglas del inicio de sesión mientras no haya WhatsApp, la duración de la sesión, las contraseñas incorrectas, que el TOTP se suma para anfitriones y la recuperación de contraseña. Sophia había dicho 5 minutos para la liga y eligió 15 al revisarlo.
+- 18 de noviembre de 2026, tarde: al construir las contraseñas incorrectas se precisó cómo se cuenta: el aviso por cuenta y la espera por dispositivo, y qué dice el aviso.

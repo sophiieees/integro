@@ -54,6 +54,13 @@ class Settings(BaseSettings):
     code_resend_wait_seconds: int = Field(default=60, ge=0)
     code_max_per_hour: int = Field(default=5, ge=1)
 
+    # Contraseñas incorrectas (ADR 0014). La cuenta nunca se bloquea: a tantos
+    # fallos seguidos se avisa al dueño, y a tantos fallos dentro de los
+    # minutos de espera, el dispositivo que intenta espera esos minutos.
+    login_notice_after_failures: int = Field(default=3, ge=1)
+    login_wait_after_failures: int = Field(default=6, ge=1)
+    login_wait_minutes: int = Field(default=15, ge=1)
+
     # Días sin uso que aguanta una sesión antes de cerrarse sola (ADR 0014).
     # El anfitrión maneja dinero y propiedades, por eso la suya dura menos.
     session_idle_days_guest: int = Field(default=30, ge=1)
