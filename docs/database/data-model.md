@@ -15,275 +15,95 @@ Este documento sustituye a la tabla de la sección 5 de `docs/arquitectura.md`.
 
 ## 2. Diagrama entidad-relación
 
-Son 25 tablas. Primero va el diagrama general, solo con las tablas y sus relaciones, y después cinco diagramas de detalle con las llaves de cada tabla: `PK` llave primaria, `FK` llave foránea, `UK` valor único. Los demás atributos están en la sección 4. Las mismas imágenes están en la carpeta `img/`.
+Modelo conceptual en notación de Chen. Los nombres van en inglés y coinciden con los del modelo relacional de la sección 4: cada entidad corresponde a una tabla y cada óvalo a una columna, salvo lo que se indica en la sección 2.8.
 
-Cómo leer las líneas: `||` exactamente uno, `o|` cero o uno, `o{` cero o muchos.
+### 2.1 Simbología
 
-### 2.1 Diagrama general
+![Simbología del diagrama entidad-relación](img/chen-legend.png)
 
-```mermaid
-erDiagram
-    users ||--o| user_credentials : "tiene contraseña"
-    users ||--o{ sessions : "inicia"
-    users ||--o{ password_resets : "solicita"
-    users ||--o| admins : "puede ser"
-    users ||--o| host_profiles : "puede ser anfitrión"
-    users ||--o{ verifications : "se verifica"
-    users |o--o{ audit_log : "actúa"
-    host_profiles ||--o{ properties : "es titular de"
-    host_profiles ||--o{ property_co_hosts : "ayuda en"
-    host_profiles ||--o| memberships : "paga"
-    memberships ||--o{ membership_charges : "genera"
-    properties ||--o{ property_co_hosts : "tiene coanfitriones"
-    properties |o--o{ verifications : "se verifica"
-    properties ||--o{ property_photos : "muestra"
-    properties ||--o| rates : "cobra"
-    properties ||--o{ seasonal_rates : "cobra por temporada"
-    properties ||--o{ property_amenities : "ofrece"
-    amenities ||--o{ property_amenities : "se ofrece en"
-    properties ||--o{ calendar_blocks : "se bloquea"
-    properties ||--o{ bookings : "recibe"
-    users ||--o{ bookings : "reserva"
-    bookings |o--o| calendar_blocks : "ocupa"
-    bookings ||--o{ payments : "se paga con"
-    properties ||--o{ conversations : "trata de"
-    users ||--o{ conversations : "abre"
-    bookings |o--o{ conversations : "se liga a"
-    conversations ||--o{ messages : "contiene"
-    users ||--o{ messages : "envía"
-    bookings ||--o{ reviews : "recibe"
-    users ||--o{ reviews : "escribe"
-    users ||--o{ reports : "levanta"
-    bookings |o--o{ reports : "trata de"
-    properties |o--o{ reports : "trata de"
-    stripe_events
-```
+| Figura | Significa |
+|---|---|
+| Rectángulo | Entidad fuerte: existe por sí misma y tiene clave propia |
+| Rectángulo doble | Entidad débil: no existe sin su entidad dueña y se identifica a través de ella |
+| Rombo | Relación entre entidades |
+| Rombo doble | Relación de identificación: la que une a una entidad débil con su dueña |
+| Óvalo | Atributo |
+| Óvalo con texto subrayado | Atributo clave |
+| Óvalo con subrayado punteado | Clave parcial de una entidad débil: distingue a una fila solo dentro de su dueña |
+| Óvalo doble | Atributo multivalor: puede tener varios valores |
+| Óvalo punteado | Atributo derivado: se calcula a partir de otros y no se guarda |
+| Óvalo con óvalos colgando | Atributo compuesto: se divide en partes |
+| Línea doble | Participación total: la entidad no puede existir sin esa relación |
+| 1, N, M sobre la línea | Cardinalidad de la entidad en la relación |
 
-`stripe_events` no se relaciona con ninguna tabla: solo recuerda qué avisos de Stripe ya se procesaron.
+### 2.2 Diagrama general
 
-### 2.2 Personas y acceso
+Todas las entidades y relaciones, sin atributos. Los atributos están en los diagramas de detalle.
 
-```mermaid
-erDiagram
-    users ||--o| user_credentials : "tiene contraseña"
-    users ||--o{ sessions : "inicia"
-    users ||--o{ password_resets : "solicita"
-    users ||--o| admins : "puede ser"
-    users ||--o| host_profiles : "puede ser anfitrión"
-    users ||--o{ verifications : "se verifica"
-    users |o--o{ audit_log : "actúa"
+![Diagrama general](img/chen-general.png)
 
-    users {
-        uuid id PK
-        text email UK
-        text phone UK
-    }
-    user_credentials {
-        uuid id PK
-        uuid user_id FK,UK
-    }
-    sessions {
-        uuid id PK
-        uuid user_id FK
-        text token_hash UK
-    }
-    password_resets {
-        uuid id PK
-        uuid user_id FK
-        text token_hash UK
-    }
-    admins {
-        uuid id PK
-        uuid user_id FK,UK
-    }
-    host_profiles {
-        uuid id PK
-        uuid user_id FK,UK
-        text stripe_account_id UK
-    }
-    verifications {
-        uuid id PK
-        uuid user_id FK
-        uuid property_id FK
-    }
-    audit_log {
-        uuid id PK
-        uuid actor_id FK
-    }
-```
+`StripeEvent` no participa en ninguna relación: solo recuerda qué avisos de Stripe ya se procesaron.
 
-### 2.3 Propiedades
+### 2.3 Personas y acceso
 
-```mermaid
-erDiagram
-    host_profiles ||--o{ properties : "es titular de"
-    host_profiles ||--o{ property_co_hosts : "ayuda en"
-    properties ||--o{ property_co_hosts : "tiene coanfitriones"
-    properties |o--o{ verifications : "se verifica"
-    properties ||--o{ property_photos : "muestra"
-    properties ||--o| rates : "cobra"
-    properties ||--o{ seasonal_rates : "cobra por temporada"
-    properties ||--o{ property_amenities : "ofrece"
-    amenities ||--o{ property_amenities : "se ofrece en"
+![Personas y acceso](img/chen-people-access.png)
 
-    host_profiles {
-        uuid id PK
-        uuid user_id FK,UK
-    }
-    properties {
-        uuid id PK
-        uuid owner_id FK
-    }
-    property_co_hosts {
-        uuid id PK
-        uuid property_id FK
-        uuid host_id FK
-    }
-    verifications {
-        uuid id PK
-        uuid user_id FK
-        uuid property_id FK
-    }
-    property_photos {
-        uuid id PK
-        uuid property_id FK
-    }
-    rates {
-        uuid id PK
-        uuid property_id FK,UK
-    }
-    seasonal_rates {
-        uuid id PK
-        uuid property_id FK
-    }
-    amenities {
-        uuid id PK
-        text code UK
-    }
-    property_amenities {
-        uuid id PK
-        uuid property_id FK
-        uuid amenity_id FK
-    }
-```
+- Entidades débiles: `UserCredential`, `Admin` y `HostProfile`. Las tres dependen de `User` con relación de identificación de uno a uno, por eso no llevan clave parcial.
+- Atributo compuesto: `name` (`first_name`, `last_name`).
+- Atributo multivalor: `phone`.
+- Atributo derivado: `age`, que se calcula con `birth_date`.
 
-### 2.4 Reservas, pagos y membresías
+### 2.4 Propiedades
 
-```mermaid
-erDiagram
-    properties ||--o{ calendar_blocks : "se bloquea"
-    properties ||--o{ bookings : "recibe"
-    users ||--o{ bookings : "reserva"
-    bookings |o--o| calendar_blocks : "ocupa"
-    bookings ||--o{ payments : "se paga con"
-    host_profiles ||--o| memberships : "paga"
-    memberships ||--o{ membership_charges : "genera"
+![Propiedades](img/chen-properties.png)
 
-    users {
-        uuid id PK
-    }
-    properties {
-        uuid id PK
-        uuid owner_id FK
-    }
-    calendar_blocks {
-        uuid id PK
-        uuid property_id FK
-        uuid booking_id FK,UK
-    }
-    bookings {
-        uuid id PK
-        uuid property_id FK
-        uuid guest_id FK
-    }
-    payments {
-        uuid id PK
-        uuid booking_id FK
-        text stripe_reference UK
-        text idempotency_key UK
-    }
-    stripe_events {
-        uuid id PK
-        text stripe_event_id UK
-    }
-    host_profiles {
-        uuid id PK
-        uuid user_id FK,UK
-    }
-    memberships {
-        uuid id PK
-        uuid host_id FK,UK
-    }
-    membership_charges {
-        uuid id PK
-        uuid membership_id FK
-        text stripe_reference UK
-    }
-```
+- Entidades débiles: `PropertyPhoto` (clave parcial `position`), `SeasonalRate` (clave parcial `start_date`) y `Rate` (uno a uno, sin clave parcial). Las tres dependen de `Property`.
+- Relación con atributo: `co-hosts`, de muchos a muchos entre `HostProfile` y `Property`, con el atributo `since`.
+- Relación de muchos a muchos sin atributos: `offers`, entre `Property` y `Amenity`.
+- Atributos compuestos: `location` (`city`, `zone`, `exact_address`, `approximate_location`) en `Property` y `name` (`name_es`, `name_en`) en `Amenity`.
+- Atributo multivalor: `house_rules`.
+- Atributo derivado: `average_rating`, que se calcula con las reseñas.
 
-### 2.5 Mensajes
+### 2.5 Reservas y pagos
 
-```mermaid
-erDiagram
-    properties ||--o{ conversations : "trata de"
-    users ||--o{ conversations : "abre"
-    bookings |o--o{ conversations : "se liga a"
-    conversations ||--o{ messages : "contiene"
-    users ||--o{ messages : "envía"
+![Reservas y pagos](img/chen-bookings-payments.png)
 
-    users {
-        uuid id PK
-    }
-    properties {
-        uuid id PK
-    }
-    bookings {
-        uuid id PK
-    }
-    conversations {
-        uuid id PK
-        uuid property_id FK
-        uuid guest_id FK
-        uuid booking_id FK
-    }
-    messages {
-        uuid id PK
-        uuid conversation_id FK
-        uuid sender_id FK
-    }
-```
+- Entidad débil: `CalendarBlock` (clave parcial `start_date`), que depende de `Property`.
+- Atributo derivado: `nights`, que se calcula con `check_in` y `check_out`.
 
-### 2.6 Reseñas y reportes
+### 2.6 Membresías
 
-```mermaid
-erDiagram
-    bookings ||--o{ reviews : "recibe"
-    users ||--o{ reviews : "escribe"
-    users ||--o{ reports : "levanta"
-    bookings |o--o{ reports : "trata de"
-    properties |o--o{ reports : "trata de"
+![Membresías](img/chen-memberships.png)
 
-    users {
-        uuid id PK
-    }
-    properties {
-        uuid id PK
-    }
-    bookings {
-        uuid id PK
-    }
-    reviews {
-        uuid id PK
-        uuid booking_id FK
-        uuid author_id FK
-    }
-    reports {
-        uuid id PK
-        uuid reporter_id FK
-        uuid booking_id FK
-        uuid property_id FK
-    }
-```
+- Entidad débil: `Membership`, que depende de `HostProfile` con relación de identificación de uno a uno.
+- Atributo compuesto: `period` (`period_start`, `period_end`).
+
+### 2.7 Mensajes, reseñas y reportes
+
+![Mensajes, reseñas y reportes](img/chen-messages-reports.png)
+
+- Relación con atributos: `reviews`, de muchos a muchos entre `User` y `Booking`, con los atributos `rating` y `body`.
+
+### 2.8 Cómo se convierte al modelo relacional
+
+| En el diagrama | En el modelo relacional |
+|---|---|
+| Entidad fuerte | Una tabla con su clave `id`. |
+| Entidad débil | Una tabla con la llave foránea de su dueña. Por convención del proyecto también lleva `id`; la identificación del diagrama se conserva con una regla de valor único: la llave foránea sola cuando es de uno a uno, o la llave foránea junto con la clave parcial. |
+| Relación de uno a uno o de uno a muchos | Una llave foránea en el lado "muchos" (o en la entidad débil). |
+| Relación de muchos a muchos | Una tabla intermedia con las dos llaves foráneas y sus atributos: `co-hosts` es `property_co_hosts` (su atributo `since` es `created_at`), `offers` es `property_amenities` y `reviews` es `reviews`. |
+| Atributo compuesto | Una columna por cada parte; el óvalo padre no se guarda. |
+| Atributo derivado | No se guarda: `age`, `nights` y `average_rating` se calculan al consultarlos. |
+| Atributo multivalor | Una tabla aparte con la llave foránea de la entidad y un valor por fila. |
+
+Los dos atributos multivalor del diagrama:
+
+- `phone`: confirmado como multivalor el 17 de noviembre de 2026. Es la tabla `user_phones`; el correo sigue siendo uno solo por persona.
+- `house_rules`: hoy es una sola columna de `properties`. Como multivalor le corresponde una tabla `property_house_rules`; esta decisión sigue pendiente.
+
+### 2.9 Cómo se regeneran las imágenes
+
+Los diagramas se generan desde `tools/er-diagram/generate.mjs`, que contiene la lista de entidades, atributos y relaciones. Las instrucciones están al inicio de ese archivo.
 
 ## 3. Relaciones y cardinalidad
 
@@ -304,6 +124,7 @@ erDiagram
 
 | Uno | Muchos | Llave foránea | Obligatoria | Cómo se lee |
 |---|---|---|---|---|
+| `users` | `user_phones` | `user_phones.user_id → users(id)` | Sí | Una persona registra varios teléfonos; uno es el principal. Sale del atributo multivalor `phone` del diagrama. |
 | `users` | `sessions` | `sessions.user_id → users(id)` | Sí | Una persona puede tener varias sesiones abiertas (celular y computadora). |
 | `users` | `password_resets` | `password_resets.user_id → users(id)` | Sí | Una persona puede pedir recuperar su contraseña varias veces. |
 | `users` | `verifications` | `verifications.user_id → users(id)` | Sí | Una persona pasa por varias verificaciones: identidad, cuenta bancaria, tarjeta. |
@@ -321,8 +142,6 @@ erDiagram
 | `bookings` | `conversations` | `conversations.booking_id → bookings(id)` | No | La conversación se liga a la reserva cuando existe; antes de reservar está vacía. |
 | `conversations` | `messages` | `messages.conversation_id → conversations(id)` | Sí | Una conversación contiene varios mensajes. |
 | `users` | `messages` | `messages.sender_id → users(id)` | Sí | Una persona envía varios mensajes. |
-| `bookings` | `reviews` | `reviews.booking_id → bookings(id)` | Sí | Una reserva recibe hasta dos reseñas: la del huésped y la del anfitrión. |
-| `users` | `reviews` | `reviews.author_id → users(id)` | Sí | Una persona escribe varias reseñas, una por reserva. |
 | `users` | `reports` | `reports.reporter_id → users(id)` | Sí | Una persona puede levantar varios reportes. |
 | `bookings` | `reports` | `reports.booking_id → bookings(id)` | No | Un reporte puede tratar de una reserva. |
 | `properties` | `reports` | `reports.property_id → properties(id)` | No | Un reporte puede tratar de un anuncio sin que exista reserva. |
@@ -336,6 +155,7 @@ Una relación de muchos a muchos no se puede guardar con una sola llave foránea
 |---|---|---|---|
 | `host_profiles` y `properties` (coanfitriones) | `property_co_hosts` | `property_id → properties(id)` y `host_id → host_profiles(user_id)`; la pareja es única | Una propiedad tiene varios coanfitriones y un anfitrión ayuda en varias propiedades. El coanfitrión edita, responde mensajes y maneja el calendario; no toca dinero. |
 | `properties` y `amenities` | `property_amenities` | `property_id → properties(id)` y `amenity_id → amenities(id)`; la pareja es única | Una propiedad ofrece varios servicios y un servicio (wifi, cocina) se ofrece en muchas propiedades. |
+| `users` y `bookings` (reseñas) | `reviews` | `author_id → users(id)` y `booking_id → bookings(id)`; la pareja es única | Una persona reseña varias reservas y una reserva recibe hasta dos reseñas: la del huésped y la del anfitrión. La relación lleva los atributos `rating` y `body`. |
 
 ## 4. Modelo relacional
 
@@ -343,9 +163,11 @@ Notación: `tabla(columnas)`. La llave primaria va <ins>subrayada</ins>. `FK` ma
 
 ### Grupo 1. Personas y acceso
 
-Estado: `users`, `user_credentials`, `host_profiles` y `verifications` construidas; `sessions`, `password_resets` y `admins` diseñadas.
+Estado: `users`, `user_credentials`, `user_phones`, `host_profiles` y `verifications` construidas; `sessions`, `password_resets` y `admins` diseñadas.
 
-- **users**(<ins>id</ins>, first_name, last_name, email UK, phone UK, country, birth_date, preferred_language, identity_status)
+- **users**(<ins>id</ins>, first_name, last_name, email UK, country, birth_date, preferred_language, identity_status)
+- **user_phones**(<ins>id</ins>, user_id FK → users(id), phone UK, is_primary, verified_at?)
+  - Cada persona tiene exactamente un teléfono principal. Un teléfono no se repite en toda la plataforma.
 - **user_credentials**(<ins>id</ins>, user_id FK UK → users(id), password_hash)
 - **sessions**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, revoked_at?)
 - **password_resets**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, used_at?)
@@ -406,11 +228,11 @@ Estado: diseñadas.
 - **audit_log**(<ins>id</ins>, actor_id? FK → users(id), action, entity_type, entity_id)
   - Solo se inserta; nunca se edita ni se borra.
 
-## 5. Propuestas incluidas que esperan decisión
+## 5. Decisiones del modelo
 
-Están dibujadas en el diagrama, pero no venían en las tablas autorizadas el 17 de noviembre de 2026.
+Aceptadas por Sophia el 17 de noviembre de 2026.
 
-| # | Propuesta | Por qué |
+| # | Decisión | Por qué |
 |---|---|---|
 | 1 | El titular va en `properties.owner_id` y los coanfitriones en `property_co_hosts` | Así la base garantiza que cada propiedad tiene exactamente un titular. |
 | 2 | Las llaves foráneas de anfitrión apuntan a `host_profiles(user_id)` y no a `users(id)` | Nadie puede ser titular, coanfitrión o tener membresía sin perfil de anfitrión. |
@@ -420,8 +242,50 @@ Están dibujadas en el diagrama, pero no venían en las tablas autorizadas el 17
 | 6 | Columnas de `sessions` y `password_resets` | Se guarda la huella del código, no el código, igual que con las contraseñas. |
 | 7 | `amenities` con `name_es` y `name_en` | La plataforma funciona en español e inglés. |
 | 8 | Nombres `memberships` y `membership_charges` | `docs/arquitectura.md` las llamaba `subscriptions` e `invoices`. |
+| 9 | Teléfono multivalor y correo único | Si la persona pierde, cambia o le roban el teléfono conserva otro con el cual entrar; el correo es uno solo porque con él inicia sesión. |
+| 10 | Entidades débiles: `UserCredential`, `Admin`, `HostProfile`, `Rate`, `Membership`, `PropertyPhoto`, `SeasonalRate` y `CalendarBlock` | Ninguna existe sin su entidad dueña. |
+| 11 | `reviews` es una relación de muchos a muchos con atributos, no una entidad | Una reseña solo existe entre una persona y una reserva. |
 
-## 6. Lo que falta decidir antes de construir
+## 6. Tablas de estados
 
-- **Listas de estados.** `properties.status`, `bookings.status`, `payments.status` y `memberships.status` son máquinas de estados cerradas. Cada una necesita su tabla de estados y cambios permitidos antes de su migración.
+Pagos, membresías, propiedades y reservas son máquinas de estados cerradas: todo cambio que no esté en su tabla está prohibido y tiene su prueba. Las de pagos, membresías y propiedades fueron aceptadas el 17 de noviembre de 2026.
+
+### 6.1 Pagos (`payments.status`)
+
+| De | A | Quién lo dispara |
+|---|---|---|
+| `created` | `pending` | El huésped confirma la reserva y Stripe crea el intento de cobro |
+| `pending` | `paid` | Aviso firmado de Stripe: cobro exitoso |
+| `pending` | `rejected` | Aviso firmado de Stripe: cobro fallido, con el motivo que da Stripe |
+| `pending` | `expired` | 30 minutos sin confirmación |
+| `paid` | `cancelled` | El huésped cancela; aplica la política de cancelación de la propiedad |
+| `paid` | `refunded` | Reembolso ejecutado en Stripe, parcial o total |
+
+### 6.2 Membresías (`memberships.status`)
+
+| Estado | Cuándo | Qué pasa con las propiedades |
+|---|---|---|
+| `active` | Stripe confirma el pago del mes | Visibles |
+| `grace` | El cobro falló; días 1 a 7, con tres reintentos y avisos | Visibles |
+| `suspended` | Día 8 sin pago | Ocultas, con los datos intactos; el anfitrión ve un aviso para pagar |
+| `cancelled` | Día 30 sin pago | Ocultas; si vuelve, paga y se reactiva sin verificarse de nuevo |
+
+Los días (7, 8 y 30) viven en una configuración, no en el código. Falta escribir la tabla de cambios permitidos entre estos estados antes de construir el grupo 5.
+
+### 6.3 Propiedades (`properties.status`)
+
+Estados: `draft` (borrador), `in_review` (en revisión), `active` (activa), `paused` (pausada por el anfitrión), `suspended` (suspendida por la plataforma) y `removed` (retirada).
+
+Una propiedad está activa solo si se cumplen tres cosas a la vez: su verificación está aprobada, la membresía del titular está `active` o `grace`, y el anfitrión no la pausó. En cuanto una falla, la propiedad se oculta sola.
+
+Falta escribir la tabla de cambios permitidos entre estos estados antes de construir el grupo 2.
+
+### 6.4 Reservas (`bookings.status`)
+
+Sin definir. Necesita su lista de estados y su tabla de cambios antes de construir el grupo 3.
+
+## 7. Lo que falta decidir antes de construir
+
+- **Estados de las reservas** y las tablas de cambios permitidos de membresías y propiedades (sección 6).
+- **`house_rules`:** si pasa a una tabla aparte (sección 2.8).
 - **Tablas que no están en este modelo:** calendarios iCal por propiedad, llaves digitales y registro de aperturas de la chapa inteligente, comprobación del correo al registrarse y eventos de uso (búsquedas, clics).
