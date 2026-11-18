@@ -117,7 +117,8 @@ def test_openapi_lists_both_health_routes(settings_without_database):
 
     assert response.status_code == 200
     paths = response.json()["paths"]
-    assert set(paths) == {"/api/v1/health", "/api/v1/health/database"}
+    # Desde la pieza del registro hay más rutas; las dos de comprobación siguen ahí.
+    assert {"/api/v1/health", "/api/v1/health/database"} <= set(paths)
 
 
 # ---------------------------------------------------------------------------

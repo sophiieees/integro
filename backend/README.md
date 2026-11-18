@@ -14,7 +14,9 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/database/transaction.py` | Transacciones con papel: como el sistema o como una persona con sesión. Todo acceso a las tablas pasa por aquí. |
 | `app/api/v1/router.py` | Reúne las rutas de la versión 1. Cada módulo agrega aquí las suyas. |
 | `app/api/v1/health.py` | Las dos rutas de comprobación. |
-| `app/modules/` | Módulos de dominio. Vacío: cada módulo crea su carpeta en su pieza. |
+| `app/modules/` | Módulos de dominio. Cada módulo crea su carpeta en su pieza. |
+| `app/modules/accounts/` | Cuentas: reglas del formulario (`validation.py`), contraseñas y códigos (`security.py`), registro y comprobación del correo (`registration.py`) y sus rutas (`router.py`). |
+| `app/notifications/` | Envío de códigos. Hoy solo el modo desarrollo (`console.py`); WhatsApp queda pendiente (`whatsapp.py`). |
 | `requirements.txt` | Dependencias del backend, con versión exacta. |
 | `requirements-dev.txt` | Lo anterior más lo necesario para correr las pruebas. |
 | `.env.example` | Plantilla de las variables de entorno, sin contraseña. |
@@ -27,7 +29,16 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 |---|---|
 | `GET /api/v1/health` | `200 {"status": "ok"}`. No toca la base de datos. |
 | `GET /api/v1/health/database` | `200 {"status": "ok", "database": "integro", "port": 5433, "server_version": "18.x"}` si la base responde. `503 {"status": "unavailable"}` si no, sin el motivo ni datos de conexión. |
-| `GET /docs` | Documentación OpenAPI que FastAPI genera a partir del código. |
+| `POST /api/v1/auth/register` | Crea la cuenta y envía un código de 6 dígitos al correo. `201 {"status": "verification_required", "email": "..."}`. `422` si falta o no sirve un dato; `409` si el correo o el teléfono ya tienen cuenta. |
+| `POST /api/v1/auth/verify-email` | Comprueba el correo con el código. `200 {"status": "verified"}`. `400` si el código es incorrecto, venció o agotó sus 5 intentos; `409` si el correo ya estaba comprobado. |
+| `POST /api/v1/auth/resend-code` | Envía otro código. `200 {"status": "sent"}`. `429` si no han pasado 60 segundos o ya van 5 en una hora. |
+| `GET /docs` | Documentación OpenAPI que FastAPI genera a partir del código. Desde ahí se pueden probar las rutas. |
+
+Los avisos de las rutas de Cuentas salen siempre con la misma forma, para ponerlos junto a su campo: `{"errors": [{"field": "password", "code": "missing_symbol", "message": "..."}]}`.
+
+Reglas del registro: todos los datos son obligatorios, 18 años cumplidos, y contraseña de mínimo 8 caracteres con mayúscula, minúscula, número y símbolo. La cuenta no puede iniciar sesión hasta comprobar el correo.
+
+En modo desarrollo (`EMAIL_DELIVERY=console`) el código no se envía: aparece en la ventana donde corre el servidor, en una línea que empieza con `[MODO DESARROLLO]`.
 
 ## Con qué papel se habla con la base
 
@@ -84,7 +95,22 @@ python -m pip install -r requirements-dev.txt
 Copy-Item .env.example .env
 ```
 
-Se abre `backend/.env` y se escribe la contraseña de `integro_api` después de `DATABASE_PASSWORD=`. Ese archivo no se sube al repositorio: git lo ignora.
+Se abre el archivo con `notepad .env` y se escribe la contraseña de `integro_api` después de `DATABASE_PASSWORD=`. Ese archivo no se sube al repositorio: git lo ignora.
+
+La llave secreta de los códigos se genera al azar y se guarda sin mostrarla. Con el entorno virtual activo:
+
+```powershell
+Add-Content .env ""
+Add-Content .env "CODE_HASH_SECRET=$(python -c 'import secrets; print(secrets.token_hex(32))')"
+```
+
+Si el archivo `.env` es anterior a la pieza del registro y no trae la línea del modo de envío, se agrega:
+
+```powershell
+Add-Content .env "EMAIL_DELIVERY=console"
+```
+
+Cada variable va una sola vez. Si `CODE_HASH_SECRET=` quedó vacía por haber copiado la plantilla, esa línea se borra en el Bloc de notas.
 
 ## Arrancar el servidor
 
@@ -110,7 +136,7 @@ Con el entorno virtual activo, desde `backend/`:
 python -m pytest ..\tests\backend -v -rs
 ```
 
-Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py` y `test_account_access_tables.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las de `test_account_access_tables.py` comprueban las tablas de `database/migrations/20261117000003_sessions_codes_password_resets.sql`; si esa migración no se ha corrido en la base, se omiten y la salida lo dice. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
+Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py` y `test_account_access_tables.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las de `test_account_access_tables.py` comprueban las tablas de `database/migrations/20261117000003_sessions_codes_password_resets.sql`; si esa migración no se ha corrido en la base, se omiten y la salida lo dice. Las del registro (`test_accounts_registration.py`) llaman a las rutas de verdad, también dentro de una transacción que se deshace, y leen el código de un anotador en lugar de enviarlo. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
 
 ## Si algo falla
 

@@ -7,6 +7,7 @@ nombre, gana la variable de entorno.
 """
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,8 +24,10 @@ class ConfigurationError(RuntimeError):
 class Settings(BaseSettings):
     """Variables que el backend necesita para arrancar.
 
-    Ninguna tiene valor por defecto: si falta una, el backend no arranca y dice
-    cuál. Así nunca se conecta por descuido a una base que no es.
+    Las de conexión, la llave de los códigos y el modo de envío no tienen valor
+    por defecto: si falta una, el backend no arranca y dice cuál. Así nunca se
+    conecta por descuido a una base que no es ni envía códigos de una forma
+    que nadie eligió.
     """
 
     model_config = SettingsConfigDict(env_file_encoding="utf-8", extra="ignore")
@@ -35,6 +38,21 @@ class Settings(BaseSettings):
     database_user: str = Field(min_length=1)
     # SecretStr evita que la contraseña aparezca al imprimir la configuración.
     database_password: SecretStr = Field(min_length=1)
+
+    # Llave secreta con la que se calcula la huella de los códigos de un solo
+    # uso. Sin ella, quien robe la base adivina un código de seis dígitos.
+    code_hash_secret: SecretStr = Field(min_length=32)
+    # Cómo salen los correos. "console": modo desarrollo, el código se escribe
+    # en la ventana del servidor en lugar de enviarse (ADR 0014).
+    email_delivery: Literal["console"]
+
+    # Límites de los códigos (ADR 0014). Son los valores decididos; se pueden
+    # cambiar con una variable de entorno sin tocar el código.
+    code_length: int = Field(default=6, ge=4, le=10)
+    code_ttl_seconds: int = Field(default=300, ge=30)
+    code_max_attempts: int = Field(default=5, ge=1)
+    code_resend_wait_seconds: int = Field(default=60, ge=0)
+    code_max_per_hour: int = Field(default=5, ge=1)
 
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:

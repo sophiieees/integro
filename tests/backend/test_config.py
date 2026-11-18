@@ -10,6 +10,8 @@ VALID = {
     "DATABASE_NAME": "integro",
     "DATABASE_USER": "integro_api",
     "DATABASE_PASSWORD": "clave-inventada-para-la-prueba",
+    "CODE_HASH_SECRET": "llave-inventada-para-las-pruebas-0123456789",
+    "EMAIL_DELIVERY": "console",
 }
 
 
@@ -70,7 +72,7 @@ def test_each_missing_variable_is_named(clean_environment, variable):
     assert f"{variable} (falta)" in str(raised.value)
 
 
-def test_no_variables_at_all_names_the_five(clean_environment):
+def test_no_variables_at_all_names_every_required_one(clean_environment):
     with pytest.raises(ConfigurationError) as raised:
         load_settings(env_file=None)
 
@@ -124,3 +126,65 @@ def test_printing_the_settings_hides_the_password(clean_environment):
 
     assert "clave-inventada-para-la-prueba" not in repr(settings)
     assert "clave-inventada-para-la-prueba" not in str(settings)
+
+
+# ---------------------------------------------------------------------------
+# Códigos de un solo uso (ADR 0014)
+# ---------------------------------------------------------------------------
+
+
+def test_code_limits_default_to_the_decided_values(clean_environment):
+    set_variables(clean_environment)
+
+    settings = load_settings(env_file=None)
+
+    assert settings.code_length == 6
+    assert settings.code_ttl_seconds == 300
+    assert settings.code_max_attempts == 5
+    assert settings.code_resend_wait_seconds == 60
+    assert settings.code_max_per_hour == 5
+
+
+def test_code_limits_can_be_changed_without_touching_the_code(clean_environment):
+    set_variables(clean_environment, CODE_TTL_SECONDS="600", CODE_MAX_PER_HOUR="3")
+
+    settings = load_settings(env_file=None)
+
+    assert settings.code_ttl_seconds == 600
+    assert settings.code_max_per_hour == 3
+
+
+@pytest.mark.parametrize("secret", ["corta", "x" * 31])
+def test_code_hash_secret_shorter_than_32_is_rejected(clean_environment, secret):
+    set_variables(clean_environment, CODE_HASH_SECRET=secret)
+
+    with pytest.raises(ConfigurationError) as raised:
+        load_settings(env_file=None)
+
+    assert "CODE_HASH_SECRET (valor no válido)" in str(raised.value)
+    assert secret not in str(raised.value)
+
+
+def test_code_hash_secret_of_32_is_accepted(clean_environment):
+    set_variables(clean_environment, CODE_HASH_SECRET="x" * 32)
+
+    assert load_settings(env_file=None).code_hash_secret.get_secret_value() == "x" * 32
+
+
+@pytest.mark.parametrize("delivery", ["smtp", "CONSOLE", "sms", "whatsapp"])
+def test_email_delivery_not_built_is_rejected(clean_environment, delivery):
+    set_variables(clean_environment, EMAIL_DELIVERY=delivery)
+
+    with pytest.raises(ConfigurationError) as raised:
+        load_settings(env_file=None)
+
+    assert "EMAIL_DELIVERY (valor no válido)" in str(raised.value)
+
+
+def test_printing_the_settings_hides_the_code_hash_secret(clean_environment):
+    set_variables(clean_environment)
+
+    settings = load_settings(env_file=None)
+
+    assert VALID["CODE_HASH_SECRET"] not in repr(settings)
+    assert VALID["CODE_HASH_SECRET"] not in str(settings)
