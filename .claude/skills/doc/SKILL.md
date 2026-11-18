@@ -36,6 +36,8 @@ Estructura, según el esquema de especificación de requisitos de software de IS
 
 Si Sophia tiene la norma a la mano y su esquema difiere de este, manda el de la norma.
 
+La sección 1 explica también cómo se trabajó: con dos chats, uno de consulta y análisis (dudas, arquitectura y decisiones) y otro de programación (las piezas), y con la bitácora como registro de ambos.
+
 ## De dónde sale cada cosa
 
 Solo de lo que ya está escrito en el repositorio. Nada se inventa ni se completa de memoria.
