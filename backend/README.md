@@ -36,7 +36,7 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 
 Los avisos de las rutas de Cuentas salen siempre con la misma forma, para ponerlos junto a su campo: `{"errors": [{"field": "password", "code": "missing_symbol", "message": "..."}]}`.
 
-Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (contados con la fecha del país que la persona eligió; si el país tiene varios husos horarios, con el más adelantado), y contraseña de mínimo 8 caracteres con mayúscula, minúscula, número y símbolo. La cuenta no puede iniciar sesión hasta comprobar el correo.
+Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (contados con la fecha del país que la persona eligió; si el país tiene varios husos horarios, con el más adelantado), y contraseña de 8 a 12 caracteres con mayúscula, minúscula, número y símbolo, sin espacios. La cuenta no puede iniciar sesión hasta comprobar el correo.
 
 En modo desarrollo (`EMAIL_DELIVERY=console`) el código no se envía: aparece en la ventana donde corre el servidor, en una línea que empieza con `[MODO DESARROLLO]`.
 

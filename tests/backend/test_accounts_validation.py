@@ -69,7 +69,6 @@ def test_form_is_tidied_before_saving():
             "email": "  Ana@Example.COM ",
             "country": "mx",
             "preferred_language": "EN",
-            "password": " Ejemplo-2026 ",
         },
         NOW,
     )
@@ -79,8 +78,7 @@ def test_form_is_tidied_before_saving():
     assert data.email == "ana@example.com"
     assert data.country == "MX"
     assert data.preferred_language == "en"
-    # La contraseña no se toca: se guarda como la persona la escribió.
-    assert data.password == " Ejemplo-2026 "
+    assert data.password == "Ejemplo-2026"
 
 
 @pytest.mark.parametrize("language", [None, "", "   "])
@@ -269,14 +267,19 @@ def test_missing_country_does_not_add_a_wrong_age_warning():
         ("Abcd-1x", ["too_short"]),  # 7
         ("ejemplo-2026", ["missing_uppercase"]),
         ("EJEMPLO-2026", ["missing_lowercase"]),
-        ("Ejemplo-dosmil", ["missing_digit"]),
+        ("Ejemplo-dos", ["missing_digit"]),
         ("Ejemplo2026", ["missing_symbol"]),
-        ("Ejemplo 2026", ["missing_symbol"]),  # el espacio no cuenta como símbolo
+        ("Ejemplo 2026", ["has_spaces", "missing_symbol"]),  # el espacio no cuenta como símbolo
+        ("Ejem plo-26", ["has_spaces"]),  # espacio en medio
+        (" Ejemplo-26", ["has_spaces"]),  # espacio al inicio
+        ("Ejemplo-26 ", ["has_spaces"]),  # espacio al final
+        ("Ejemplo-26\t", ["has_spaces"]),  # tabulador
         ("abcdefgh", ["missing_uppercase", "missing_digit", "missing_symbol"]),
         ("12345678", ["missing_uppercase", "missing_lowercase", "missing_symbol"]),
         ("a", ["too_short", "missing_uppercase", "missing_digit", "missing_symbol"]),
-        ("Aa1-" + "x" * 124, []),  # justo 128
-        ("Aa1-" + "x" * 125, ["too_long"]),  # 129
+        ("Aa1-" + "x" * 8, []),  # justo 12
+        ("Aa1-" + "x" * 9, ["too_long"]),  # 13
+        ("Ejemplo-2026-largo", ["too_long"]),  # una contraseña larga ya no se acepta
         ("Contraseña-1", []),  # letras con acento o eñe valen
     ],
 )
@@ -287,6 +290,12 @@ def test_password_rules(password, codes):
 
 def test_weak_password_is_reported_in_the_form():
     assert errors_for(password="Ejemplo2026") == [("password", "missing_symbol")]
+
+
+def test_password_with_spaces_is_rejected_not_trimmed():
+    """Decisión de Sophia: una contraseña no lleva espacios; se avisa, no se le quitan."""
+    assert errors_for(password=" Ejemplo-26") == [("password", "has_spaces")]
+    assert errors_for(password="Ejem plo-26") == [("password", "has_spaces")]
 
 
 # ---------------------------------------------------------------------------

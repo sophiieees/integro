@@ -5,7 +5,8 @@ Decisiones de Sophia del 17 de noviembre de 2026:
   teléfono, país y fecha de nacimiento. El idioma es español si no se indica.
 - Edad mínima: 18 años cumplidos el día del registro, con la fecha del país
   que la persona eligió, porque hay huéspedes extranjeros.
-- Contraseña: mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.
+- Contraseña: de 8 a 12 caracteres, con mayúscula, minúscula, número y símbolo,
+  y sin espacios. Si trae espacios se rechaza con un aviso; no se le quitan.
 
 Los formatos son los mismos que exige la base de datos (migraciones del
 grupo 1), para avisar por campo antes de intentar guardar.
@@ -22,8 +23,8 @@ MINIMUM_AGE_YEARS = 18
 # La hora más adelantada del planeta (UTC+14). Se usa cuando no se sabe el país.
 MOST_ADVANCED_TIME = timezone(timedelta(hours=14))
 PASSWORD_MIN_LENGTH = 8
-# Tope para que nadie mande un texto enorme a convertir con Argon2id.
-PASSWORD_MAX_LENGTH = 128
+# Máximo decidido por Sophia el 17 de noviembre de 2026, al revisar la pieza.
+PASSWORD_MAX_LENGTH = 12
 NAME_MAX_LENGTH = 80
 EMAIL_MAX_LENGTH = 254
 EARLIEST_BIRTH_DATE = date(1900, 1, 1)
@@ -121,6 +122,8 @@ def password_errors(password: str) -> list[FieldError]:
         fail("too_short", f"La contraseña debe tener al menos {PASSWORD_MIN_LENGTH} caracteres.")
     if len(password) > PASSWORD_MAX_LENGTH:
         fail("too_long", f"La contraseña debe tener como máximo {PASSWORD_MAX_LENGTH} caracteres.")
+    if any(character.isspace() for character in password):
+        fail("has_spaces", "La contraseña no puede tener espacios.")
     if not any(character.isupper() for character in password):
         fail("missing_uppercase", "La contraseña debe tener al menos una mayúscula.")
     if not any(character.islower() for character in password):
@@ -150,7 +153,8 @@ def validate_registration(raw: dict, now: datetime) -> tuple[RegistrationData | 
         elif not isinstance(value, str):
             errors.append(FieldError(field, "invalid", "Este dato debe ser un texto."))
         else:
-            # La contraseña se guarda tal cual la escribió; lo demás, sin espacios a los lados.
+            # La contraseña no se toca (si trae espacios se rechaza más abajo);
+            # lo demás se guarda sin espacios a los lados.
             text[field] = value if field == "password" else value.strip()
 
     for field in ("first_name", "last_name"):
