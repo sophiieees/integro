@@ -15,5 +15,8 @@ Un archivo por decisión, numerado en orden de registro. Formato: contexto, deci
 | 0009 | Tokens de diseño antes de la identidad de marca | Aceptada |
 | 0010 | Sin blockchain en el MVP; anclaje de hashes en fase 2 | Aceptada |
 | 0011 | Chapa inteligente: integrar, no fabricar | Aceptada (recomendación del documento de chapa) |
+| 0012 | API en Python con FastAPI | Aceptada |
+| 0013 | PostgreSQL propio, sin Supabase, con autenticación propia | Aceptada |
+| 0014 | Inicio de sesión con contraseña, con código y con los dos | Aceptada en lo general; detalles pendientes |
 
-Decisiones programadas que todavía no tienen ADR: procesador de pagos, proveedor de verificación de identidad, NestJS o FastAPI, proveedor de LLM, ciudad de lanzamiento.
+Decisiones programadas que todavía no tienen ADR: procesador de pagos, proveedor de verificación de identidad, proveedor de LLM, ciudad de lanzamiento, nube de la base de datos y de la API, almacenamiento de archivos privados y proveedores de SMS, WhatsApp y correo.
