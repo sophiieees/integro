@@ -520,4 +520,93 @@ PROMPTS = [
             ("11.5", "Sin límite de teléfonos por persona.", "Sophia no indicó un máximo. Campo: qué datos necesita.", "Aceptar", "Sí, acepto todos. También cubren los que siguen pendientes.", "Sin regla de máximo; el límite de teléfonos queda como sugerencia."),
         ],
     },
+    # ------------------------------------------------------------------ 12
+    {
+        "n": 12,
+        "titulo": "PostgreSQL en la computadora y veredictos pendientes",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Ya instalé PostgreSQL. También instalé KeePass, que es para guardar contraseñas. No recuerdo qué "
+                     "guardé en la versión vieja de PostgreSQL."),
+        "tarea": ("1) ¿Qué veredictos quedan pendientes? Vuelve a explicar qué es lo de house rules, la huella de "
+                  "identidad y el generador de diagramas. 2) Revisa la instalación de PostgreSQL. 3) Arregla tú la "
+                  "versión 16; te doy permiso como administrador. 4) ¿Dónde tengo que abrir pgAdmin? ¿Desde la terminal, "
+                  "como en un entorno virtual? 5) Acepto todos los veredictos, también los que seguían pendientes. 6) Ya "
+                  "terminando esto, se escribe la base de datos, se comienza la configuración del backend en el siguiente "
+                  "chat y por último hacemos el frontend, ¿no?"),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "2011898 (rama docs/house-rules-identity, PR #6) y ce06dc9 (rama docs/bitacora-veredictos, PR #7)",
+            "archivos": [
+                ("docs/database/data-model.md", "house_rules pasa a la tabla property_house_rules y la huella de identidad queda diseñada."),
+                ("docs/database/img/chen-people-access.png y .svg", "el diagrama de personas con el atributo identity_fingerprint."),
+                ("herramientas/bitacora/bitacora_datos.py", "veredictos 6.1 a 6.8, 8.4, 8.5, 10.6 a 10.8 y 11.1 a 11.5 pasan a Aceptar."),
+                ("Fuera del repositorio: configuración de PostgreSQL 18", "el puerto cambió de 5432 a 5433, con copia del archivo anterior; la versión 16 no se tocó."),
+            ],
+            "sugerencias": [
+                ("Poner un máximo de teléfonos por persona.", "sin límite, una cuenta podría acaparar números."),
+                ("Corregir la línea de Supabase en CLAUDE.md.", "el otro chat lee ese archivo al arrancar."),
+            ],
+            "lineas": ("data-model.md: secciones 2.3, 2.8, 3, 4, 5 y 7. bitacora_datos.py: dieciocho veredictos. "
+                       "postgresql.conf de la versión 18: la línea del puerto."),
+            "pruebas": ("Comprobado en la computadora de Sophia: PostgreSQL 18.7 instalado, servicio corriendo y, después "
+                        "del cambio, en escucha en el puerto 5433. Sophia corrió las dos migraciones en pgAdmin, en la base "
+                        "integro, y reportó: «Todo perfecto»."),
+        },
+        "decisiones": [
+            ("12.1", "Dejar el servicio de PostgreSQL 16 en inicio manual para que no compita por el puerto 5432.", "Es el cambio más pequeño y se puede deshacer. Campo: qué hace.", "Revisar", "Mejor vamos a cambiar de puerto en la versión 18, para que no haya conflicto.", "PostgreSQL 18 corre en el puerto 5433."),
+            ("12.2", "No desinstalar PostgreSQL 16, aunque Sophia había dicho «elimínalo tú».", "Guarda una base de datos que la IA no pudo identificar y desinstalar no se puede deshacer. Campo: qué hace.", "Aceptar", "Porque no recuerdo qué guardé ahí.", "La versión 16 quedó intacta y detenida."),
+            ("12.3", "house_rules en tabla aparte, huella única de identidad verificada y generador de diagramas en el repositorio.", "Explicados a petición de Sophia. Campo: qué datos necesita.", "Aceptar", "Y hablando de las tres preguntas, acepto todos.", "Registrados en las decisiones 10.6, 10.7 y 10.8."),
+            ("12.4", "Las propuestas que seguían pendientes: 6.1 a 6.8, 8.4, 8.5 y 11.1 a 11.5.", "Listadas a petición de Sophia, cada una con la recomendación de la IA. Campo: qué hace.", "Aceptar", "Sí, acepto todos. También cubren los que siguen pendientes.", "Registrados en cada una de esas filas."),
+            ("12.5", "La base de datos se crea en PostgreSQL desde pgAdmin, que es un programa de Windows; el entorno virtual es para el backend en Python.", "Sophia pensaba que la base se escribía en un entorno virtual. Campo: qué hace.", "Aceptar", "Confirmo de lo de pgAdmin.", "Sophia creó la base integro y corrió las migraciones en pgAdmin."),
+        ],
+    },
+    # ------------------------------------------------------------------ 13
+    {
+        "n": 13,
+        "titulo": "Arranque del backend: orden, FastAPI e inicio de sesión",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Las migraciones ya corrieron en mi PostgreSQL, todo perfecto. Este chat es solo para preguntas, "
+                     "consultas y análisis; la programación va en otro chat. Todo esto va documentado, y el documento debe "
+                     "especificar que se hicieron dos chats. Cuando hagamos los detalles del registro daré puntos más "
+                     "detallados."),
+        "tarea": ("1) Con base en los documentos, ¿cómo está estructurado y qué es lo primero que tenemos que programar "
+                  "en cuestión de backend? 2) El framework va en Python y se va a utilizar FastAPI. 3) Aclara a qué te "
+                  "refieres con inicio de sesión con contraseña, con código o con contraseña más código. 4) Modifica "
+                  "CLAUDE.md para que sea la base de datos que ya tenemos, con todo lo que acabamos de hacer. 5) Hay que "
+                  "agregar las tres formas, para tener una buena verificación: que ponga su correo y su contraseña y, "
+                  "cuando ponga la contraseña, se le manda un código que le llega por SMS o al correo; y para cuando "
+                  "vuelva a iniciar sesión, que escriba el correo o el teléfono y le llegue un código por WhatsApp. "
+                  "6) Sí, registremos como ADR las dos decisiones de fondo: FastAPI y PostgreSQL."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "0d52972 (rama config/claude-md-backend, PR #8) y c7befd7 (rama docs/adr-backend, PR #9)",
+            "archivos": [
+                ("CLAUDE.md", "FastAPI, PostgreSQL propio sin Supabase, autenticación propia, nombres en inglés y la regla de los dos chats."),
+                (".claude/skills/doc/SKILL.md", "el documento final explica que se trabajó con dos chats."),
+                ("docs/decisiones/0012, 0013 y 0014, y su README", "registros de decisión: FastAPI, PostgreSQL propio e inicio de sesión."),
+            ],
+            "sugerencias": [
+                ("Orden del backend: esqueleto, Cuentas, Verificación, Propiedades, Búsqueda y cotización, Reservas, Pagos y membresías, y al final mensajes, reseñas, reportes y administración.",
+                 "cada módulo depende del anterior, y las tablas de Cuentas ya existen."),
+                ("Empezar a enviar los códigos por correo y agregar después SMS y WhatsApp.",
+                 "cada canal necesita un proveedor y cada mensaje cuesta; en WhatsApp la plantilla debe aprobarla Meta."),
+            ],
+            "lineas": ("CLAUDE.md: regla 10, sección de decisiones técnicas, dos líneas de seguridad y una de estilo. "
+                       "doc/SKILL.md: un párrafo. Tres archivos nuevos en docs/decisiones y tres filas en su README."),
+        },
+        "decisiones": [
+            ("13.1", "Programar primero el esqueleto del backend y el módulo de Cuentas.", "Todos los demás módulos necesitan una persona identificada. Campo: qué hace.", "Aceptar", "Ya con lo demás arranco la pieza de esqueleto backend Python.", "Orden de construcción del backend."),
+            ("13.2", "FastAPI como framework, porque la arquitectura lo había dejado abierto entre NestJS y FastAPI.", "Sophia ya había decidido programar en Python. Campo: qué hace.", "Aceptar", "El framework va a ir en Python y obviamente se va a utilizar FastAPI.", "ADR 0012 y CLAUDE.md."),
+            ("13.3", "Elegir una forma de iniciar sesión: contraseña, código, o contraseña más código.", "La arquitectura decía inicio de sesión con código y la base guarda contraseña. Campo: qué hace.", "Revisar", "Yo creo que hay que agregar las tres para tener una buena verificación.", "ADR 0014 con las tres formas."),
+            ("13.4", "Corregir en CLAUDE.md la línea que todavía decía Supabase.", "El otro chat lee ese archivo al arrancar. Campo: qué datos necesita.", "Aceptar", "Sí hay que modificar el CLAUDE.md para que sea la base de datos que ya tenemos ahorita.", "CLAUDE.md, sección de decisiones técnicas."),
+            ("13.5", "Registrar como ADR las decisiones de FastAPI y de PostgreSQL propio.", "La arquitectura pedía dejarlas por escrito. Campo: qué hace.", "Aceptar", "Sí, está bien que registremos como ADR las dos decisiones de fondo.", "ADR 0012 y 0013."),
+            ("13.6", "ADR 0014 con la decisión del inicio de sesión, que Sophia no había pedido como registro.", "El otro chat no ve esta conversación. Campo: qué hace.", "Aceptar", "Sophia fusionó el PR #9 sin cambios.", "ADR 0014."),
+            ("13.7", "Regla 10 de los dos chats en CLAUDE.md y un párrafo en la skill /doc, que Sophia no había pedido como cambio de archivo.", "Sophia dijo que el documento debía especificar que se hicieron dos chats. Campo: qué hace.", "Aceptar", "Sophia fusionó el PR #8 sin cambios.", "CLAUDE.md y doc/SKILL.md."),
+            ("13.8", "Consecuencias del inicio de sesión: tabla de códigos de un solo uso, fecha de comprobación del correo, proveedores de SMS, WhatsApp y correo, y contraseña más código para lo que mueve dinero.", "Sin ellas las tres formas no se pueden construir ni quedan protegidas. Campo: qué datos necesita.", "Pendiente", "", "Anotadas como pendientes en el ADR 0014."),
+        ],
+    },
 ]
