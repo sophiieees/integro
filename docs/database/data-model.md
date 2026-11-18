@@ -128,6 +128,7 @@ Los diagramas se generan desde `tools/er-diagram/generate.mjs`, que contiene la 
 | `users` | `user_phones` | `user_phones.user_id → users(id)` | Sí | Una persona registra varios teléfonos; uno es el principal. Sale del atributo multivalor `phone` del diagrama. |
 | `users` | `sessions` | `sessions.user_id → users(id)` | Sí | Una persona puede tener varias sesiones abiertas (celular y computadora). |
 | `users` | `password_resets` | `password_resets.user_id → users(id)` | Sí | Una persona puede pedir recuperar su contraseña varias veces. |
+| `users` | `one_time_codes` | `one_time_codes.user_id → users(id)` | Sí | A una persona se le envían varios códigos de un solo uso: para iniciar sesión, para comprobar su correo y para comprobar un teléfono. |
 | `users` | `verifications` | `verifications.user_id → users(id)` | Sí | Una persona pasa por varias verificaciones: identidad, cuenta bancaria, tarjeta. |
 | `properties` | `verifications` | `verifications.property_id → properties(id)` | No | Una propiedad pasa por varias verificaciones. Vacía cuando se verifica a la persona y no a una propiedad. |
 | `host_profiles` | `properties` | `properties.owner_id → host_profiles(user_id)` | Sí | Un anfitrión es titular de varias propiedades; cada propiedad tiene un solo titular, que paga la membresía y recibe el dinero. |
@@ -165,15 +166,24 @@ Notación: `tabla(columnas)`. La llave primaria va <ins>subrayada</ins>. `FK` ma
 
 ### Grupo 1. Personas y acceso
 
-Estado: `users`, `user_credentials`, `user_phones`, `host_profiles` y `verifications` construidas; `sessions`, `password_resets` y `admins` diseñadas.
+Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verifications`, `sessions`, `password_resets` y `one_time_codes` construidas; `admins` diseñada.
 
-- **users**(<ins>id</ins>, first_name, last_name, email UK, country, birth_date, preferred_language, identity_status, identity_fingerprint? UK)
+- **users**(<ins>id</ins>, first_name, last_name, email UK, email_verified_at?, country, birth_date, preferred_language, identity_status, identity_fingerprint? UK)
+  - `email_verified_at` queda vacía hasta que la persona escribe el código que se le envió al correo. La escribe solo el sistema.
   - `identity_fingerprint` está diseñada, todavía no construida: se agrega con su propia migración cuando la parte legal la confirme.
 - **user_phones**(<ins>id</ins>, user_id FK → users(id), phone UK, is_primary, verified_at?)
   - Cada persona tiene exactamente un teléfono principal. Un teléfono no se repite en toda la plataforma.
 - **user_credentials**(<ins>id</ins>, user_id FK UK → users(id), password_hash)
-- **sessions**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, revoked_at?)
+- **sessions**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, revoked_at?, last_used_at, ip_address?, user_agent?)
+  - Una sesión sirve mientras no haya vencido y `revoked_at` siga vacía. La persona lee sus propias sesiones, sin `token_hash`; las escribe solo el sistema.
+  - `ip_address` y `user_agent` dicen desde dónde se abrió la sesión. Son datos personales y van en el aviso de privacidad.
 - **password_resets**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, used_at?)
+  - Solo la lee y la escribe el sistema.
+- **one_time_codes**(<ins>id</ins>, user_id FK → users(id), purpose, channel, destination, code_hash, expires_at, attempts, used_at?)
+  - `purpose` dice para qué es el código: `login`, `verify_email` o `verify_phone`. `channel` dice por dónde salió: `email`, `sms` o `whatsapp`. El correo se comprueba por correo y el teléfono por SMS o WhatsApp.
+  - `destination` es el correo o el teléfono al que se envió, con el mismo formato que `users.email` y `user_phones.phone`.
+  - `code_hash` no es único: un código de seis dígitos se repite entre personas. Solo la lee y la escribe el sistema.
+  - En las tres tablas, `token_hash` y `code_hash` son un SHA-256 en hexadecimal (64 caracteres) y el sistema no borra filas: una sesión se cierra con `revoked_at` y un código o una recuperación se gastan con `used_at`.
 - **admins**(<ins>id</ins>, user_id FK UK → users(id))
 - **host_profiles**(<ins>id</ins>, user_id FK UK → users(id), level, stripe_account_id? UK, clabe_last4?)
 - **verifications**(<ins>id</ins>, user_id FK → users(id), property_id? FK → properties(id), kind, provider, provider_reference, result, resolved_at?)
@@ -253,6 +263,13 @@ Aceptadas por Sophia el 17 de noviembre de 2026.
 | 12 | `house_rules` en la tabla `property_house_rules` | Una regla por fila se puede ordenar, traducir y usar como filtro de búsqueda. |
 | 13 | Huella única de la identidad verificada (`users.identity_fingerprint`) | Detecta a una misma persona con dos cuentas aunque use otro correo y otro teléfono; si la huella se repite, la cuenta se manda a revisión y no se bloquea sola. Sujeta a revisión legal. |
 | 14 | El generador de los diagramas vive en `tools/er-diagram/` | Cuando cambia el modelo se corrige la lista y las imágenes se regeneran. |
+| 15 | La sesión se guarda en la tabla `sessions`, no en un pase firmado (JWT) | Cerrar sesión la revoca y la llave deja de servir en ese instante; también se puede cerrar la sesión de un celular robado. `docs/arquitectura.md` decía JWT. |
+| 16 | `sessions` guarda `ip_address`, `user_agent` y `last_used_at` | Para mostrarle a la persona dónde tiene sesión iniciada y para detectar accesos sospechosos. Son datos personales. |
+| 17 | Los códigos de un solo uso van en su propia tabla, `one_time_codes`; `password_resets` se queda como estaba | El inicio de sesión del ADR 0014 envía códigos por correo, SMS o WhatsApp y hay que guardar su huella para comprobarlos. |
+| 18 | Fecha de comprobación del correo en `users.email_verified_at` | La base distingue un correo comprobado de uno que no, igual que con los teléfonos. |
+| 19 | La persona lee sus propias sesiones, sin la huella; los códigos y las recuperaciones solo los ve el sistema | Lo mínimo que hace falta para la pantalla de sesiones abiertas. |
+
+Las decisiones 15 a 19 son del 17 de noviembre de 2026, al construir las tablas de acceso a la cuenta.
 
 ## 6. Tablas de estados
 
@@ -296,4 +313,5 @@ Sin definir. Necesita su lista de estados y su tabla de cambios antes de constru
 
 - **Estados de las reservas** y las tablas de cambios permitidos de membresías y propiedades (sección 6).
 - **Huella de identidad:** la revisión legal y comprobar que el proveedor de verificación entrega un dato estable para calcularla.
-- **Tablas que no están en este modelo:** calendarios iCal por propiedad, llaves digitales y registro de aperturas de la chapa inteligente, comprobación del correo al registrarse y eventos de uso (búsquedas, clics).
+- **Tablas que no están en este modelo:** calendarios iCal por propiedad, llaves digitales y registro de aperturas de la chapa inteligente y eventos de uso (búsquedas, clics).
+- **Diagrama de Chen:** falta agregar `one_time_codes` y los atributos nuevos de `users` y `sessions`, y regenerar las imágenes de la sección 2.

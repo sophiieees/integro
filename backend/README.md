@@ -110,7 +110,7 @@ Con el entorno virtual activo, desde `backend/`:
 python -m pytest ..\tests\backend -v -rs
 ```
 
-Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
+Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py` y `test_account_access_tables.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las de `test_account_access_tables.py` comprueban las tablas de `database/migrations/20261117000003_sessions_codes_password_resets.sql`; si esa migración no se ha corrido en la base, se omiten y la salida lo dice. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
 
 ## Si algo falla
 
