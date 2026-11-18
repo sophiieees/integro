@@ -52,6 +52,7 @@ Todas las entidades y relaciones, sin atributos. Los atributos están en los dia
 - Atributo compuesto: `name` (`first_name`, `last_name`).
 - Atributo multivalor: `phone`.
 - Atributo derivado: `age`, que se calcula con `birth_date`.
+- `identity_fingerprint`: huella irreversible de la identidad verificada. No es el documento ni permite reconstruirlo.
 
 ### 2.4 Propiedades
 
@@ -99,7 +100,7 @@ Todas las entidades y relaciones, sin atributos. Los atributos están en los dia
 Los dos atributos multivalor del diagrama:
 
 - `phone`: confirmado como multivalor el 17 de noviembre de 2026. Es la tabla `user_phones`; el correo sigue siendo uno solo por persona.
-- `house_rules`: hoy es una sola columna de `properties`. Como multivalor le corresponde una tabla `property_house_rules`; esta decisión sigue pendiente.
+- `house_rules`: confirmado como multivalor el 17 de noviembre de 2026. Es la tabla `property_house_rules`, con una regla por fila.
 
 ### 2.9 Cómo se regeneran las imágenes
 
@@ -131,6 +132,7 @@ Los diagramas se generan desde `tools/er-diagram/generate.mjs`, que contiene la 
 | `properties` | `verifications` | `verifications.property_id → properties(id)` | No | Una propiedad pasa por varias verificaciones. Vacía cuando se verifica a la persona y no a una propiedad. |
 | `host_profiles` | `properties` | `properties.owner_id → host_profiles(user_id)` | Sí | Un anfitrión es titular de varias propiedades; cada propiedad tiene un solo titular, que paga la membresía y recibe el dinero. |
 | `properties` | `property_photos` | `property_photos.property_id → properties(id)` | Sí | Una propiedad tiene varias fotos. |
+| `properties` | `property_house_rules` | `property_house_rules.property_id → properties(id)` | Sí | Una propiedad tiene varias reglas de la casa. Sale del atributo multivalor `house_rules` del diagrama. |
 | `properties` | `seasonal_rates` | `seasonal_rates.property_id → properties(id)` | Sí | Una propiedad tiene varias temporadas de precio. |
 | `properties` | `calendar_blocks` | `calendar_blocks.property_id → properties(id)` | Sí | Una propiedad tiene varios periodos bloqueados. |
 | `properties` | `bookings` | `bookings.property_id → properties(id)` | Sí | Una propiedad recibe varias reservas. |
@@ -165,7 +167,8 @@ Notación: `tabla(columnas)`. La llave primaria va <ins>subrayada</ins>. `FK` ma
 
 Estado: `users`, `user_credentials`, `user_phones`, `host_profiles` y `verifications` construidas; `sessions`, `password_resets` y `admins` diseñadas.
 
-- **users**(<ins>id</ins>, first_name, last_name, email UK, country, birth_date, preferred_language, identity_status)
+- **users**(<ins>id</ins>, first_name, last_name, email UK, country, birth_date, preferred_language, identity_status, identity_fingerprint? UK)
+  - `identity_fingerprint` está diseñada, todavía no construida: se agrega con su propia migración cuando la parte legal la confirme.
 - **user_phones**(<ins>id</ins>, user_id FK → users(id), phone UK, is_primary, verified_at?)
   - Cada persona tiene exactamente un teléfono principal. Un teléfono no se repite en toda la plataforma.
 - **user_credentials**(<ins>id</ins>, user_id FK UK → users(id), password_hash)
@@ -180,9 +183,11 @@ Estado: `users`, `user_credentials`, `user_phones`, `host_profiles` y `verificat
 
 Estado: diseñadas.
 
-- **properties**(<ins>id</ins>, owner_id FK → host_profiles(user_id), title, description, property_type, capacity, bedrooms, beds, bathrooms, house_rules, city, zone, exact_address, approximate_location, cancellation_policy, status)
+- **properties**(<ins>id</ins>, owner_id FK → host_profiles(user_id), title, description, property_type, capacity, bedrooms, beds, bathrooms, city, zone, exact_address, approximate_location, cancellation_policy, status)
 - **property_co_hosts**(<ins>id</ins>, property_id FK → properties(id), host_id FK → host_profiles(user_id))
   - Única la pareja (property_id, host_id).
+- **property_house_rules**(<ins>id</ins>, property_id FK → properties(id), rule, position)
+  - Única la pareja (property_id, position).
 - **property_photos**(<ins>id</ins>, property_id FK → properties(id), file_path, position)
   - Única la pareja (property_id, position).
 - **rates**(<ins>id</ins>, property_id FK UK → properties(id), nightly_price_cents, cleaning_fee_cents, minimum_nights)
@@ -245,6 +250,9 @@ Aceptadas por Sophia el 17 de noviembre de 2026.
 | 9 | Teléfono multivalor y correo único | Si la persona pierde, cambia o le roban el teléfono conserva otro con el cual entrar; el correo es uno solo porque con él inicia sesión. |
 | 10 | Entidades débiles: `UserCredential`, `Admin`, `HostProfile`, `Rate`, `Membership`, `PropertyPhoto`, `SeasonalRate` y `CalendarBlock` | Ninguna existe sin su entidad dueña. |
 | 11 | `reviews` es una relación de muchos a muchos con atributos, no una entidad | Una reseña solo existe entre una persona y una reserva. |
+| 12 | `house_rules` en la tabla `property_house_rules` | Una regla por fila se puede ordenar, traducir y usar como filtro de búsqueda. |
+| 13 | Huella única de la identidad verificada (`users.identity_fingerprint`) | Detecta a una misma persona con dos cuentas aunque use otro correo y otro teléfono; si la huella se repite, la cuenta se manda a revisión y no se bloquea sola. Sujeta a revisión legal. |
+| 14 | El generador de los diagramas vive en `tools/er-diagram/` | Cuando cambia el modelo se corrige la lista y las imágenes se regeneran. |
 
 ## 6. Tablas de estados
 
@@ -287,5 +295,5 @@ Sin definir. Necesita su lista de estados y su tabla de cambios antes de constru
 ## 7. Lo que falta decidir antes de construir
 
 - **Estados de las reservas** y las tablas de cambios permitidos de membresías y propiedades (sección 6).
-- **`house_rules`:** si pasa a una tabla aparte (sección 2.8).
+- **Huella de identidad:** la revisión legal y comprobar que el proveedor de verificación entrega un dato estable para calcularla.
 - **Tablas que no están en este modelo:** calendarios iCal por propiedad, llaves digitales y registro de aperturas de la chapa inteligente, comprobación del correo al registrarse y eventos de uso (búsquedas, clics).
