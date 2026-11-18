@@ -15,6 +15,9 @@ psycopg-pool==3.3.3
 pydantic-settings==2.16.2
 # Convierte las contraseñas con Argon2id. Publicada el 3 de junio de 2025.
 argon2-cffi==25.1.0
+# Husos horarios de cada país, para contar la edad con la fecha del país de la
+# persona. Publicada el 28 de octubre de 2026.
+tzdata==2026.6
 # Esquemas de entrada y de respuesta. FastAPI la instala sola, pero tomaría la
 # 2.14.3, que tiene 11 días. Se fija la anterior, publicada el 29 de octubre de 2026.
 pydantic==2.14.2

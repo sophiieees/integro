@@ -6,9 +6,8 @@ ponga junto a su campo:
     {"errors": [{"field": "password", "code": "too_short", "message": "..."}]}
 """
 
-from datetime import date, datetime
+from datetime import datetime, timezone
 from typing import Any, Literal
-from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -25,14 +24,6 @@ from app.modules.accounts.registration import (
 from app.modules.accounts.validation import FieldError, validate_registration
 
 router = APIRouter(prefix="/auth", tags=["accounts"])
-
-# La edad se calcula con la fecha de la Ciudad de México, no con la del servidor.
-PLATFORM_TIME_ZONE = ZoneInfo("America/Mexico_City")
-
-
-def today_on_the_platform() -> date:
-    return datetime.now(PLATFORM_TIME_ZONE).date()
-
 
 # Los campos se reciben sin tipo para que un dato faltante o mal escrito salga
 # como aviso por campo, con la misma forma que los demás.
@@ -113,7 +104,8 @@ def required_text(body: BaseModel, fields: tuple[str, ...]) -> tuple[dict[str, s
 def register(body: RegisterRequest, request: Request):
     """Crea la cuenta y envía un código al correo. La cuenta no puede iniciar
     sesión hasta que el correo se compruebe con ese código."""
-    data, errors = validate_registration(body.model_dump(), today_on_the_platform())
+    # La edad se cuenta con la fecha del país de la persona en este instante.
+    data, errors = validate_registration(body.model_dump(), datetime.now(timezone.utc))
     if errors:
         return error_response(422, errors)
     state = request.app.state
