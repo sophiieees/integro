@@ -1,0 +1,95 @@
+Pieza: cambio de papel por transacción (rama api/transaction-role, commit 70fb8aa, PR #13)
+Fecha: 17 de noviembre de 2026
+Dónde corrió: en la computadora de Sophia, contra la base integro de PostgreSQL 18 en el puerto 5433.
+No en una versión publicada.
+Únicos cambios respecto a la salida original: la ruta del entorno virtual temporal de la IA se
+reemplazó por <entorno virtual temporal> y la carpeta local del repositorio por <raíz del repositorio>.
+
+==============================================================================
+1. Corrida de la IA: python -m pytest tests\backend\test_transaction.py -v -rs -p no:cacheprovider
+==============================================================================
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-9.2.0, pluggy-1.7.0 -- <entorno virtual temporal>\Scripts\python.exe
+rootdir: <raíz del repositorio>
+plugins: anyio-4.16.0
+collecting ... collected 45 items
+
+tests/backend/test_transaction.py::test_system_acts_as_integro_service_and_sees_everyone PASSED [  2%]
+tests/backend/test_transaction.py::test_user_acts_as_integro_app_and_sees_only_own_row PASSED [  4%]
+tests/backend/test_transaction.py::test_each_person_sees_only_themselves PASSED [  6%]
+tests/backend/test_transaction.py::test_person_without_account_sees_nothing PASSED [  8%]
+tests/backend/test_transaction.py::test_system_after_user_no_longer_carries_the_person PASSED [ 11%]
+tests/backend/test_transaction.py::test_user_cannot_read_credentials PASSED [ 13%]
+tests/backend/test_transaction.py::test_user_cannot_change_own_email PASSED [ 15%]
+tests/backend/test_transaction.py::test_connection_is_clean_after_user_transaction PASSED [ 17%]
+tests/backend/test_transaction.py::test_connection_is_clean_after_system_transaction PASSED [ 20%]
+tests/backend/test_transaction.py::test_failure_undoes_everything_and_leaves_connection_clean PASSED [ 22%]
+tests/backend/test_transaction.py::test_failure_as_user_leaves_connection_clean PASSED [ 24%]
+tests/backend/test_transaction.py::test_database_error_leaves_connection_clean PASSED [ 26%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database[None] PASSED [ 28%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database[''] PASSED [ 31%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database['   '] PASSED [ 33%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database['ana'] PASSED [ 35%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database["'; reset role; --"] PASSED [ 37%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database['00000000-0000-0000-0000-00000000000'] PASSED [ 40%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database['00000000-0000-0000-0000-0000000000000'] PASSED [ 42%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database['zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz'] PASSED [ 44%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database[123] PASSED [ 46%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database[0] PASSED [ 48%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database[True] PASSED [ 51%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database[b'00000000-0000-0000-0000-000000000000'] PASSED [ 53%]
+tests/backend/test_transaction.py::test_invalid_user_id_is_rejected_before_touching_the_database[['00000000-0000-0000-0000-000000000000']] PASSED [ 55%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects[None] PASSED [ 57%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects[''] PASSED [ 60%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects['   '] PASSED [ 62%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects['ana'] PASSED [ 64%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects["'; reset role; --"] PASSED [ 66%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects['00000000-0000-0000-0000-00000000000'] PASSED [ 68%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects['00000000-0000-0000-0000-0000000000000'] PASSED [ 71%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects['zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz'] PASSED [ 73%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects[123] PASSED [ 75%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects[0] PASSED  [ 77%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects[True] PASSED [ 80%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects[b'00000000-0000-0000-0000-000000000000'] PASSED [ 82%]
+tests/backend/test_transaction.py::test_parse_user_id_rejects[['00000000-0000-0000-0000-000000000000']] PASSED [ 84%]
+tests/backend/test_transaction.py::test_parse_user_id_accepts_uuid_and_its_text PASSED [ 86%]
+tests/backend/test_transaction.py::test_user_id_as_text_works_like_uuid PASSED [ 88%]
+tests/backend/test_transaction.py::test_without_role_integro_api_cannot_read[users] PASSED [ 91%]
+tests/backend/test_transaction.py::test_without_role_integro_api_cannot_read[user_credentials] PASSED [ 93%]
+tests/backend/test_transaction.py::test_without_role_integro_api_cannot_read[user_phones] PASSED [ 95%]
+tests/backend/test_transaction.py::test_without_role_integro_api_cannot_read[host_profiles] PASSED [ 97%]
+tests/backend/test_transaction.py::test_without_role_integro_api_cannot_read[verifications] PASSED [100%]
+
+============================= 45 passed in 0.35s ==============================
+
+==============================================================================
+2. Filas en la base después de esa corrida, consultadas como el sistema
+==============================================================================
+personas en users: 0
+personas de prueba (@prueba.invalid): 0
+teléfonos en user_phones: 0
+
+==============================================================================
+3. Batería completa de la IA: python -m pytest tests\backend -rs -p no:cacheprovider -q
+==============================================================================
+........................................................................ [ 84%]
+.............                                                            [100%]
+============================== warnings summary ===============================
+<entorno virtual temporal>\Lib\site-packages\fastapi\testclient.py:1
+  <entorno virtual temporal>\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+85 passed, 1 warning in 46.40s
+
+==============================================================================
+4. Filas en la base después de la batería completa, consultadas como el sistema
+==============================================================================
+personas en users: 0
+personas de prueba (@prueba.invalid): 0
+teléfonos en user_phones: 0
+
+==============================================================================
+5. Corrida de Sophia en su entorno virtual (backend/.venv)
+==============================================================================
+Sophia reportó: «se probaron las 45 pruebas, pasaron todas».

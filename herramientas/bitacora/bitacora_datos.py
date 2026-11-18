@@ -682,4 +682,63 @@ PROMPTS = [
             ("14.12", "Casos de prueba que Sophia no pidió: límites de la configuración, rutas que no existen (404), métodos no permitidos (405) y un grupo de conexiones simulado.", "La skill /pieza pide probar los límites además de los casos de la especificación. Campo: cómo se sabrá que funciona.", "Aceptar", "Apruebo todas.", "tests/backend/test_health.py y test_config.py."),
         ],
     },
+    # ------------------------------------------------------------------ 15
+    {
+        "n": 15,
+        "titulo": "Cambio de papel por transacción, antes de Cuentas",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Sí, primero el cambio de papel por transacción y después Cuentas. Ya se probaron las 45 pruebas y "
+                     "pasaron todas; ya fusioné el PR. Me interesa que haya una cuenta sin id: que puedas entrar a la "
+                     "página y revisar las propiedades que quieres reservar; cuando vas a alquilar o a preguntar por una "
+                     "propiedad es cuando se te pide crear la cuenta, y como anfitrión te registras en el link que viene "
+                     "en la página. Al inicio no vas a tener un id y tienes que ver la página principal."),
+        "tarea": ("1) Primero el cambio de papel por transacción y después Cuentas. 2) Codifica el módulo de Cuentas: "
+                  "registro, inicio de sesión, sesiones, cerrar sesión y recuperar contraseña. 3) Detalla los casos de "
+                  "prueba de más: que el sistema después de actuar como Ana ya no carga su id, que no puede cambiar su "
+                  "correo y las 7 pruebas. 4) Detalla el caso 5, que usa la transacción de verdad. 5) Detalla el punto 3, "
+                  "que el id se acepta como UUID. 6) La modificación de backend/README.md la apruebo; los demás quedan "
+                  "en revisión."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": "70fb8aa (rama api/transaction-role, PR #13, fusionado por Sophia en bd23ac5)",
+            "archivos": [
+                ("backend/app/database/transaction.py", "system_transaction actúa como integro_service; user_transaction actúa como integro_app y anota el id de la persona en app.user_id."),
+                ("tests/backend/test_transaction.py", "los siete casos aceptados y sus límites: 45 pruebas contra la base real."),
+                ("tests/backend/conftest.py", "conexión a la base real y el mecanismo que deshace todo al terminar cada prueba."),
+                ("backend/README.md", "explica los dos papeles y que las pruebas no dejan nada guardado."),
+                ("herramientas/bitacora/evidencias/backend_transaction_role_pruebas_2026-11-17.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Elegir entre JWT y sesiones guardadas en la base antes de la pieza 2.",
+                 "docs/arquitectura.md dice «Autenticación JWT» y data-model.md diseña sessions con token_hash, que es otro mecanismo y sí se puede revocar al cerrar sesión."),
+                ("Tener listo lo que necesitan la pieza 2 y el registro: el veredicto 13.8, los detalles del registro, las reglas de la contraseña y cuánto dura una sesión.",
+                 "sin esos datos las tablas que faltan de Cuentas no se pueden cerrar."),
+                ("Que ningún módulo pida conexiones directas al grupo, solo a través de las dos funciones.",
+                 "así es imposible olvidar el papel."),
+            ],
+            "lineas": ("transaction.py y test_transaction.py: completos, nuevos. conftest.py: tres importaciones y las "
+                       "líneas 53 a 86 (real_pool, SingleConnectionPool y rollback_pool). backend/README.md: una fila en "
+                       "la tabla de estructura, la sección «Con qué papel se habla con la base» y el párrafo de «Correr "
+                       "las pruebas». No se agregó ninguna ruta a la API."),
+            "pruebas": ("Corridas en la computadora de Sophia, contra la base integro de PostgreSQL 18 en el puerto 5433, "
+                        "no en una versión publicada. Corrida de la IA de la pieza: «45 passed in 0.35s». Batería completa "
+                        "de la IA: «85 passed, 1 warning in 46.40s». Filas en la base, consultadas como el sistema antes y "
+                        "después de la batería completa: 0 personas, 0 personas de prueba y 0 teléfonos. Sophia reportó: "
+                        "«se probaron las 45 pruebas, pasaron todas». Salida completa copiada en "
+                        "herramientas/bitacora/evidencias/backend_transaction_role_pruebas_2026-11-17.txt."),
+        },
+        "decisiones": [
+            ("15.1", "Partir lo pedido en seis piezas y construir solo la primera: papel por transacción, tablas que faltan de Cuentas, registro, inicio de sesión y sesiones, cerrar sesión y recuperar contraseña.", "La skill /pieza construye una sola responsabilidad a la vez. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Sí, este orden».", "Se construyó solo el cambio de papel; el módulo de Cuentas queda en cinco piezas."),
+            ("15.2", "Las pruebas que tocan la base corren en integro y deshacen todo al terminar.", "Hacen falta personas de prueba y no debe quedar ninguna fila. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «En integro, sin guardar nada».", "rollback_pool en tests/backend/conftest.py."),
+            ("15.3", "Usar integro_app sin el id de la persona se rechaza siempre, antes de tocar la base.", "integro_app representa a una persona con sesión. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Rechazarlo siempre».", "InvalidUserIdError en transaction.py."),
+            ("15.4", "Siete casos de prueba: como el sistema, como Ana, lo que Ana no puede leer, conexión limpia al terminar, fallo a la mitad, id que no es UUID y sin elegir papel.", "El prompt no decía cómo comprobar el cambio de papel. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí, esos casos».", "tests/backend/test_transaction.py."),
+            ("15.5", "Casos de prueba de más: cada persona se ve solo a sí misma, un id sin cuenta no ve nada, el sistema no carga el id de Ana, Ana no puede cambiar su correo y el caso 7 en las cinco tablas.", "La skill /pieza pide probar los límites además de los casos de la especificación. Campo: cómo se sabrá que funciona.", "Aceptar", "«Los demás quedan en revisión.» Después del detalle: «Desviación 1. Acepto.»", "Sin cambios en el código."),
+            ("15.6", "El caso 5 usa una transacción de verdad: inserta una persona y falla a propósito.", "Es la única forma de ver que una fila real desaparece; si la función estuviera rota quedaría una fila y la prueba diría cuál borrar. Campo: cómo se sabrá que funciona.", "Aceptar", "«Los demás quedan en revisión.» Después del detalle: «Desviación 2. Acepto.»", "Sin cambios en el código."),
+            ("15.7", "El id se acepta como UUID o como texto que sea un UUID, en mayúsculas o minúsculas.", "El id va a llegar como texto desde la sesión y así se valida en un solo lugar. Campo: qué datos necesita.", "Aceptar", "«Los demás quedan en revisión.» Después del detalle: «Y desviación 3. Acepto.»", "Sin cambios en el código."),
+            ("15.8", "Modificar backend/README.md: sección de los dos papeles y párrafo de las pruebas.", "Ya no era cierto que ninguna prueba escribe en la base. Campo: qué hace.", "Aceptar", "Ese está bien, lo apruebo.", "backend/README.md."),
+            ("15.9", "El modo visitante, para ver la portada y las propiedades sin cuenta, se construye junto con la tabla de propiedades y no ahora.", "Hoy solo existen tablas privadas y no hay nada público que mostrar. Campo: qué hace.", "Aceptar", "Para el visitante, ya entendí. Acepto la propuesta A y entonces está bien también que no vea nada, por así decirlo.", "Queda como requisito del grupo 2: las propiedades publicadas las ve cualquiera, sin cuenta."),
+        ],
+    },
 ]
