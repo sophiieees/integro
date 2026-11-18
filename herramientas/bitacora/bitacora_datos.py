@@ -842,4 +842,62 @@ PROMPTS = [
             ("16.25", "Veredicto 13.8: códigos de 6 dígitos que vencen en 10 minutos, con 5 intentos, 60 segundos entre envíos y máximo 5 por hora.", "Valores de configuración, propuestos por la IA. Campo: qué datos necesita.", "Revisar", "Todo se mantiene igual, excepto lo de 10 minutos, se reduce a 5.", "6 dígitos, 5 minutos, 5 intentos, 60 segundos entre envíos y máximo 5 por hora."),
         ],
     },
+    # ------------------------------------------------------------------ 17
+    {
+        "n": 17,
+        "titulo": "Documentación primero: ADR de sesiones, ADR 0014 y diagrama de Chen",
+        "fecha": "17 de noviembre de 2026, noche",
+        "rol": ROL_PROYECTO,
+        "contexto": ("La IA preguntó qué iba primero: las tres piezas de documentación aceptadas en el prompt 16 o el "
+                     "registro. Ya revisé las dos imágenes; están bien. Ya fusioné los PRs."),
+        "tarea": ("1) Documentación primero. 2) Mis veredictos de las 8 desviaciones son aceptar."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "17 de noviembre de 2026",
+            "commits": ("257b88e (rama docs/adr-account-access, PR #17, fusionado en fb8e009) y e3107bd (rama "
+                        "docs/er-diagram-account-access, PR #18, fusionado en d690265)"),
+            "archivos": [
+                ("docs/decisiones/0015-sesiones-en-la-base-no-jwt.md", "registro nuevo: la sesión se guarda en sessions y no en un JWT."),
+                ("docs/decisiones/0014-inicio-de-sesion-con-contrasena-y-codigo.md", "al día con las decisiones 16.21 a 16.25: correo y WhatsApp sin SMS, modo desarrollo, contraseña más código y límites de los códigos."),
+                ("docs/decisiones/0012-api-en-python-con-fastapi.md", "una línea: las pruebas nuevas van en Python contra la base real."),
+                ("docs/decisiones/README.md", "fila del 0015, estado del 0014 y lista de decisiones sin ADR."),
+                ("docs/arquitectura.md", "el cuadro ya no dice «Autenticación JWT» y un párrafo remite a los ADR 0014 y 0015."),
+                ("tools/er-diagram/generate.mjs", "entidad OneTimeCode, relación «is sent» y atributos nuevos de User y Session."),
+                ("docs/database/img/chen-people-access y chen-general (.png y .svg)", "diagramas regenerados."),
+                ("docs/database/data-model.md", "tres líneas en la sección 2.3 y se quita el pendiente del diagrama en la sección 7."),
+            ],
+            "sugerencias": [
+                ("Decidir si el código enviado sustituye al segundo factor TOTP que pedía la arquitectura para anfitriones y panel, o si se suman.",
+                 "hay que saberlo antes de construir el inicio de sesión de anfitriones."),
+                ("Una pieza para poner al día docs/arquitectura.md completa.",
+                 "todavía dice «NestJS o FastAPI», PostgreSQL 16 y la fila vieja de Cuentas."),
+                ("Corregir docs/diseno/pantallas.md.",
+                 "lista la pantalla 5 como «Registro e inicio de sesión con código»."),
+            ],
+            "lineas": ("arquitectura.md: la línea 31 del cuadro y un párrafo después del cuadro. ADR 0014: completo. ADR "
+                       "0012: la tercera consecuencia. README de decisiones: las filas 0014 y 0015 y el último párrafo. "
+                       "generate.mjs: las entidades User, Session y OneTimeCode, la relación is_sent, el diagrama "
+                       "chen-people-access y la opción escala. data-model.md: secciones 2.3 y 7."),
+            "pruebas": ("No hay pruebas automáticas: no cambió código de la aplicación. La IA comprobó que la línea nueva "
+                        "del cuadro de la arquitectura mide 82 caracteres, igual que las demás; que git marca como "
+                        "cambiados solo chen-general y chen-people-access y los otros cinco diagramas salieron idénticos; "
+                        "y abrió las dos imágenes: la primera versión de personas y acceso tenía óvalos encimados bajo "
+                        "User y con el ajuste ya no. Salida del generador: «chen-general 1547x1477 pt 54 nodos (acomodo 4, "
+                        "4 cruces)» y «chen-people-access 2127x1354 pt 66 nodos». Sophia: «ya revisé las dos imágenes. "
+                        "Están bien»."),
+        },
+        "decisiones": [
+            ("17.1", "Hacer las dos piezas de documentación en un mismo turno, cada una en su rama.", "Las dos ya tenían veredicto (16.15 y 16.16) y no tocan los mismos archivos; la skill /pieza dice construir solo la primera. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "Dos ramas y dos PR."),
+            ("17.2", "Reorganizar el ADR 0014 en secciones, con las cifras de costo y una sección «Cambios», en lugar de corregir una línea.", "Las decisiones 16.21 a 16.25 cambiaban casi todo el registro. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "ADR 0014 completo."),
+            ("17.3", "Dos puntos abiertos escritos por la IA en el ADR 0014: si el código enviado sustituye al TOTP, y que «sin SMS» cubre solo los códigos y no los avisos.", "La arquitectura pedía TOTP y mencionaba avisos por SMS. Campo: qué datos necesita.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "Sección Consecuencias del ADR 0014."),
+            ("17.4", "Tocar el ADR 0012 y el README de decisiones, que no estaban en la lista de tres.", "La decisión 16.7 resolvió lo que el ADR 0012 dejaba pendiente y el README es el índice. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "Una línea en el 0012 y tres en el README."),
+            ("17.5", "Nombre del archivo del ADR 0015 en español, aunque CLAUDE.md pide archivos nuevos en inglés.", "Toda la carpeta docs/decisiones está en español, incluidos el 0012, el 0013 y el 0014. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "0015-sesiones-en-la-base-no-jwt.md."),
+            ("17.6", "En docs/arquitectura.md cambiar solo lo del JWT y avisar en un párrafo que /auth/refresh ya no aplica.", "Era lo aceptado en 16.15; el resto del documento se deja para otra pieza. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "Dos cambios en arquitectura.md."),
+            ("17.7", "Cambiar el código del generador de diagramas: opción escala, columnas más separadas y posición fija del rombo opens.", "User ya tiene once atributos y ocho relaciones y los óvalos se encimaban. Campo: qué hace.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "tools/er-diagram/generate.mjs."),
+            ("17.8", "Nombre de la relación, «is sent», y OneTimeCode como entidad fuerte.", "Igual que Session y PasswordReset: tiene su clave id. Campo: qué datos necesita.", "Aceptar", "Mis veredictos de las 8 desviaciones son aceptar.", "Diagrama de personas y acceso."),
+            ("17.9", "Decidir si el código enviado sustituye al segundo factor TOTP o si se suman.", "Hay que saberlo antes del inicio de sesión de anfitriones. Campo: qué hace.", "Pendiente", "", ""),
+            ("17.10", "Una pieza para poner al día docs/arquitectura.md completa.", "Todavía dice «NestJS o FastAPI» y PostgreSQL 16. Campo: qué hace.", "Pendiente", "", ""),
+            ("17.11", "Corregir docs/diseno/pantallas.md.", "Lista la pantalla 5 como «Registro e inicio de sesión con código». Campo: qué hace.", "Pendiente", "", ""),
+        ],
+    },
 ]
