@@ -6,7 +6,7 @@ Estas pruebas corren las migraciones de `database/migrations/` sobre un PostgreS
 
 | Archivo | Para qué |
 |---|---|
-| `group1_users.test.js` | Casos del grupo 1: `users`, `user_credentials`, `host_profiles` y `verifications`. |
+| `group1_users.test.js` | Casos del grupo 1: `users`, `user_credentials`, `user_phones`, `host_profiles` y `verifications`. |
 
 ## Cómo correrlas
 
