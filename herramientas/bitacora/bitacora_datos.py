@@ -1025,11 +1025,82 @@ PROMPTS = [
             ("19.1", "Sesión de 30 días sin uso para huéspedes, 7 para anfitriones y 30 minutos en el panel de administración.", "Sophia preguntó si un mes era mucho; quien maneja dinero conviene que dure menos. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «30 días huésped, 7 anfitrión».", "ADR 0014, sección «Cuánto dura una sesión»."),
             ("19.2", "La espera de 15 minutos se aplica a quien está intentando, por dispositivo y dirección, y no a la cuenta completa.", "Si se aplica a la cuenta, cualquiera que conozca el correo puede dejar fuera al dueño. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «A quien está intentando».", "ADR 0014, sección «Contraseñas incorrectas»."),
             ("19.3", "Liga de recuperación de 15 minutos en lugar de los 5 que dijo Sophia.", "Un correo puede tardar en llegar y la persona todavía tiene que abrirlo y escribir la contraseña nueva. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «15 minutos».", "ADR 0014, sección «Recuperar la contraseña»."),
-            ("19.4", "Leer la respuesta dos como: cada inicio de sesión pide correo, contraseña y código, sin recordar dispositivos.", "Sophia dijo que también se pide después de cerrar sesión; recordar dispositivos necesitaría una tabla más. Campo: qué hace.", "Pendiente", "", "ADR 0014, sección «Cómo se inicia sesión mientras no haya WhatsApp»."),
+            ("19.4", "Leer la respuesta dos como: cada inicio de sesión pide correo, contraseña y código, sin recordar dispositivos.", "Sophia dijo que también se pide después de cerrar sesión; recordar dispositivos necesitaría una tabla más. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Sí, siempre los tres datos», al arrancar la pieza del inicio de sesión (prompt 20).", "ADR 0014, sección «Cómo se inicia sesión mientras no haya WhatsApp»."),
             ("19.5", "El otro factor por llamada o WhatsApp espera a tener proveedor; hoy, a los 3 fallos hay aviso y el código al correo se sigue pidiendo.", "No hay proveedor de llamadas ni de WhatsApp contratado. Campo: qué hace.", "Pendiente", "", "ADR 0014, sección «Contraseñas incorrectas»."),
             ("19.6", "Escribir las reglas en el ADR 0014 sin que Sophia lo pidiera.", "El otro chat no ve esta conversación. Campo: qué hace.", "Pendiente", "", "Rama docs/adr-login-rules."),
-            ("19.7", "Una tabla para contar los intentos fallidos por dispositivo y dirección, y más adelante la del secreto TOTP.", "Sin guardarlos no se pueden contar. Campo: qué datos necesita.", "Pendiente", "", "Anotadas en las consecuencias del ADR 0014; sin diseñar."),
+            ("19.7", "Una tabla para contar los intentos fallidos por dispositivo y dirección, y más adelante la del secreto TOTP.", "Sin guardarlos no se pueden contar. Campo: qué datos necesita.", "Aceptar", "Necesito que se comience la implementación funcional de esos puntos, ya que la contraseña debe limitar los intentos a 3.", "La tabla de intentos fallidos entra con la migración que sigue al prompt 20; la del secreto TOTP queda para el paso de huésped a anfitrión."),
             ("19.8", "Subir el máximo de la contraseña de 12 a 64 caracteres.", "Un máximo de 12 impide las contraseñas de un gestor. Campo: cómo se sabrá que funciona.", "Pendiente", "", "Sin cambios."),
+        ],
+    },
+    # ------------------------------------------------------------------ 20
+    {
+        "n": 20,
+        "titulo": "Inicio de sesión y sesión, con las reglas del ADR 0014",
+        "fecha": "18 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Las reglas del inicio de sesión ya estaban decididas y escritas en el ADR 0014 (prompt 19). Después: "
+                     "ya pasaron las 482 pruebas y ya fusioné el PR."),
+        "tarea": ("1) /pieza: inicio de sesión y sesiones, con las reglas del ADR 0014. 2) Acepto todas las desviaciones. "
+                  "3) Para el punto 8 necesito que se comience la implementación funcional de esos puntos: la contraseña "
+                  "debe limitar los intentos a 3, hay que crear la tabla de administradores, que es importante, y hay que "
+                  "desglosar lo del tope a una sesión que se use a diario, que es importante."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "18 de noviembre de 2026",
+            "commits": "327ade8 (rama api/accounts-login, PR #24, fusionado por Sophia en 89f02de)",
+            "archivos": [
+                ("backend/app/modules/accounts/login.py", "los dos pasos: correo y contraseña, y después el código que abre la sesión."),
+                ("backend/app/modules/accounts/sessions.py", "reconoce a la persona por su llave y renueva el plazo de 30 o 7 días."),
+                ("backend/app/api/auth.py", "lee la llave del encabezado; lo usa toda ruta que necesite sesión."),
+                ("backend/app/modules/accounts/codes.py", "el manejo de códigos, que comparten el registro y el inicio de sesión."),
+                ("backend/app/modules/accounts/router.py", "tres rutas nuevas: /auth/login, /auth/login/verify y /auth/me."),
+                ("backend/app/modules/accounts/security.py", "comprobar la contraseña y generar la llave de sesión con su huella."),
+                ("backend/app/modules/accounts/registration.py", "usa codes.py en lugar de su copia propia."),
+                ("backend/app/core/config.py y backend/app/main.py", "los días de la sesión como configuración y la respuesta 401 común."),
+                ("tests/backend/test_accounts_login.py", "los diez casos aceptados y sus límites: 75 pruebas."),
+                ("backend/README.md", "rutas nuevas y reglas del inicio de sesión."),
+                ("herramientas/bitacora/evidencias/backend_accounts_login_pruebas_2026-11-18.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Hacer enseguida la pieza de contraseñas incorrectas.",
+                 "sin ella alguien podría probar contraseñas sin límite, aunque el código al correo siga protegiendo la entrada."),
+                ("Decidir el tope total de una sesión.",
+                 "hoy la sesión se renueva con cada uso y quien entra a diario nunca vuelve a escribir su contraseña."),
+                ("Tomar la IP real del encabezado del proxy cuando la API esté en la nube.",
+                 "hoy se guarda la de quien se conecta directo."),
+            ],
+            "lineas": ("Nuevos completos: login.py, sessions.py, codes.py, api/auth.py y test_accounts_login.py. router.py: "
+                       "cuatro importaciones y el bloque final. registration.py: las importaciones, verify_email y "
+                       "resend_code; se quitó _create_code. security.py: verify_password, generate_session_token y "
+                       "hash_session_token. config.py: dos campos. main.py: dos líneas. README.md: tablas de estructura y "
+                       "de rutas, y un párrafo de reglas."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben se deshace. IA: «482 passed, 1 warning in 71.96s» y 0 filas guardadas. "
+                        "Recorrido de la IA con el servidor de verdad y guardado real, en un PostgreSQL temporal: iniciar "
+                        "sesión antes de comprobar el correo, 403; contraseña incorrecta, 401; correo y contraseña "
+                        "correctos, 200 «code_required» y el código en la ventana del servidor; código incorrecto, 400 con "
+                        "«attempts_left: 4»; código correcto, 200 con la llave; quién soy con la llave, 200 con los datos; "
+                        "sin llave y con una llave inventada, 401. La sesión quedó guardada con una huella de 64 "
+                        "caracteres, la IP, el navegador y 30 días de plazo. Sophia: «Ya pasaron las 482 pruebas». Salida "
+                        "completa copiada en herramientas/bitacora/evidencias/backend_accounts_login_pruebas_2026-11-18.txt."),
+        },
+        "decisiones": [
+            ("20.1", "Construir en dos piezas: primero iniciar sesión y la sesión; después las contraseñas incorrectas, que necesitan una tabla nueva.", "La skill /pieza construye una sola responsabilidad y la segunda trae una migración. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «En dos piezas».", "Esta pieza no limita los intentos de contraseña."),
+            ("20.2", "Cada inicio de sesión pide correo, contraseña y código, sin recordar dispositivos (pendiente 19.4).", "Es lo que ya decía el ADR 0014. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Sí, siempre los tres datos».", "Cierra el pendiente 19.4."),
+            ("20.3", "La llave de sesión viaja en el encabezado de cada petición, y no en una cookie.", "Funciona igual para la web y para la app móvil, que es la regla de API primero. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «En el encabezado de cada petición».", "backend/app/api/auth.py."),
+            ("20.4", "Diez casos de prueba para /auth/login, /auth/login/verify y /auth/me.", "El prompt no traía casos. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí, esos casos».", "75 pruebas."),
+            ("20.5", "Mover el manejo de códigos de registration.py a codes.py, que era código ya fusionado.", "El registro y el inicio de sesión usan las mismas reglas de códigos. Campo: qué hace.", "Aceptar", "Acepto todas.", "Las 75 pruebas del registro siguen pasando sin tocarlas."),
+            ("20.6", "Comparar la contraseña aunque el correo no tenga cuenta.", "Para que el tiempo de respuesta no revele qué correos existen. Campo: qué hace.", "Aceptar", "Acepto todas.", "verify_password en security.py."),
+            ("20.7", "El aviso de correo sin comprobar solo sale con la contraseña correcta.", "Con contraseña incorrecta responde 401 como cualquier otra cuenta. Campo: qué hace.", "Aceptar", "Acepto todas.", "start_login en login.py."),
+            ("20.8", "Volver a mandar correo y contraseña funciona como pedir otro código, con los límites de 60 segundos y 5 por hora.", "No hace falta una ruta aparte. Campo: qué hace.", "Aceptar", "Acepto todas.", "start_login en login.py."),
+            ("20.9", "Lo que devuelve /auth/me: id, nombre, apellido, correo, país, idioma, si es anfitrión y cuándo vence la sesión.", "El prompt no decía qué datos. Campo: qué datos necesita.", "Aceptar", "Acepto todas.", "MeResponse en router.py."),
+            ("20.10", "Si la dirección de quien se conecta no es una IP válida se guarda vacía, y el navegador se corta a 500 caracteres.", "Son las reglas de la tabla sessions. Campo: qué datos necesita.", "Aceptar", "Acepto todas.", "clean_ip en login.py."),
+            ("20.11", "Una persona que pasa a ser anfitriona recibe el plazo de 7 días desde su siguiente uso.", "El ADR dice que la sesión de anfitrión se distingue por el perfil de anfitrión. Campo: qué hace.", "Aceptar", "Acepto todas.", "authenticate en sessions.py."),
+            ("20.12", "Lo que la pieza no hace: no limita los intentos de contraseña, no distingue el panel de administración y no pone un tope total a la sesión.", "Los tres necesitan una tabla o una decisión que no existían. Campo: qué hace.", "Aceptar", "Acepto todas. Para el paso 8 necesito que se comience la implementación funcional de esos puntos, ya que la contraseña debe limitar los intentos a 3, hay que crear la tabla de administradores, es importante, hay que desglosar lo del tope a una sesión que se use a diario, es importante.", "Tres piezas siguientes: migración con intentos fallidos y administradores, contraseñas incorrectas, y panel con tope de sesión."),
+            ("20.13", "Casos de prueba de más y un recorrido con guardado real en un PostgreSQL temporal.", "Las pruebas deshacen todo y faltaba ver el guardado de verdad. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("20.14", "Contraseñas incorrectas como en el ADR: aviso al dueño a los 3 fallos y espera de 15 minutos a los 6, por dispositivo y dirección.", "La nota de Sophia decía «limitar los intentos a 3» y el ADR 0014 decía aviso a los 3 y espera a los 6. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Como el ADR: aviso a los 3, espera a los 6».", "El ADR 0014 no cambia."),
+            ("20.15", "Tope total de una sesión: 90 días para huésped, 30 para anfitrión y 12 horas para el panel, como valores de configuración.", "Sophia pidió desglosar el tope; la sesión que se usa a diario no vencía nunca. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «90 días huésped, 30 anfitrión, 12 horas panel».", "Se construye con la pieza del panel; cierra el pendiente del ADR 0014."),
+            ("20.16", "Los administradores se dan de alta solo a mano en pgAdmin; la API nunca puede crearlos ni quitarlos.", "Si alguien toma el control de la API no puede hacerse administrador. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Solo a mano, en pgAdmin».", "Permisos de la tabla admins en la migración siguiente."),
         ],
     },
 ]
