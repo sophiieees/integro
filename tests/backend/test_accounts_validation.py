@@ -1,7 +1,7 @@
 """Reglas del formulario de registro, sin base de datos.
 
 Decisiones de Sophia del 17 de noviembre de 2026: todos los datos obligatorios,
-18 años cumplidos, y contraseña de mínimo 8 caracteres con mayúscula,
+18 años cumplidos, y contraseña de mínimo 10 caracteres con mayúscula,
 minúscula, número y símbolo.
 """
 

@@ -3,8 +3,8 @@
 Decisiones de Sophia del 19 de noviembre de 2026:
 
 - Cuatro niveles: bajo, medio, confiable y muy confiable.
-- El largo da el nivel base y cada debilidad lo baja un nivel, nunca por
-  debajo de bajo.
+- El largo da el nivel base, dos símbolos distintos lo suben un nivel y cada
+  debilidad lo baja un nivel, nunca por debajo de bajo.
 - Para registrarse hace falta al menos el nivel medio.
 
     Largo             Nivel base
@@ -13,10 +13,19 @@ Decisiones de Sophia del 19 de noviembre de 2026:
     13 a 15           confiable
     16 o más          muy confiable
 
+La cuenta, en este orden:
+
+    1. nivel base por el largo;
+    2. si trae dos símbolos distintos o más (por ejemplo - y !), sube un nivel,
+       sin pasar de muy confiable. Dos veces el mismo símbolo no cuenta, y una
+       contraseña de menos de 10 caracteres no sube;
+    3. cada debilidad baja un nivel.
+
 Debilidades (cada tipo cuenta una vez):
 
     repeated_characters   tres caracteres iguales seguidos: aaa, 111
-    sequence              cuatro seguidos en orden: 1234, abcd, 4321, qwer
+    sequence              cuatro seguidos en orden: 1234, abcd, 4321, qwer, y
+                          también símbolos en fila en el teclado: !"#$, $%&/
     personal_data         contiene su nombre, su apellido o su correo, en
                           palabras de cuatro letras o más
     common_word           contiene una palabra de la lista de palabras comunes
@@ -43,8 +52,20 @@ LENGTH_LEVELS = ((16, 3), (13, 2), (10, 1), (0, 0))
 
 REPEAT_LENGTH = 3
 SEQUENCE_LENGTH = 4
-# Filas donde se buscan los caracteres seguidos: números, abecedario y teclado.
-SEQUENCE_ROWS = ("0123456789", "abcdefghijklmnopqrstuvwxyz", "qwertyuiop", "asdfghjkl", "zxcvbnm")
+# Filas donde se buscan los caracteres seguidos: números, abecedario, teclado
+# y, desde el 19 de noviembre, los símbolos de la fila de los números (teclado
+# en español de Latinoamérica y teclado en inglés).
+SEQUENCE_ROWS = (
+    "0123456789",
+    "abcdefghijklmnopqrstuvwxyz",
+    "qwertyuiop",
+    "asdfghjkl",
+    "zxcvbnm",
+    '!"#$%&/()=?',
+    "!@#$%^&*()",
+)
+# Cuántos símbolos distintos hacen falta para subir un nivel.
+VARIED_SYMBOLS = 2
 # Lista de palabras comunes que dio Sophia el 19 de noviembre de 2026, tal como
 # la escribió. Sustituye a la lista anterior. Se compara sin mayúsculas ni
 # acentos (COMMON_WORDS, más abajo), así que "admin" y "ADMIN" son la misma.
@@ -112,6 +133,11 @@ def has_sequence(password: str) -> bool:
     return False
 
 
+def distinct_symbols(password: str) -> set[str]:
+    """Los símbolos distintos que trae: lo que no es letra, número ni espacio."""
+    return {character for character in password if not character.isalnum() and not character.isspace()}
+
+
 def personal_words(first_name: str | None, last_name: str | None, email: str | None) -> set[str]:
     """Las palabras de su nombre, su apellido y lo que va antes de la arroba en su correo."""
     pieces = [first_name or "", last_name or "", (email or "").split("@")[0]]
@@ -144,6 +170,12 @@ def password_strength(
     if any(word in text for word in COMMON_WORDS):
         weaknesses.append(COMMON_WORD)
 
+    # Dos símbolos distintos suben un nivel, sin pasar del más alto; una
+    # contraseña corta (nivel base bajo) no sube.
+    raised = base
+    if base > 0 and len(distinct_symbols(password)) >= VARIED_SYMBOLS:
+        raised = min(base + 1, len(LEVELS) - 1)
+
     lowered_by = len([weakness for weakness in weaknesses if weakness != SHORT])
-    level = LEVELS[max(base - lowered_by, 0)]
+    level = LEVELS[max(raised - lowered_by, 0)]
     return PasswordStrength(level=level, label=LABELS[level], weaknesses=tuple(weaknesses))

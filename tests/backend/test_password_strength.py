@@ -2,18 +2,19 @@
 
 Decisiones de Sophia del 19 de noviembre de 2026:
 
-    - La contraseña mide de 8 a 20 caracteres (antes, hasta 12).
+    - La contraseña mide de 10 a 20 caracteres (antes, de 8 a 12).
     - Niveles: bajo, medio, confiable y muy confiable. El largo da el nivel
-      base (8 a 9 bajo, 10 a 12 medio, 13 a 15 confiable, 16 a 20 muy
-      confiable) y cada debilidad lo baja un nivel: tres caracteres iguales
-      seguidos, cuatro seguidos en orden, su nombre o su correo, o una palabra
-      muy común.
+      base (10 a 12 medio, 13 a 15 confiable, 16 a 20 muy confiable), dos
+      símbolos distintos lo suben un nivel y cada debilidad lo baja un nivel:
+      tres caracteres iguales seguidos, cuatro seguidos en orden (también
+      símbolos en fila en el teclado), su nombre o su correo en palabras de
+      cuatro letras o más, o una palabra de la lista de palabras comunes.
     - Para registrarse hace falta al menos el nivel medio.
     - El cálculo vive en la API, con una ruta que no guarda nada.
 
 Ejemplos que Sophia aprobó:
 
-    Abcde-1x             bajo
+    Abcde-1x             bajo       (desde la revisión, además no cumple el mínimo de 10)
     Ejemplo-2026         medio
     Lluvia-Verde-26      confiable
     Mi-Casa-Verde-2026   muy confiable
@@ -32,6 +33,7 @@ from app.main import create_app
 from app.modules.accounts.password_strength import (
     COMMON_WORDS,
     COMMON_WORDS_AS_GIVEN,
+    distinct_symbols,
     has_repeated_characters,
     has_sequence,
     password_strength,
@@ -143,10 +145,68 @@ def test_repeated_characters(text, found):
     [
         ("1234", True), ("x4321x", True), ("abcd", True), ("dcba", True), ("qwer", True), ("asdf", True),
         ("zxcv", True), ("123", False), ("abc", False), ("1357", False), ("a1b2c3d4", False), ("2026", False),
+        # Símbolos en fila en el teclado: español de Latinoamérica e inglés, en los dos sentidos.
+        ('!"#$', True), ("$%&/", True), ("/()=", True), ("=)(/", True), ("!@#$", True), ("%^&*", True),
+        (")(*&", True), ('!"#', False), ("#-$-%-&", False), ("!#%/", False), ("-_.,", False),
     ],
 )
 def test_sequences(text, found):
     assert has_sequence(text) is found
+
+
+# ---------------------------------------------------------------------------
+# Dos símbolos distintos suben un nivel
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "password, symbols",
+    [("Kz7-Pm4-Xv", {"-"}), ("Kz7-Pm4_Xv", {"-", "_"}), ("Kz7Pm4Xv9T", set()), ("Añ7-Pm4!Xv", {"-", "!"}),
+     ("#$%&![{", {"#", "$", "%", "&", "!", "[", "{"})],
+)
+def test_distinct_symbols(password, symbols):
+    assert distinct_symbols(password) == symbols
+
+
+@pytest.mark.parametrize(
+    "password, level",
+    [
+        ("Kz7-Pm4-Xv", "medium"),  # 10, el mismo símbolo dos veces: no sube
+        ("Kz7-Pm4_Xv", "reliable"),  # 10, dos símbolos distintos
+        ("Kz7Pm4Xv9Tb", "medium"),  # 11, sin símbolos
+        ("Kz7-Pm4-Xv9-T", "reliable"),  # 13, un símbolo
+        ("Kz7-Pm4_Xv9-T", "very_reliable"),  # 13, dos símbolos distintos
+        ("Kz7-Pm4_Xv9!Tb2#", "very_reliable"),  # 16: ya estaba en el más alto, no hay otro nivel
+        ("Kz7-Pm4_", "low"),  # 8: una contraseña corta no sube
+        ("Kz7-Pm4_X", "low"),  # 9
+    ],
+)
+def test_two_distinct_symbols_raise_one_level(password, level):
+    assert password_strength(password).level == level
+
+
+def test_more_than_two_symbols_still_raise_only_one_level():
+    assert level_of("Kz7-Pm4_X!") == ("reliable", ())
+
+
+def test_the_raise_is_counted_before_the_weaknesses():
+    """Primero sube, con tope en muy confiable, y después bajan las debilidades.
+
+    Por eso el ejemplo aprobado Ana-Torres-2026! sigue en confiable: 16
+    caracteres ya es el nivel más alto y su apellido lo baja uno."""
+    assert level_of("Ana-Torres-2026!", **ANA) == ("reliable", ("personal_data",))
+    # 13 caracteres: confiable, sube a muy confiable y la repetición la deja en confiable.
+    assert level_of("Kzzz-Pm4_Xv9T") == ("reliable", ("repeated_characters",))
+    # La misma con un solo símbolo: confiable menos uno.
+    assert level_of("Kzzz-Pm4-Xv9T") == ("medium", ("repeated_characters",))
+
+
+def test_symbols_in_a_row_raise_and_lower():
+    """Cuatro símbolos en fila son dos símbolos distintos (sube) y una secuencia (baja)."""
+    assert level_of('Kz7!"#$Pm4xT') == ("medium", ("sequence",))
+    assert level_of("Kz7$%&/Pm4xT") == ("medium", ("sequence",))
+    # Los mismos símbolos separados no son secuencia.
+    assert level_of("K$z7%P&m4/xT") == ("reliable", ())
 
 
 def test_capitals_and_accents_do_not_hide_a_weakness():
@@ -220,7 +280,7 @@ def test_without_personal_data_nothing_is_assumed():
 
 
 # ---------------------------------------------------------------------------
-# El registro: de 8 a 20 y al menos nivel medio
+# El registro: de 10 a 20 y al menos nivel medio
 # ---------------------------------------------------------------------------
 
 FORM = {
@@ -262,6 +322,14 @@ def test_registration_accepts_exactly_20_and_rejects_21():
 )
 def test_registration_rejects_a_low_password(password):
     assert register_errors(password) == [("password", "too_weak")]
+
+
+def test_two_symbols_make_up_for_one_weakness_at_registration():
+    """11 caracteres con repetición: con un símbolo sale baja; con dos distintos, media."""
+    assert register_errors("Kzzz-Pm4-Xv") == [("password", "too_weak")]
+    assert register_errors("Kzzz-Pm4_Xv") == []
+    # Con dos debilidades no alcanza.
+    assert register_errors("Kz7-1234_xY") == [("password", "too_weak")]
 
 
 def test_the_too_weak_message_says_how_to_fix_it():
@@ -329,6 +397,21 @@ def test_route_rates_a_password(client):
         "accepted": True,
         "errors": [],
     }
+
+
+def test_route_raises_the_level_with_two_distinct_symbols(client):
+    one = client.post(STRENGTH, json={"password": "Kz7-Pm4-Xv"}).json()
+    two = client.post(STRENGTH, json={"password": "Kz7-Pm4_Xv"}).json()
+
+    assert (one["level"], one["label"]) == ("medium", "Medio")
+    assert (two["level"], two["label"], two["weaknesses"], two["accepted"]) == ("reliable", "Confiable", [], True)
+
+
+def test_route_reports_symbols_in_a_row_as_a_sequence(client):
+    body = client.post(STRENGTH, json={"password": "Kz7$%&/Pm4xT"}).json()
+
+    assert (body["level"], body["weaknesses"]) == ("medium", ["sequence"])
+    assert body["hints"] == ["Evita secuencias como 1234 o abcd."]
 
 
 def test_route_uses_the_personal_data_when_it_is_given(client):
