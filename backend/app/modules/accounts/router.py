@@ -371,6 +371,9 @@ class PasswordStrengthResponse(BaseModel):
     label: str
     weaknesses: list[str]
     hints: list[str]
+    # Lo que suma: lo que ya le subió el nivel y cómo subirlo todavía.
+    strengths: list[str]
+    raise_hints: list[str]
     meets_rules: bool
     accepted: bool
     errors: list[ErrorItem]
@@ -389,7 +392,9 @@ def optional_text(value: Any) -> str | None:
 def strength(body: PasswordStrengthRequest):
     """Califica una contraseña mientras la persona la escribe: bajo, medio,
     confiable o muy confiable. No guarda ni anota nada. accepted dice si el
-    registro la aceptaría: cumple las reglas y alcanza al menos el nivel medio."""
+    registro la aceptaría: cumple las reglas y alcanza al menos el nivel medio.
+    weaknesses y hints dicen lo que le resta; strengths y raise_hints, lo que
+    le suma."""
     if not isinstance(body.password, str) or body.password == "":
         return error_response(422, [FieldError("password", "required", "Este dato es obligatorio.")])
 
@@ -409,6 +414,8 @@ def strength(body: PasswordStrengthRequest):
         label=result.label,
         weaknesses=list(result.weaknesses),
         hints=list(result.hints),
+        strengths=list(result.strengths),
+        raise_hints=list(result.raise_hints),
         meets_rules=not rule_errors,
         accepted=not rule_errors and result.is_enough,
         errors=[ErrorItem(field=e.field, code=e.code, message=e.message) for e in rule_errors],

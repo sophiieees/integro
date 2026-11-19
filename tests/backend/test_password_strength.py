@@ -202,6 +202,38 @@ def test_the_raise_is_counted_before_the_weaknesses():
     assert level_of("Kzzz-Pm4-Xv9T") == ("medium", ("repeated_characters",))
 
 
+RAISE_HINT = "Usa dos símbolos distintos para subir un nivel."
+
+
+@pytest.mark.parametrize(
+    "password, strengths, raise_hints",
+    [
+        ("Kz7-Pm4-Xv", (), (RAISE_HINT,)),  # 10, un símbolo: puede subir
+        ("Kz7Pm4Xv9Tb", (), (RAISE_HINT,)),  # 11, sin símbolos
+        ("Kz7-Pm4_Xv", ("varied_symbols",), ()),  # 10, dos distintos: ya subió
+        ("Kz7-Pm4-Xv9-T", (), (RAISE_HINT,)),  # 13, un símbolo
+        ("Kz7-Pm4_Xv9-T", ("varied_symbols",), ()),  # 13, dos distintos
+        ("Kz7-Pm4-Xv9-Tb2-", (), ()),  # 16: ya está en el más alto, nada que subir
+        ("Kz7-Pm4_Xv9!Tb2#", (), ()),  # 16 con cuatro símbolos: tampoco subió nada
+        ("Kz7-Pm4_", (), ()),  # 8: una contraseña corta no sube; su consejo es el largo
+    ],
+)
+def test_what_adds_to_the_level(password, strengths, raise_hints):
+    """Decisión de Sophia del 19 de noviembre: que también se diga lo que suma."""
+    result = password_strength(password)
+
+    assert (result.strengths, result.raise_hints) == (strengths, raise_hints)
+
+
+def test_what_adds_is_told_together_with_what_lowers():
+    """Una contraseña con una debilidad sigue recibiendo el consejo de los símbolos."""
+    result = password_strength("Kzzz-Pm4-Xv9T")
+
+    assert (result.level, result.weaknesses) == ("medium", ("repeated_characters",))
+    assert result.hints == ("Evita repetir el mismo carácter tres veces seguidas.",)
+    assert result.raise_hints == (RAISE_HINT,)
+
+
 def test_symbols_in_a_row_raise_and_lower():
     """Cuatro símbolos en fila son dos símbolos distintos (sube) y una secuencia (baja)."""
     assert level_of('Kz7!"#$Pm4xT') == ("medium", ("sequence",))
@@ -436,6 +468,8 @@ def test_route_rates_a_password(client):
         "label": "Confiable",
         "weaknesses": [],
         "hints": [],
+        "strengths": [],
+        "raise_hints": ["Usa dos símbolos distintos para subir un nivel."],
         "meets_rules": True,
         "accepted": True,
         "errors": [],
@@ -447,7 +481,16 @@ def test_route_raises_the_level_with_two_distinct_symbols(client):
     two = client.post(STRENGTH, json={"password": "Kz7-Pm4_Xv"}).json()
 
     assert (one["level"], one["label"]) == ("medium", "Medio")
+    assert (one["strengths"], one["raise_hints"]) == ([], ["Usa dos símbolos distintos para subir un nivel."])
     assert (two["level"], two["label"], two["weaknesses"], two["accepted"]) == ("reliable", "Confiable", [], True)
+    assert (two["strengths"], two["raise_hints"]) == (["varied_symbols"], [])
+
+
+def test_route_says_nothing_adds_when_the_rules_are_broken(client):
+    """Sin cumplir las reglas sale baja y no se dan consejos para subir: primero van las reglas."""
+    body = client.post(STRENGTH, json={"password": "lluvia verde"}).json()
+
+    assert (body["meets_rules"], body["strengths"], body["raise_hints"]) == (False, [], [])
 
 
 def test_route_reports_symbols_in_a_row_as_a_sequence(client):

@@ -21,6 +21,11 @@ La cuenta, en este orden:
        contraseña de menos de 10 caracteres no sube;
     3. cada debilidad baja un nivel.
 
+Además de lo que resta (weaknesses y hints), el resultado dice lo que suma:
+strengths trae "varied_symbols" cuando los dos símbolos ya le subieron el
+nivel, y raise_hints trae el consejo de usarlos cuando todavía puede subir.
+Con 16 caracteres o más no hay nivel al que subir y las dos van vacías.
+
 Debilidades (cada tipo cuenta una vez):
 
     repeated_characters   tres caracteres iguales seguidos: aaa, 111
@@ -97,6 +102,11 @@ SEQUENCE = "sequence"
 PERSONAL_DATA = "personal_data"
 COMMON_WORD = "common_word"
 
+# Lo que suma: lo que ya subió el nivel de la contraseña.
+VARIED_SYMBOLS_STRENGTH = "varied_symbols"
+# Lo que sumaría: se dice cuando todavía puede subir un nivel con símbolos.
+VARIED_SYMBOLS_RAISE_HINT = "Usa dos símbolos distintos para subir un nivel."
+
 HINTS = {
     SHORT: "Usa al menos 10 caracteres.",
     REPEATED_CHARACTERS: "Evita repetir el mismo carácter tres veces seguidas.",
@@ -113,6 +123,10 @@ class PasswordStrength:
     # Por qué no sale más alta, en el orden en que se revisa. SHORT no baja el
     # nivel: explica que el largo no da para más que bajo.
     weaknesses: tuple[str, ...]
+    # Lo que suma (decisión de Sophia del 19 de noviembre de 2026): strengths
+    # es lo que ya le subió el nivel y raise_hints, cómo subirlo todavía.
+    strengths: tuple[str, ...] = ()
+    raise_hints: tuple[str, ...] = ()
 
     @property
     def is_enough(self) -> bool:
@@ -215,10 +229,24 @@ def password_strength(
 
     # Dos símbolos distintos suben un nivel, sin pasar del más alto; una
     # contraseña corta (nivel base bajo) no sube.
+    # Solo se dice lo que suma cuando de verdad hay un nivel al que subir: con
+    # 16 caracteres o más ya está en el más alto.
     raised = base
-    if base > 0 and len(distinct_symbols(password)) >= VARIED_SYMBOLS:
-        raised = min(base + 1, len(LEVELS) - 1)
+    strengths = []
+    raise_hints = []
+    if 0 < base < len(LEVELS) - 1:
+        if len(distinct_symbols(password)) >= VARIED_SYMBOLS:
+            raised = base + 1
+            strengths.append(VARIED_SYMBOLS_STRENGTH)
+        else:
+            raise_hints.append(VARIED_SYMBOLS_RAISE_HINT)
 
     lowered_by = len([weakness for weakness in weaknesses if weakness != SHORT])
     level = LEVELS[max(raised - lowered_by, 0)]
-    return PasswordStrength(level=level, label=LABELS[level], weaknesses=tuple(weaknesses))
+    return PasswordStrength(
+        level=level,
+        label=LABELS[level],
+        weaknesses=tuple(weaknesses),
+        strengths=tuple(strengths),
+        raise_hints=tuple(raise_hints),
+    )
