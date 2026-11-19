@@ -23,11 +23,25 @@ Desde entonces el prototipo creció a cuatro páginas publicadas, y el backend s
 - El logotipo queda pendiente: todavía no se tiene.
 - Los documentos del proyecto siguen en azul marino `#0E0E55`; esta paleta es de la web.
 
+### Cómo se aplica la paleta
+Decidido por Sophia el 19 de noviembre de 2026.
+
+| Dónde | Regla |
+|---|---|
+| Botones | Fondo verde íntegro. Al dar clic cambian a dorado arena. |
+| La palabra «Íntegro» del eslogan | Dorado arena. |
+| Botón «Reportar un problema» | Dorado arena. |
+| Dorado arena | Solo en botones o en algo que resalte. Nunca en texto corrido. |
+| Texto | Negro o colores legibles. |
+| Tipografía Outfit | Los archivos de la fuente se guardan dentro del proyecto; no se piden a Google en cada visita. |
+
+Dos puntos que la pieza de frontend debe confirmar con Sophia: el color de la letra sobre un botón dorado (la propuesta es verde noche, porque la letra blanca sobre dorado se lee mal) y cómo se ve el botón al pasar el cursor, que no se definió.
+
 ## Consecuencias
 - A favor: se abre con doble clic, se publica sin compilar, cualquiera edita el HTML y no hay peso de dependencias.
 - En contra: no hay renderizado en servidor, así que las fichas de propiedad se indexan peor en buscadores, ni PWA (ADR 0004). Si más adelante se migra a Next.js, la maquetación se rehace como componentes.
 - El frontend habla con la API de FastAPI (ADR 0001 y ADR 0012). Las pantallas de cuenta, empezando por el inicio de sesión y «Entrar» en la cabecera, se construyen sobre este prototipo.
-- Falta guardar el manual de identidad en `docs/diseno/` y aplicar su paleta y su tipografía a los tokens de `estilos.css`, que todavía tienen los colores de octubre.
+- Falta guardar el manual de identidad en `docs/diseno/` y aplicar su paleta y su tipografía a los tokens de `estilos.css`, que todavía tienen los colores de octubre: botones azules, la palabra del eslogan en azul claro y tipografía del sistema.
 
 ## Alternativa descartada por ahora
 Arrancar Next.js directamente. Sigue siendo lo que fija el MVP técnico; se retoma cuando haga falta el renderizado en servidor o la PWA.
@@ -37,3 +51,4 @@ Decisiones de Sophia del 19 de noviembre de 2026. Bitácora, decisiones 0.1, 0.2
 
 ## Cambios
 - 19 de noviembre de 2026: pasa de propuesta a aceptada. La versión anterior daba fecha a la migración a Next.js (semanas 6 y 7) y no hablaba de la identidad de marca.
+- 19 de noviembre de 2026, más tarde: se agregó cómo se aplica la paleta a los botones, al eslogan y al texto, y que la tipografía se guarda dentro del proyecto.
