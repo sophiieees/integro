@@ -11,7 +11,7 @@ Un archivo por decisión, numerado en orden de registro. Formato: contexto, deci
 | 0005 | Importación asistida; sin scraping de Airbnb | Aceptada |
 | 0006 | Calendario por iCal con aviso inmediato contra la doble reserva | Aceptada |
 | 0007 | Verificación de propiedad por capas | Aceptada |
-| 0008 | Prototipo estático antes de Next.js | Propuesta, pendiente de Sophia |
+| 0008 | Frontend en HTML, CSS y JavaScript; Next.js se decide más adelante | Aceptada |
 | 0009 | Tokens de diseño antes de la identidad de marca | Aceptada |
 | 0010 | Sin blockchain en el MVP; anclaje de hashes en fase 2 | Aceptada |
 | 0011 | Chapa inteligente: integrar, no fabricar | Aceptada (recomendación del documento de chapa) |
