@@ -19,10 +19,14 @@ Debilidades (cada tipo cuenta una vez):
     sequence              cuatro seguidos en orden: 1234, abcd, 4321, qwer
     personal_data         contiene su nombre, su apellido o su correo, en
                           palabras de cuatro letras o más
-    common_word           contiene una palabra muy común: password, qwerty
+    common_word           contiene una palabra de la lista de palabras comunes
+                          que dio Sophia: 1234, gato, admin, password...
 
 Las mayúsculas y los acentos no cuentan: "Contraseña" y "contrasena" son la
 misma palabra.
+
+Una entrada de la lista puede coincidir con otra debilidad: "1234" es a la vez
+secuencia y palabra común, y entonces baja dos niveles.
 """
 
 import re
@@ -41,7 +45,13 @@ REPEAT_LENGTH = 3
 SEQUENCE_LENGTH = 4
 # Filas donde se buscan los caracteres seguidos: números, abecedario y teclado.
 SEQUENCE_ROWS = ("0123456789", "abcdefghijklmnopqrstuvwxyz", "qwertyuiop", "asdfghjkl", "zxcvbnm")
-COMMON_WORDS = ("password", "contrasena", "integro", "qwerty", "admin", "bienvenido", "welcome", "letmein")
+# Lista de palabras comunes que dio Sophia el 19 de noviembre de 2026, tal como
+# la escribió. Sustituye a la lista anterior. Se compara sin mayúsculas ni
+# acentos (COMMON_WORDS, más abajo), así que "admin" y "ADMIN" son la misma.
+COMMON_WORDS_AS_GIVEN = (
+    "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
+    "123456789", "admin", "password", "contraseña", "Pass@123", "1234567890", "abcd1234", "ADMIN",
+)
 # Un dato personal de menos letras daría coincidencias por casualidad: con
 # tres, «Ana» aparecería dentro de «Manzana» (decisión del 19 de noviembre).
 PERSONAL_DATA_MIN_LENGTH = 4
@@ -83,6 +93,10 @@ def plain(text: str) -> str:
     """En minúsculas y sin acentos, para comparar."""
     decomposed = unicodedata.normalize("NFKD", text.lower())
     return "".join(character for character in decomposed if not unicodedata.combining(character))
+
+
+# La lista ya en la forma en que se compara, sin entradas repetidas.
+COMMON_WORDS = tuple(dict.fromkeys(plain(word) for word in COMMON_WORDS_AS_GIVEN))
 
 
 def has_repeated_characters(password: str) -> bool:

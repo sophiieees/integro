@@ -30,6 +30,8 @@ from fastapi.testclient import TestClient
 
 from app.main import create_app
 from app.modules.accounts.password_strength import (
+    COMMON_WORDS,
+    COMMON_WORDS_AS_GIVEN,
     has_repeated_characters,
     has_sequence,
     password_strength,
@@ -104,9 +106,12 @@ def test_short_is_reported_as_the_reason_for_low():
         # 16 caracteres: sin debilidades es muy confiable.
         ("Kz7-Pm4-Xv9-Tb2-", {}, "very_reliable", ()),
         ("Kzzz-Pm4-Xv9-Tb2", {}, "reliable", ("repeated_characters",)),
-        ("Kz7-1234-Xv9-Tb2", {}, "reliable", ("sequence",)),
+        ("Kz7-5678-Xv9-Tb2", {}, "reliable", ("sequence",)),
+        # "1234" es secuencia y además está en la lista de palabras comunes: baja dos.
+        ("Kz7-1234-Xv9-Tb2", {}, "medium", ("sequence", "common_word")),
         ("Kz7-Torres-Xv9-2", ANA, "reliable", ("personal_data",)),
-        ("Kz7-Qwerty-Xv9-2", {}, "medium", ("sequence", "common_word")),
+        # "qwerty" ya no está en la lista; sigue contando como secuencia del teclado.
+        ("Kz7-Qwerty-Xv9-2", {}, "reliable", ("sequence",)),
         ("Kz7-Admin-Xv9-22", {}, "reliable", ("common_word",)),
         ("Password-1234-aaa", {}, "low", ("repeated_characters", "sequence", "common_word")),
         ("Torres-1234-aaa-Password", ANA, "low", ("repeated_characters", "sequence", "personal_data", "common_word")),
@@ -146,10 +151,50 @@ def test_sequences(text, found):
 
 def test_capitals_and_accents_do_not_hide_a_weakness():
     assert "common_word" in password_strength("Mi-CONTRASEÑA-9x").weaknesses
-    assert "common_word" in password_strength("Mi-Íntegro-2026x").weaknesses
+    assert "common_word" in password_strength("Mi-PERRO-Kz7-Xv9").weaknesses
     assert "sequence" in password_strength("Kz7-AbCd-Xv9-Tb2").weaknesses
     assert "repeated_characters" in password_strength("KzZz-Pm4-Xv9-Tb2").weaknesses
     assert plain("ÍNTEGRO Contraseña") == "integro contrasena"
+
+
+# ---------------------------------------------------------------------------
+# La lista de palabras comunes que dio Sophia
+# ---------------------------------------------------------------------------
+
+def test_the_list_is_the_one_sophia_gave():
+    assert COMMON_WORDS_AS_GIVEN == (
+        "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
+        "123456789", "admin", "password", "contraseña", "Pass@123", "1234567890", "abcd1234", "ADMIN",
+    )
+    # Para comparar: sin mayúsculas ni acentos, y "ADMIN" es la misma que "admin".
+    assert COMMON_WORDS == (
+        "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
+        "123456789", "admin", "password", "contrasena", "pass@123", "1234567890", "abcd1234",
+    )
+
+
+@pytest.mark.parametrize("word", COMMON_WORDS_AS_GIVEN)
+def test_every_word_of_the_list_is_found(word):
+    assert "common_word" in password_strength(f"Kz7-{word}-Xv").weaknesses
+    assert "common_word" in password_strength(f"Kz7-{word.upper()}-Xv").weaknesses
+
+
+@pytest.mark.parametrize("password", ["Mi-Integro-Kz7-Xv", "Kz7-Bienvenido-9x", "Kz7-Welcome-Xv9", "Kz7-Letmein-Xv9"])
+def test_words_that_are_no_longer_in_the_list(password):
+    """Estaban en la lista anterior; Sophia dio la suya y ya no cuentan."""
+    assert password_strength(password).weaknesses == ()
+
+
+@pytest.mark.parametrize("password", ["Mayo-Kz7-Xv9-Tb2", "Apoyo-Kz7-Xv9-Tb", "Rayo-Kz7-Xv9-Tb2"])
+def test_the_two_letter_word_is_found_inside_longer_words(password):
+    """"yo" está en la lista y se busca en cualquier parte: también dentro de mayo, apoyo o rayo."""
+    assert level_of(password) == ("reliable", ("common_word",))
+
+
+def test_a_number_of_the_list_is_also_a_sequence():
+    assert level_of("Kz7-123456-Xv9-T") == ("medium", ("sequence", "common_word"))
+    # Sin secuencia ni repetición de tres, solo cuenta como palabra común.
+    assert level_of("Kz7-123123-Xv9-T") == ("reliable", ("common_word",))
 
 
 def test_personal_data_comes_from_name_surname_and_email():
@@ -220,7 +265,7 @@ def test_registration_rejects_a_low_password(password):
 
 
 def test_the_too_weak_message_says_how_to_fix_it():
-    _, errors = validate_registration({**FORM, "password": "Torres-1234-xY"}, NOW)
+    _, errors = validate_registration({**FORM, "password": "Torres-5678-xY"}, NOW)
 
     assert len(errors) == 1
     assert errors[0].message == (
@@ -299,8 +344,8 @@ def test_route_says_a_low_password_would_not_be_accepted(client):
     body = client.post(STRENGTH, json={"password": "Kz7-1234-xY"}).json()
 
     assert (body["level"], body["label"], body["meets_rules"], body["accepted"]) == ("low", "Bajo", True, False)
-    assert body["weaknesses"] == ["sequence"]
-    assert body["hints"] == ["Evita secuencias como 1234 o abcd."]
+    assert body["weaknesses"] == ["sequence", "common_word"]
+    assert body["hints"] == ["Evita secuencias como 1234 o abcd.", "Evita palabras muy comunes."]
 
 
 def test_route_says_which_rule_a_short_password_breaks(client):
