@@ -1302,7 +1302,8 @@ PROMPTS = [
             "commits": ("0607755 (rama api/password-strength, PR #31, fusionado por Sophia en f66bcab). Primera revisión: "
                         "dadcb26, cf9fdad, d088cba y f4bc240 (rama api/password-strength-review, PR #32, fusionado por "
                         "Sophia en c34773f). Segunda revisión: 9fd18c8, 861e65c y cdf36a2 (rama "
-                        "api/password-strength-review-2, subida y sin fusionar)."),
+                        "api/password-strength-review-2, PR #33, fusionado por Sophia en 5428016). Aviso de secuencia: "
+                        "18f3fa4 (rama api/password-sequence-hint, subida y sin fusionar)."),
             "archivos": [
                 ("backend/app/modules/accounts/password_strength.py", "nuevo: califica una contraseña en bajo, medio, confiable o muy confiable, y dice lo que le resta y lo que le suma."),
                 ("backend/app/modules/accounts/validation.py", "la contraseña mide de 10 a 20 caracteres y el registro rechaza las de nivel bajo."),
@@ -1359,10 +1360,10 @@ PROMPTS = [
             ("24.19", "Cambiar pruebas anteriores que usaban contraseñas de 8 o 9 caracteres, el nombre «Ana» o la palabra «íntegro».", "Las reglas cambiaron con la revisión. Campo: cómo se sabrá que funciona.", "Rechazar", "Rechazar por las modificaciones de la desviación 1.", "Volvieron los casos de «íntegro» y de «qwerty» como palabra común (commit 9fd18c8)."),
             ("24.20", "Rehacer los cuatro commits de la primera revisión y volver a subir la rama encima.", "Un script de la IA guardó cuatro archivos con otro fin de línea y Git los mostraba cambiados completos; el contenido era el mismo. Campo: cómo se sabrá que funciona.", "Aceptar", "Aceptar.", "Sin cambios."),
             ("24.21", "Que la ruta diga también lo que suma.", "Solo decía lo que resta. Campo: qué hace.", "Aceptar", "Acepto la sugerencia de: que la ruta diga también lo que suma.", "Datos strengths y raise_hints en la respuesta (commit cdf36a2)."),
-            ("24.22", "Cambiar el aviso de secuencia para que mencione los símbolos.", "Dice «Evita secuencias como 1234 o abcd» aunque la secuencia sea de símbolos. Campo: qué hace.", "Pendiente", "", ""),
-            ("24.23", "De «palabra suelta, o quitarla» se aplicó palabra suelta, y se definió así: sin otra letra pegada antes ni después; un número o un símbolo al lado no la esconden. Solo aplica a «yo».", "Sophia nombró las dos opciones y no dijo qué pasa con un número pegado. Campo: qué hace.", "Pendiente", "", ""),
-            ("24.24", "Lo que suma se contesta en dos datos nuevos: strengths (lo que ya le subió el nivel) y raise_hints (el consejo «Usa dos símbolos distintos para subir un nivel.»). Con 16 caracteres o más, o sin cumplir las reglas, van vacíos.", "Sophia aceptó la sugerencia sin fijar nombres, texto ni cuándo se muestra. Campo: qué hace.", "Pendiente", "", ""),
-            ("24.25", "Del rechazo 24.19 solo volvieron las pruebas de «íntegro» y «qwerty»; las de 8 o 9 caracteres y las del nombre «Ana» siguen cambiadas.", "Con el mínimo de 10 (24.4) y las cuatro letras (24.9) esas pruebas ya no pueden pasar como estaban. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("24.22", "Cambiar el aviso de secuencia para que mencione los símbolos.", "Dice «Evita secuencias como 1234 o abcd» aunque la secuencia sea de símbolos. Campo: qué hace.", "Aceptar", "Acepto las 3 desviaciones y la sugerencia.", "El aviso dice «Evita secuencias como 1234, abcd o símbolos en fila del teclado.» (commit 18f3fa4)."),
+            ("24.23", "De «palabra suelta, o quitarla» se aplicó palabra suelta, y se definió así: sin otra letra pegada antes ni después; un número o un símbolo al lado no la esconden. Solo aplica a «yo».", "Sophia nombró las dos opciones y no dijo qué pasa con un número pegado. Campo: qué hace.", "Aceptar", "Acepto las 3 desviaciones y la sugerencia.", "Sin cambios."),
+            ("24.24", "Lo que suma se contesta en dos datos nuevos: strengths (lo que ya le subió el nivel) y raise_hints (el consejo «Usa dos símbolos distintos para subir un nivel.»). Con 16 caracteres o más, o sin cumplir las reglas, van vacíos.", "Sophia aceptó la sugerencia sin fijar nombres, texto ni cuándo se muestra. Campo: qué hace.", "Aceptar", "Acepto las 3 desviaciones y la sugerencia.", "Sin cambios."),
+            ("24.25", "Del rechazo 24.19 solo volvieron las pruebas de «íntegro» y «qwerty»; las de 8 o 9 caracteres y las del nombre «Ana» siguen cambiadas.", "Con el mínimo de 10 (24.4) y las cuatro letras (24.9) esas pruebas ya no pueden pasar como estaban. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto las 3 desviaciones y la sugerencia.", "Sin cambios."),
         ],
     },
 ]
