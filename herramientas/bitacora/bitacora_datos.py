@@ -1277,4 +1277,92 @@ PROMPTS = [
             ("23.6", "Actualizar el ADR 0008, que sigue como propuesta.", "El veredicto 0.1 ya es firme. Campo: qué hace.", "Pendiente", "", ""),
         ],
     },
+    # ------------------------------------------------------------------ 24
+    {
+        "n": 24,
+        "titulo": "Contraseña de hasta 20 caracteres con indicador de cuatro niveles, y sus dos revisiones",
+        "fecha": "19 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("El veredicto 19.8 (prompt 23) dejó la contraseña en 20 caracteres como máximo, con la recomendación "
+                     "de bajo, medio, confiable y muy confiable. Sobre las mayúsculas y los acentos: aquí hay un error, "
+                     "supongo, no debe ser lo mismo CONTRASEÑA y contrasena. Los símbolos como #, $%&![{ hacen más segura "
+                     "la contraseña."),
+        "tarea": ("1) /pieza, sin más texto: la primera pieza de la lista que salió del prompt 23. 2) Desviaciones: 1, está "
+                  "bien que el mínimo sea 10; 2, está bien y, como sugieres, se deben transcribir en la configuración de "
+                  "español a inglés y viceversa; 3, ¿a qué te refieres con lista de palabras comunes que elegiste?; 4, "
+                  "está bien, también que busque símbolos; 5, aquí hay un error, supongo; 6, esa regla hay que cambiarla, "
+                  "acepto tu sugerencia de subir a cuatro letras el mínimo de los datos personales; 7, 8, 9 y 10, acepto. "
+                  "/bitacora. 3) Desviaciones de la revisión: 1, complementa tu lista con la mía; 2, sí, que sea como "
+                  "palabra suelta, o quitarla, para que no castigue «mayo»; 3, 4 y 5, aceptar; 6, rechazar por las "
+                  "modificaciones de la desviación 1; 7, aceptar. Acepto la sugerencia de que la ruta diga también lo que "
+                  "suma."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "19 de noviembre de 2026",
+            "commits": ("0607755 (rama api/password-strength, PR #31, fusionado por Sophia en f66bcab). Primera revisión: "
+                        "dadcb26, cf9fdad, d088cba y f4bc240 (rama api/password-strength-review, PR #32, fusionado por "
+                        "Sophia en c34773f). Segunda revisión: 9fd18c8, 861e65c y cdf36a2 (rama "
+                        "api/password-strength-review-2, subida y sin fusionar)."),
+            "archivos": [
+                ("backend/app/modules/accounts/password_strength.py", "nuevo: califica una contraseña en bajo, medio, confiable o muy confiable, y dice lo que le resta y lo que le suma."),
+                ("backend/app/modules/accounts/validation.py", "la contraseña mide de 10 a 20 caracteres y el registro rechaza las de nivel bajo."),
+                ("backend/app/modules/accounts/router.py", "ruta nueva POST /api/v1/auth/password-strength, que no guarda nada."),
+                ("tests/backend/test_password_strength.py", "nuevo: los seis ejemplos aprobados y sus límites; 171 pruebas, sin base de datos."),
+                ("tests/backend/test_accounts_validation.py y test_accounts_registration.py", "puestas al día con el mínimo de 10 y el máximo de 20."),
+                ("backend/README.md", "las reglas de la contraseña, los niveles y la ruta."),
+                ("herramientas/bitacora/evidencias/backend_password_strength_pruebas_2026-11-19.txt", "salida real de las pruebas y del recorrido de la ruta."),
+            ],
+            "sugerencias": [
+                ("Cambiar la regla escrita a «de 10 a 20».", "para que diga lo que de verdad se acepta y el formulario no prometa 8."),
+                ("Subir a cuatro letras el mínimo de los datos personales.", "para que nombres cortos como Ana o Luz no bajen el nivel por casualidad."),
+                ("Traducir las etiquetas y las recomendaciones al inglés junto con los demás textos.", "la plataforma es bilingüe y los textos están solo en español."),
+                ("Que «yo» cuente solo como palabra suelta, o quitarla.", "con dos letras aparece dentro de mayo, apoyo o rayo y les bajaba un nivel."),
+                ("Que la ruta diga también lo que suma.", "solo decía lo que resta."),
+                ("Cambiar el aviso de secuencia para que mencione los símbolos.", "dice «Evita secuencias como 1234 o abcd» aunque la secuencia sea de símbolos."),
+            ],
+            "lineas": ("Nuevos completos: password_strength.py y test_password_strength.py. validation.py: las constantes "
+                       "del mínimo y del máximo, el encabezado y el bloque de la contraseña en validate_registration. "
+                       "router.py: una importación y el bloque «Qué tan confiable es una contraseña», con los datos "
+                       "strengths y raise_hints en la respuesta. Pruebas anteriores: los casos de la contraseña en "
+                       "test_accounts_validation.py y dos bloques en test_accounts_registration.py. README.md: una fila "
+                       "en estructura, una en rutas y los párrafos de las reglas y de los niveles."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben se deshace. Corridas de la IA: «629 passed, 1 warning in 92.99s» con la pieza "
+                        "y 0 filas guardadas; «689 passed, 1 warning in 85.96s» con la primera revisión; «726 passed, 1 "
+                        "warning in 84.22s» con la segunda. En las dos revisiones no se contaron las filas. Recorrido de la "
+                        "ruta dentro del programa de pruebas, sin servidor aparte: Lluvia#Verde!26, muy confiable con "
+                        "strengths varied_symbols; Kz7-Pm4-Xv, medio con el consejo «Usa dos símbolos distintos para subir "
+                        "un nivel.»; Mayo-Kz7-Xv9-Tb2, muy confiable sin debilidades; Mi-Integro-Kz7-Xv, confiable con "
+                        "common_word; Kz7-1234-Xv9-Tb2, medio con sequence y common_word. Sophia no reportó su corrida de "
+                        "las revisiones. Salida copiada en "
+                        "herramientas/bitacora/evidencias/backend_password_strength_pruebas_2026-11-19.txt."),
+        },
+        "decisiones": [
+            ("24.1", "El nivel se decide por el largo (hasta 9 bajo, 10 a 12 medio, 13 a 15 confiable, 16 a 20 muy confiable) y cada debilidad lo baja un nivel.", "Toda contraseña válida ya trae mayúscula, minúscula, número y símbolo, así que eso no distingue a una de otra. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Por largo y por debilidades».", "password_strength.py."),
+            ("24.2", "Que el indicador solo recomiende: una contraseña baja que cumple las reglas se puede usar.", "Sophia había dicho «que tenga la recomendación». Campo: qué hace.", "Rechazar", "Sophia eligió la opción «No, se exige al menos \"medio\"».", "El registro rechaza con too_weak la contraseña de nivel bajo."),
+            ("24.3", "El cálculo vive en la API, con una ruta que no guarda nada.", "La pantalla todavía no existe y la regla es API primero. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «En la API, con una ruta que no guarda nada».", "POST /api/v1/auth/password-strength."),
+            ("24.4", "En la práctica el mínimo pasa de 8 a 10 caracteres, aunque la regla escrita decía «de 8 a 20».", "Con 8 y 9 el nivel sale siempre bajo y el registro exige medio. Campo: qué datos necesita.", "Aceptar", "Está bien que el mínimo sea 10.", "La regla escrita pasó a «de 10 a 20» (commit dadcb26)."),
+            ("24.5", "Los nombres de los niveles van en inglés dentro de la API y aparte va la etiqueta en español.", "Los valores van en inglés por la regla de estilo y la persona lee la etiqueta. Campo: qué hace.", "Aceptar", "Está bien y, como sugieres, se deben transcribir en la configuración de español a inglés y viceversa. Después eligió la opción «Después, junto con todos los textos».", "La traducción queda para una sola pieza de idiomas de toda la API."),
+            ("24.6", "La lista de palabras comunes la eligió la IA: password, contraseña, íntegro, qwerty, admin, bienvenido, welcome y letmein.", "El prompt no traía una lista. Campo: qué datos necesita.", "Revisar", "¿A qué te refieres con lista de palabras comunes que elegiste? Después: Lista de palabras comunes: 1234, gato, yo, perro, cuenta2026, 123456, 111111, 000000, 123123, 123456789, admin, password, contraseña, Pass@123, 1234567890, abcd1234, ADMIN.", "Se puso la lista de Sophia (commit d088cba)."),
+            ("24.7", "Las secuencias se buscan en los números, el abecedario y las filas del teclado, hacia adelante y hacia atrás.", "El prompt no decía dónde buscar. Campo: qué hace.", "Revisar", "Está bien, también que busque símbolos como #, $%&![{, eso hace más segura la contraseña. Después: Que dos símbolos distintos suban un nivel y que también detecte símbolos en fila.", "Dos símbolos distintos suben un nivel y cuatro símbolos en fila del teclado cuentan como secuencia (commit f4bc240)."),
+            ("24.8", "Las mayúsculas y los acentos no esconden una debilidad: «CONTRASEÑA» cuenta igual que «contrasena».", "Si contaran, bastaría cambiar una letra a mayúscula para esquivar el indicador. Campo: qué hace.", "Aceptar", "Aquí hay un error, supongo, no debe ser lo mismo CONTRASEÑA y contrasena. Tras la aclaración de que la contraseña sí distingue mayúsculas al iniciar sesión, eligió la opción «Así está bien, no era un error».", "Sin cambios."),
+            ("24.9", "Los datos personales son el nombre, el apellido y lo que va antes de la arroba, en palabras de tres letras o más.", "Para reconocer el nombre dentro de la contraseña. Campo: qué datos necesita.", "Revisar", "Esa regla hay que cambiarla, acepto tu sugerencia de subir a cuatro letras el mínimo de los datos personales, para que nombres cortos como Ana o Luz no bajen el nivel por casualidad.", "Mínimo de cuatro letras (commit cf9fdad)."),
+            ("24.10", "El aviso de contraseña débil dice cómo arreglarla.", "Para que la persona sepa qué cambiar. Campo: qué hace.", "Aceptar", "Acepto.", "validate_registration en validation.py."),
+            ("24.11", "La ruta contesta más que el nivel: las debilidades, las recomendaciones, si cumple las reglas y si el registro la aceptaría.", "La pantalla lo necesita para explicar el nivel. Campo: qué hace.", "Aceptar", "Acepto.", "PasswordStrengthResponse en router.py."),
+            ("24.12", "Una contraseña que no cumple las reglas sale como baja, con la lista de reglas que le faltan.", "No se puede usar, así que no tiene sentido darle otro nivel. Campo: qué hace.", "Aceptar", "Acepto.", "La ruta en router.py."),
+            ("24.13", "Cambiar tres pruebas anteriores que daban por hecho el máximo de 12 o aceptaban una contraseña de 8.", "La regla cambió. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto.", "test_accounts_validation.py y test_accounts_registration.py."),
+            ("24.14", "Tomar la lista de Sophia como la lista completa: salieron íntegro, qwerty, bienvenido, welcome y letmein.", "Su respuesta repetía admin, password y contraseña, y la IA la leyó como una lista nueva. Campo: qué datos necesita.", "Revisar", "Complementa tu lista con la mía.", "La lista suma la de la IA y la de Sophia (commit 9fd18c8)."),
+            ("24.15", "«yo» se busca en cualquier parte, también dentro de mayo, apoyo o rayo. Sugerencia: que cuente solo como palabra suelta, o quitarla.", "Está en la lista de Sophia y tiene dos letras. Campo: qué hace.", "Revisar", "Sí, que sea como palabra suelta, o quitarla, para que no castigue «mayo».", "«yo» cuenta solo como palabra suelta (commit 861e65c)."),
+            ("24.16", "«1234» baja dos niveles: es secuencia y además está en la lista; lo mismo 123456, 123456789, 1234567890 y abcd1234.", "Cada tipo de debilidad cuenta por separado. Campo: qué hace.", "Aceptar", "Aceptar.", "Sin cambios."),
+            ("24.17", "El orden de la cuenta: primero el largo, luego sube uno por dos símbolos distintos sin pasar de muy confiable, y al final bajan las debilidades. Dos símbolos compensan una debilidad.", "Así el ejemplo aprobado Ana-Torres-2026! sigue en confiable. Campo: qué hace.", "Aceptar", "Aceptar.", "Sin cambios."),
+            ("24.18", "Los símbolos en fila se buscan en la fila de los números del teclado en español de Latinoamérica y del teclado en inglés, de cuatro en cuatro y en los dos sentidos.", "Sophia no dijo qué teclado. Campo: qué datos necesita.", "Aceptar", "Aceptar.", "Sin cambios."),
+            ("24.19", "Cambiar pruebas anteriores que usaban contraseñas de 8 o 9 caracteres, el nombre «Ana» o la palabra «íntegro».", "Las reglas cambiaron con la revisión. Campo: cómo se sabrá que funciona.", "Rechazar", "Rechazar por las modificaciones de la desviación 1.", "Volvieron los casos de «íntegro» y de «qwerty» como palabra común (commit 9fd18c8)."),
+            ("24.20", "Rehacer los cuatro commits de la primera revisión y volver a subir la rama encima.", "Un script de la IA guardó cuatro archivos con otro fin de línea y Git los mostraba cambiados completos; el contenido era el mismo. Campo: cómo se sabrá que funciona.", "Aceptar", "Aceptar.", "Sin cambios."),
+            ("24.21", "Que la ruta diga también lo que suma.", "Solo decía lo que resta. Campo: qué hace.", "Aceptar", "Acepto la sugerencia de: que la ruta diga también lo que suma.", "Datos strengths y raise_hints en la respuesta (commit cdf36a2)."),
+            ("24.22", "Cambiar el aviso de secuencia para que mencione los símbolos.", "Dice «Evita secuencias como 1234 o abcd» aunque la secuencia sea de símbolos. Campo: qué hace.", "Pendiente", "", ""),
+            ("24.23", "De «palabra suelta, o quitarla» se aplicó palabra suelta, y se definió así: sin otra letra pegada antes ni después; un número o un símbolo al lado no la esconden. Solo aplica a «yo».", "Sophia nombró las dos opciones y no dijo qué pasa con un número pegado. Campo: qué hace.", "Pendiente", "", ""),
+            ("24.24", "Lo que suma se contesta en dos datos nuevos: strengths (lo que ya le subió el nivel) y raise_hints (el consejo «Usa dos símbolos distintos para subir un nivel.»). Con 16 caracteres o más, o sin cumplir las reglas, van vacíos.", "Sophia aceptó la sugerencia sin fijar nombres, texto ni cuándo se muestra. Campo: qué hace.", "Pendiente", "", ""),
+            ("24.25", "Del rechazo 24.19 solo volvieron las pruebas de «íntegro» y «qwerty»; las de 8 o 9 caracteres y las del nombre «Ana» siguen cambiadas.", "Con el mínimo de 10 (24.4) y las cuatro letras (24.9) esas pruebas ya no pueden pasar como estaban. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+        ],
+    },
 ]
