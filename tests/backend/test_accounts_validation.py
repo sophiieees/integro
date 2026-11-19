@@ -277,9 +277,9 @@ def test_missing_country_does_not_add_a_wrong_age_warning():
         ("abcdefgh", ["missing_uppercase", "missing_digit", "missing_symbol"]),
         ("12345678", ["missing_uppercase", "missing_lowercase", "missing_symbol"]),
         ("a", ["too_short", "missing_uppercase", "missing_digit", "missing_symbol"]),
-        ("Aa1-" + "x" * 8, []),  # justo 12
-        ("Aa1-" + "x" * 9, ["too_long"]),  # 13
-        ("Ejemplo-2026-largo", ["too_long"]),  # una contraseña larga ya no se acepta
+        ("Aa1-" + "x" * 16, []),  # justo 20
+        ("Aa1-" + "x" * 17, ["too_long"]),  # 21
+        ("Ejemplo-2026-largo", []),  # 18: desde el 19 de noviembre cabe hasta 20
         ("Contraseña-1", []),  # letras con acento o eñe valen
     ],
 )

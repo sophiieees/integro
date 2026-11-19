@@ -25,7 +25,8 @@ from app.modules.accounts.registration import (
     resend_code,
     verify_email,
 )
-from app.modules.accounts.validation import FieldError, validate_registration
+from app.modules.accounts.password_strength import LABELS, PasswordStrength, password_strength
+from app.modules.accounts.validation import FieldError, password_errors, validate_registration
 
 router = APIRouter(prefix="/auth", tags=["accounts"])
 
@@ -350,4 +351,65 @@ def me(request: Request, session: CurrentSession = Depends(require_session)):
         preferred_language=row[5],
         is_host=session.is_host,
         session_expires_at=session.expires_at,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Qué tan confiable es una contraseña
+# ---------------------------------------------------------------------------
+
+
+class PasswordStrengthRequest(BaseModel):
+    password: Any = Field(default=None, examples=["Lluvia-Verde-26"])
+    first_name: Any = Field(default=None, examples=["Ana"])
+    last_name: Any = Field(default=None, examples=["Torres"])
+    email: Any = Field(default=None, examples=["ana@example.com"])
+
+
+class PasswordStrengthResponse(BaseModel):
+    level: Literal["low", "medium", "reliable", "very_reliable"]
+    label: str
+    weaknesses: list[str]
+    hints: list[str]
+    meets_rules: bool
+    accepted: bool
+    errors: list[ErrorItem]
+
+
+def optional_text(value: Any) -> str | None:
+    return value if isinstance(value, str) else None
+
+
+@router.post(
+    "/password-strength",
+    response_model=PasswordStrengthResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Qué tan confiable es una contraseña",
+)
+def strength(body: PasswordStrengthRequest):
+    """Califica una contraseña mientras la persona la escribe: bajo, medio,
+    confiable o muy confiable. No guarda ni anota nada. accepted dice si el
+    registro la aceptaría: cumple las reglas y alcanza al menos el nivel medio."""
+    if not isinstance(body.password, str) or body.password == "":
+        return error_response(422, [FieldError("password", "required", "Este dato es obligatorio.")])
+
+    rule_errors = password_errors(body.password)
+    # Una contraseña que no cumple las reglas no se puede usar: sale como baja.
+    if rule_errors:
+        result = PasswordStrength(level="low", label=LABELS["low"], weaknesses=())
+    else:
+        result = password_strength(
+            body.password,
+            first_name=optional_text(body.first_name),
+            last_name=optional_text(body.last_name),
+            email=optional_text(body.email),
+        )
+    return PasswordStrengthResponse(
+        level=result.level,
+        label=result.label,
+        weaknesses=list(result.weaknesses),
+        hints=list(result.hints),
+        meets_rules=not rule_errors,
+        accepted=not rule_errors and result.is_enough,
+        errors=[ErrorItem(field=e.field, code=e.code, message=e.message) for e in rule_errors],
     )
