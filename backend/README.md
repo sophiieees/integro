@@ -16,6 +16,7 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/api/v1/health.py` | Las dos rutas de comprobación. |
 | `app/modules/` | Módulos de dominio. Cada módulo crea su carpeta en su pieza. |
 | `app/modules/accounts/` | Cuentas: reglas del formulario (`validation.py`), qué tan confiable es una contraseña (`password_strength.py`), contraseñas, códigos y llaves (`security.py`), códigos de un solo uso (`codes.py`), registro y comprobación del correo (`registration.py`), inicio de sesión (`login.py`), sesiones (`sessions.py`) y sus rutas (`router.py`). |
+| `app/web.py` | Muestra las páginas de `web/` desde la misma dirección de la API. |
 | `app/api/auth.py` | Quién hace la petición: lee la llave de la cookie de sesión, entrega la sesión a la ruta que la pida y renueva la cookie. |
 | `app/notifications/` | Envío de códigos. Hoy solo el modo desarrollo (`console.py`); WhatsApp queda pendiente (`whatsapp.py`). |
 | `requirements.txt` | Dependencias del backend, con versión exacta. |
@@ -38,6 +39,9 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `POST /api/v1/auth/login/verify` | Inicio de sesión, paso 2: el código. `200 {"status": "session_opened", "expires_at": "..."}` y entrega la llave en la cookie `integro_session`; el texto de la respuesta no trae la llave. `400` si el código es incorrecto, venció o agotó sus 5 intentos, y entonces no hay cookie. |
 | `GET /api/v1/auth/me` | Los datos de la persona con sesión. La llave llega en la cookie `integro_session`, que el navegador manda solo; sin una cookie que sirva responde `401`. Cada uso renueva la cookie. |
 | `GET /docs` | Documentación OpenAPI que FastAPI genera a partir del código. Desde ahí se pueden probar las rutas. |
+| `GET /` y lo demás | Las páginas de `web/`: la portada en `/`, y `propiedad.html`, `anfitriones.html`, `como-funciona.html` y `assets/` por su nombre. Las rutas de arriba ganan siempre. |
+
+La API muestra también la web (`app/web.py`): al arrancarla, `http://127.0.0.1:8000/` abre la portada. Así la página y la API viven en la misma dirección y el navegador manda la cookie de sesión. Ocurre si la carpeta `web/` existe junto a `backend/` y se apaga con `SERVE_WEB=false`. Solo entrega archivos de `web/`, solo para leerlos, y pide al navegador que pregunte siempre si cambiaron.
 
 Los avisos de las rutas de Cuentas salen siempre con la misma forma, para ponerlos junto a su campo: `{"errors": [{"field": "password", "code": "missing_symbol", "message": "..."}]}`.
 
