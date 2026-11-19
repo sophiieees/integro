@@ -37,6 +37,10 @@ misma palabra.
 
 Una entrada de la lista puede coincidir con otra debilidad: "1234" es a la vez
 secuencia y palabra común, y entonces baja dos niveles.
+
+"yo" solo cuenta como palabra suelta, sin otra letra pegada: baja el nivel en
+"Yo-Kz7-Xv9" pero no en "Mayo-Kz7-Xv9". Las demás palabras de la lista se
+buscan en cualquier parte.
 """
 
 import re
@@ -79,6 +83,10 @@ COMMON_WORDS_FROM_SOPHIA = (
     "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
     "123456789", "admin", "password", "contraseña", "Pass@123", "1234567890", "abcd1234", "ADMIN",
 )
+# Palabras de la lista que solo cuentan como palabra suelta, es decir, sin otra
+# letra pegada antes ni después. Decisión de Sophia del 19 de noviembre de
+# 2026, para que «yo» no castigue a «mayo» ni a «apoyo».
+WHOLE_WORD_ONLY = ("yo",)
 # Un dato personal de menos letras daría coincidencias por casualidad: con
 # tres, «Ana» aparecería dentro de «Manzana» (decisión del 19 de noviembre).
 PERSONAL_DATA_MIN_LENGTH = 4
@@ -141,6 +149,33 @@ def has_sequence(password: str) -> bool:
     return False
 
 
+def stands_alone(word: str, text: str) -> bool:
+    """Dice si la palabra aparece suelta: sin una letra pegada antes ni después.
+
+    Un número o un símbolo al lado no la esconden: en "yo2026" y en "mi-yo-9"
+    está suelta; en "mayo" y en "yoga" no."""
+    start = text.find(word)
+    while start != -1:
+        end = start + len(word)
+        letter_before = start > 0 and text[start - 1].isalpha()
+        letter_after = end < len(text) and text[end].isalpha()
+        if not letter_before and not letter_after:
+            return True
+        start = text.find(word, start + 1)
+    return False
+
+
+def has_common_word(text: str) -> bool:
+    """Dice si trae una palabra de la lista. text ya viene sin mayúsculas ni acentos."""
+    for word in COMMON_WORDS:
+        if word in WHOLE_WORD_ONLY:
+            if stands_alone(word, text):
+                return True
+        elif word in text:
+            return True
+    return False
+
+
 def distinct_symbols(password: str) -> set[str]:
     """Los símbolos distintos que trae: lo que no es letra, número ni espacio."""
     return {character for character in password if not character.isalnum() and not character.isspace()}
@@ -175,7 +210,7 @@ def password_strength(
         weaknesses.append(SEQUENCE)
     if any(word in text for word in personal_words(first_name, last_name, email)):
         weaknesses.append(PERSONAL_DATA)
-    if any(word in text for word in COMMON_WORDS):
+    if has_common_word(text):
         weaknesses.append(COMMON_WORD)
 
     # Dos símbolos distintos suben un nivel, sin pasar del más alto; una

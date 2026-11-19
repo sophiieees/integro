@@ -40,6 +40,7 @@ from app.modules.accounts.password_strength import (
     password_strength,
     personal_words,
     plain,
+    stands_alone,
 )
 from app.modules.accounts.validation import validate_registration
 
@@ -255,10 +256,42 @@ def test_the_words_of_the_first_list_count_again(password, level):
     assert level_of(password) == (level, ("common_word",))
 
 
-@pytest.mark.parametrize("password", ["Mayo-Kz7-Xv9-Tb2", "Apoyo-Kz7-Xv9-Tb", "Rayo-Kz7-Xv9-Tb2"])
-def test_the_two_letter_word_is_found_inside_longer_words(password):
-    """"yo" está en la lista y se busca en cualquier parte: también dentro de mayo, apoyo o rayo."""
+@pytest.mark.parametrize(
+    "password",
+    ["Mayo-Kz7-Xv9-Tb2", "Apoyo-Kz7-Xv9-Tb", "Rayo-Kz7-Xv9-Tb2", "Yoga-Kz7-Xv9-Tb2", "Kz7-Xv9-Tb2-Joya", "Yoyo-Kz7-Xv9-Tb2"],
+)
+def test_yo_inside_a_longer_word_does_not_count(password):
+    """Decisión de Sophia del 19 de noviembre: «yo» solo como palabra suelta, para que no castigue «mayo»."""
+    assert level_of(password) == ("very_reliable", ())
+
+
+@pytest.mark.parametrize(
+    "password",
+    [
+        "Yo-Kz7-Xv9-Tb2-R",  # al principio
+        "Kz7-Xv9-Tb2-R-yo",  # al final
+        "Kz7-YO-Xv9-Tb2-R",  # en medio y en mayúsculas
+        "Kz7-yo2026-Xv9-T",  # un número pegado no la esconde
+        "Kz7yo-Xv9-Tb2-Rg",  # tampoco un número antes
+    ],
+)
+def test_yo_as_a_word_on_its_own_counts(password):
     assert level_of(password) == ("reliable", ("common_word",))
+
+
+@pytest.mark.parametrize(
+    "word, text, alone",
+    [("yo", "yo", True), ("yo", "mayo", False), ("yo", "yoga", False), ("yo", "mayo-yo", True),
+     ("yo", "7yo7", True), ("yo", "-yo-", True), ("yo", "", False), ("yo", "kz7-xv9", False)],
+)
+def test_stands_alone(word, text, alone):
+    assert stands_alone(word, text) is alone
+
+
+@pytest.mark.parametrize("password", ["Kz7-Gatos-Xv9-Tb", "Kz7-Perros-Xv9-T", "Administrador-9x"])
+def test_the_other_words_are_still_found_anywhere(password):
+    """Solo «yo» pide ir suelta; gato, perro o admin cuentan también dentro de otra palabra."""
+    assert "common_word" in password_strength(password).weaknesses
 
 
 def test_a_number_of_the_list_is_also_a_sequence():
