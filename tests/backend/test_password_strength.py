@@ -32,13 +32,15 @@ from fastapi.testclient import TestClient
 from app.main import create_app
 from app.modules.accounts.password_strength import (
     COMMON_WORDS,
-    COMMON_WORDS_AS_GIVEN,
+    COMMON_WORDS_FROM_AI,
+    COMMON_WORDS_FROM_SOPHIA,
     distinct_symbols,
     has_repeated_characters,
     has_sequence,
     password_strength,
     personal_words,
     plain,
+    stands_alone,
 )
 from app.modules.accounts.validation import validate_registration
 
@@ -112,8 +114,7 @@ def test_short_is_reported_as_the_reason_for_low():
         # "1234" es secuencia y además está en la lista de palabras comunes: baja dos.
         ("Kz7-1234-Xv9-Tb2", {}, "medium", ("sequence", "common_word")),
         ("Kz7-Torres-Xv9-2", ANA, "reliable", ("personal_data",)),
-        # "qwerty" ya no está en la lista; sigue contando como secuencia del teclado.
-        ("Kz7-Qwerty-Xv9-2", {}, "reliable", ("sequence",)),
+        ("Kz7-Qwerty-Xv9-2", {}, "medium", ("sequence", "common_word")),
         ("Kz7-Admin-Xv9-22", {}, "reliable", ("common_word",)),
         ("Password-1234-aaa", {}, "low", ("repeated_characters", "sequence", "common_word")),
         ("Torres-1234-aaa-Password", ANA, "low", ("repeated_characters", "sequence", "personal_data", "common_word")),
@@ -201,6 +202,38 @@ def test_the_raise_is_counted_before_the_weaknesses():
     assert level_of("Kzzz-Pm4-Xv9T") == ("medium", ("repeated_characters",))
 
 
+RAISE_HINT = "Usa dos símbolos distintos para subir un nivel."
+
+
+@pytest.mark.parametrize(
+    "password, strengths, raise_hints",
+    [
+        ("Kz7-Pm4-Xv", (), (RAISE_HINT,)),  # 10, un símbolo: puede subir
+        ("Kz7Pm4Xv9Tb", (), (RAISE_HINT,)),  # 11, sin símbolos
+        ("Kz7-Pm4_Xv", ("varied_symbols",), ()),  # 10, dos distintos: ya subió
+        ("Kz7-Pm4-Xv9-T", (), (RAISE_HINT,)),  # 13, un símbolo
+        ("Kz7-Pm4_Xv9-T", ("varied_symbols",), ()),  # 13, dos distintos
+        ("Kz7-Pm4-Xv9-Tb2-", (), ()),  # 16: ya está en el más alto, nada que subir
+        ("Kz7-Pm4_Xv9!Tb2#", (), ()),  # 16 con cuatro símbolos: tampoco subió nada
+        ("Kz7-Pm4_", (), ()),  # 8: una contraseña corta no sube; su consejo es el largo
+    ],
+)
+def test_what_adds_to_the_level(password, strengths, raise_hints):
+    """Decisión de Sophia del 19 de noviembre: que también se diga lo que suma."""
+    result = password_strength(password)
+
+    assert (result.strengths, result.raise_hints) == (strengths, raise_hints)
+
+
+def test_what_adds_is_told_together_with_what_lowers():
+    """Una contraseña con una debilidad sigue recibiendo el consejo de los símbolos."""
+    result = password_strength("Kzzz-Pm4-Xv9T")
+
+    assert (result.level, result.weaknesses) == ("medium", ("repeated_characters",))
+    assert result.hints == ("Evita repetir el mismo carácter tres veces seguidas.",)
+    assert result.raise_hints == (RAISE_HINT,)
+
+
 def test_symbols_in_a_row_raise_and_lower():
     """Cuatro símbolos en fila son dos símbolos distintos (sube) y una secuencia (baja)."""
     assert level_of('Kz7!"#$Pm4xT') == ("medium", ("sequence",))
@@ -211,44 +244,86 @@ def test_symbols_in_a_row_raise_and_lower():
 
 def test_capitals_and_accents_do_not_hide_a_weakness():
     assert "common_word" in password_strength("Mi-CONTRASEÑA-9x").weaknesses
-    assert "common_word" in password_strength("Mi-PERRO-Kz7-Xv9").weaknesses
+    assert "common_word" in password_strength("Mi-Íntegro-2026x").weaknesses
     assert "sequence" in password_strength("Kz7-AbCd-Xv9-Tb2").weaknesses
     assert "repeated_characters" in password_strength("KzZz-Pm4-Xv9-Tb2").weaknesses
     assert plain("ÍNTEGRO Contraseña") == "integro contrasena"
 
 
 # ---------------------------------------------------------------------------
-# La lista de palabras comunes que dio Sophia
+# La lista de palabras comunes: la de la IA más la que dio Sophia
 # ---------------------------------------------------------------------------
 
-def test_the_list_is_the_one_sophia_gave():
-    assert COMMON_WORDS_AS_GIVEN == (
+
+def test_the_list_is_the_one_of_the_ai_plus_the_one_sophia_gave():
+    """«Complementa tu lista con la mía» (Sophia, 19 de noviembre de 2026)."""
+    assert COMMON_WORDS_FROM_AI == (
+        "password", "contraseña", "íntegro", "qwerty", "admin", "bienvenido", "welcome", "letmein",
+    )
+    assert COMMON_WORDS_FROM_SOPHIA == (
         "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
         "123456789", "admin", "password", "contraseña", "Pass@123", "1234567890", "abcd1234", "ADMIN",
     )
-    # Para comparar: sin mayúsculas ni acentos, y "ADMIN" es la misma que "admin".
+    # Para comparar: sin mayúsculas ni acentos, y las que están en las dos cuentan una vez.
     assert COMMON_WORDS == (
+        "password", "contrasena", "integro", "qwerty", "admin", "bienvenido", "welcome", "letmein",
         "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
-        "123456789", "admin", "password", "contrasena", "pass@123", "1234567890", "abcd1234",
+        "123456789", "pass@123", "1234567890", "abcd1234",
     )
 
 
-@pytest.mark.parametrize("word", COMMON_WORDS_AS_GIVEN)
+@pytest.mark.parametrize("word", (*COMMON_WORDS_FROM_AI, *COMMON_WORDS_FROM_SOPHIA))
 def test_every_word_of_the_list_is_found(word):
     assert "common_word" in password_strength(f"Kz7-{word}-Xv").weaknesses
     assert "common_word" in password_strength(f"Kz7-{word.upper()}-Xv").weaknesses
 
 
-@pytest.mark.parametrize("password", ["Mi-Integro-Kz7-Xv", "Kz7-Bienvenido-9x", "Kz7-Welcome-Xv9", "Kz7-Letmein-Xv9"])
-def test_words_that_are_no_longer_in_the_list(password):
-    """Estaban en la lista anterior; Sophia dio la suya y ya no cuentan."""
-    assert password_strength(password).weaknesses == ()
+@pytest.mark.parametrize(
+    "password, level",
+    [("Mi-Integro-Kz7-Xv", "reliable"), ("Kz7-Bienvenido-9x", "reliable"), ("Kz7-Welcome-Xv9", "medium"),
+     ("Kz7-Letmein-Xv9", "medium")],
+)
+def test_the_words_of_the_first_list_count_again(password, level):
+    """Habían salido al tomar la lista de Sophia como la lista completa; ella pidió sumarlas."""
+    assert level_of(password) == (level, ("common_word",))
 
 
-@pytest.mark.parametrize("password", ["Mayo-Kz7-Xv9-Tb2", "Apoyo-Kz7-Xv9-Tb", "Rayo-Kz7-Xv9-Tb2"])
-def test_the_two_letter_word_is_found_inside_longer_words(password):
-    """"yo" está en la lista y se busca en cualquier parte: también dentro de mayo, apoyo o rayo."""
+@pytest.mark.parametrize(
+    "password",
+    ["Mayo-Kz7-Xv9-Tb2", "Apoyo-Kz7-Xv9-Tb", "Rayo-Kz7-Xv9-Tb2", "Yoga-Kz7-Xv9-Tb2", "Kz7-Xv9-Tb2-Joya", "Yoyo-Kz7-Xv9-Tb2"],
+)
+def test_yo_inside_a_longer_word_does_not_count(password):
+    """Decisión de Sophia del 19 de noviembre: «yo» solo como palabra suelta, para que no castigue «mayo»."""
+    assert level_of(password) == ("very_reliable", ())
+
+
+@pytest.mark.parametrize(
+    "password",
+    [
+        "Yo-Kz7-Xv9-Tb2-R",  # al principio
+        "Kz7-Xv9-Tb2-R-yo",  # al final
+        "Kz7-YO-Xv9-Tb2-R",  # en medio y en mayúsculas
+        "Kz7-yo2026-Xv9-T",  # un número pegado no la esconde
+        "Kz7yo-Xv9-Tb2-Rg",  # tampoco un número antes
+    ],
+)
+def test_yo_as_a_word_on_its_own_counts(password):
     assert level_of(password) == ("reliable", ("common_word",))
+
+
+@pytest.mark.parametrize(
+    "word, text, alone",
+    [("yo", "yo", True), ("yo", "mayo", False), ("yo", "yoga", False), ("yo", "mayo-yo", True),
+     ("yo", "7yo7", True), ("yo", "-yo-", True), ("yo", "", False), ("yo", "kz7-xv9", False)],
+)
+def test_stands_alone(word, text, alone):
+    assert stands_alone(word, text) is alone
+
+
+@pytest.mark.parametrize("password", ["Kz7-Gatos-Xv9-Tb", "Kz7-Perros-Xv9-T", "Administrador-9x"])
+def test_the_other_words_are_still_found_anywhere(password):
+    """Solo «yo» pide ir suelta; gato, perro o admin cuentan también dentro de otra palabra."""
+    assert "common_word" in password_strength(password).weaknesses
 
 
 def test_a_number_of_the_list_is_also_a_sequence():
@@ -393,6 +468,8 @@ def test_route_rates_a_password(client):
         "label": "Confiable",
         "weaknesses": [],
         "hints": [],
+        "strengths": [],
+        "raise_hints": ["Usa dos símbolos distintos para subir un nivel."],
         "meets_rules": True,
         "accepted": True,
         "errors": [],
@@ -404,7 +481,16 @@ def test_route_raises_the_level_with_two_distinct_symbols(client):
     two = client.post(STRENGTH, json={"password": "Kz7-Pm4_Xv"}).json()
 
     assert (one["level"], one["label"]) == ("medium", "Medio")
+    assert (one["strengths"], one["raise_hints"]) == ([], ["Usa dos símbolos distintos para subir un nivel."])
     assert (two["level"], two["label"], two["weaknesses"], two["accepted"]) == ("reliable", "Confiable", [], True)
+    assert (two["strengths"], two["raise_hints"]) == (["varied_symbols"], [])
+
+
+def test_route_says_nothing_adds_when_the_rules_are_broken(client):
+    """Sin cumplir las reglas sale baja y no se dan consejos para subir: primero van las reglas."""
+    body = client.post(STRENGTH, json={"password": "lluvia verde"}).json()
+
+    assert (body["meets_rules"], body["strengths"], body["raise_hints"]) == (False, [], [])
 
 
 def test_route_reports_symbols_in_a_row_as_a_sequence(client):
