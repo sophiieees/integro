@@ -1366,4 +1366,59 @@ PROMPTS = [
             ("24.25", "Del rechazo 24.19 solo volvieron las pruebas de «íntegro» y «qwerty»; las de 8 o 9 caracteres y las del nombre «Ana» siguen cambiadas.", "Con el mínimo de 10 (24.4) y las cuatro letras (24.9) esas pruebas ya no pueden pasar como estaban. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto las 3 desviaciones y la sugerencia.", "Sin cambios."),
         ],
     },
+    # ------------------------------------------------------------------ 25
+    {
+        "n": 25,
+        "titulo": "Estado de Íntegro, ADR 0008 y reglas de la paleta",
+        "fecha": "19 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Del manual de identidad solo falta el logotipo; lo demás queda establecido. Siguen pendientes el 0.8 "
+                     "y el 0.10."),
+        "tarea": ("1) Dame el estado actual de Íntegro, tanto de frontend como de backend, y en qué punto de los 8 que "
+                  "definimos estamos y qué falta. 2) Decisión 23.5: guardar el manual de identidad y aplicar su paleta y su "
+                  "tipografía al prototipo; eso queda establecido, solo el logo no se tiene. 3) Decisión 23.6: actualiza el "
+                  "ADR 0008. 4) Respuestas a las dudas de la paleta. Uno: los botones van en verde íntegro y, al dar clic, "
+                  "en dorado arena. Dos: la palabra «Íntegro» del eslogan pasa a dorado arena. Tres: el botón «Reportar un "
+                  "problema» pasa a dorado arena. Cuatro: acepto la sugerencia de guardar la tipografía dentro del "
+                  "proyecto. Cinco: el dorado solo va en botones o en algo que resalte; el texto va en negro o en colores "
+                  "legibles."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "19 de noviembre de 2026",
+            "commits": ("cc8b3c4 (rama docs/adr-0008-accepted, PR #37, fusionado por Sophia en f964d1f) y a14c703 (rama "
+                        "docs/adr-0008-palette-rules, PR #38, fusionado por Sophia en 2025472)"),
+            "archivos": [
+                ("docs/decisiones/0008-prototipo-estatico-antes-de-nextjs.md",
+                 "pasa de propuesta a aceptada: el frontend sigue en HTML, CSS y JavaScript, la migración a Next.js deja de tener fecha, y se agregan la identidad de marca y cómo se aplica la paleta."),
+                ("docs/decisiones/README.md", "título y estado del ADR 0008."),
+                ("herramientas/bitacora/bitacora_datos.py", "veredictos 23.5 y 23.6, y esta entrada."),
+            ],
+            "sugerencias": [
+                ("Estado: punto 2 de 8. Del módulo de Cuentas faltan cerrar sesión, recuperar contraseña, el tope de sesión con el panel de administración y el envío real de correos.",
+                 "es lo que hay en main al 19 de noviembre: cuatro migraciones, registro, inicio de sesión, contraseñas incorrectas e indicador de contraseña."),
+                ("Aplicar la paleta y la tipografía a estilos.css y guardar el manual en docs/diseno como pieza del chat de programación.",
+                 "es programación, y el PDF del manual lo tiene ese chat."),
+                ("Construir la pantalla básica de inicio de sesión y «Entrar» en la cabecera.",
+                 "Sophia pidió ir reflejando el backend en el frontend, y esa pieza todavía no existe."),
+            ],
+            "lineas": ("ADR 0008: reescrito completo y, después, la sección «Cómo se aplica la paleta», una línea de "
+                       "consecuencias y una entrada de cambios. README de decisiones: la fila del 0008. bitacora_datos.py: "
+                       "dos veredictos y esta entrada."),
+            "pruebas": ("No hay pruebas automáticas: no cambió código de la aplicación. El estado se leyó de main: cuatro "
+                        "migraciones, siete rutas en /api/v1/auth, cuatro páginas en web/ sin cambios desde el 18 de octubre "
+                        "y, según la bitácora del prompt 24, «726 passed» contra la base real de Sophia."),
+        },
+        "decisiones": [
+            ("25.1", "Reescribir el ADR 0008 completo, con título nuevo, en lugar de cambiarle solo el estado.", "La versión anterior daba fecha a la migración a Next.js y citaba un archivo que ya no existe. Campo: qué hace.", "Aceptar", "Sophia fusionó el PR #37 sin cambios.", "ADR 0008."),
+            ("25.2", "Dejar para el chat de programación aplicar la paleta a estilos.css y guardar el manual en docs/diseno.", "Es programación, y el PDF del manual lo tiene ese chat. Campo: qué hace.", "Aceptar", "Sophia respondió las cinco dudas que se llevan a esa pieza.", "Sin cambios en web/."),
+            ("25.3", "Decidir si los botones van en verde íntegro, verde noche o dorado arena.", "En octubre Sophia pidió que no fueran verdes y quedaron azules; la paleta nueva no tiene azul. Campo: qué hace.", "Aceptar", "Los botones van en verde íntegro y al dar clic en dorado arena.", "ADR 0008, sección «Cómo se aplica la paleta»."),
+            ("25.4", "La palabra «Íntegro» del eslogan en dorado arena.", "Hoy va en azul claro, que ya no está en la paleta. Campo: qué hace.", "Aceptar", "Sí pasa a dorado arena.", "ADR 0008, sección «Cómo se aplica la paleta»."),
+            ("25.5", "El botón «Reportar un problema» en dorado arena.", "Sophia pidió en octubre un color que resalte. Campo: qué hace.", "Aceptar", "Sí, pasa a dorado arena.", "ADR 0008, sección «Cómo se aplica la paleta»."),
+            ("25.6", "Guardar los archivos de la tipografía Outfit dentro del proyecto, en lugar de pedirlos a Google en cada visita.", "El prototipo sigue sin depender de terceros y abre igual sin internet. Campo: qué datos necesita.", "Aceptar", "Acepto la sugerencia.", "ADR 0008, sección «Cómo se aplica la paleta»."),
+            ("25.7", "No usar el dorado arena en texto corrido.", "Sobre el fondo arena tiene poco contraste y se lee mal en letras pequeñas. Campo: cómo se sabrá que funciona.", "Aceptar", "Sí, solo va en botones o en algo que resalte, el texto va en negro o colores legibles.", "ADR 0008, sección «Cómo se aplica la paleta»."),
+            ("25.8", "Escribir las reglas de la paleta en el ADR 0008 sin que Sophia lo pidiera.", "El chat de programación no ve esta conversación. Campo: qué hace.", "Aceptar", "Sophia fusionó el PR #38 sin cambios.", "ADR 0008."),
+            ("25.9", "Letra en verde noche sobre los botones dorados.", "La letra blanca sobre dorado se lee mal. Campo: cómo se sabrá que funciona.", "Pendiente", "", "Anotado en el ADR 0008 para confirmarlo en la pieza de frontend."),
+            ("25.10", "Definir cómo se ve el botón al pasar el cursor.", "Sophia dijo qué pasa al dar clic, pero no al pasar el cursor. Campo: qué hace.", "Pendiente", "", "Anotado en el ADR 0008 para confirmarlo en la pieza de frontend."),
+        ],
+    },
 ]
