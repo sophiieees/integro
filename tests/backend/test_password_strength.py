@@ -109,7 +109,7 @@ def test_short_is_reported_as_the_reason_for_low():
         ("Kz7-Qwerty-Xv9-2", {}, "medium", ("sequence", "common_word")),
         ("Kz7-Admin-Xv9-22", {}, "reliable", ("common_word",)),
         ("Password-1234-aaa", {}, "low", ("repeated_characters", "sequence", "common_word")),
-        ("Ana-1234-aaa-Password", ANA, "low", ("repeated_characters", "sequence", "personal_data", "common_word")),
+        ("Torres-1234-aaa-Password", ANA, "low", ("repeated_characters", "sequence", "personal_data", "common_word")),
     ],
 )
 def test_each_weakness_lowers_one_level(password, person, level, weaknesses):
@@ -154,16 +154,17 @@ def test_capitals_and_accents_do_not_hide_a_weakness():
 
 def test_personal_data_comes_from_name_surname_and_email():
     assert personal_words("Ana María", "Torres-López", "anita.t_99@example.com") == {
-        "ana", "maria", "torres", "lopez", "anita",
+        "maria", "torres", "lopez", "anita",
     }
-    # Lo que va después de la arroba no cuenta, ni las palabras de menos de tres letras.
-    assert personal_words("Jo", None, "x@example.com") == set()
+    # Lo que va después de la arroba no cuenta, ni las palabras de menos de cuatro letras.
+    assert personal_words("Ana", "Luz", "eva@example.com") == set()
     assert personal_words(None, None, None) == set()
 
 
 @pytest.mark.parametrize(
     "password, weak",
-    [("Kz7-ANA-Xv9-Tb2x", True), ("Kz7-Torres-Xv9-2", True), ("Kz7-Pm4-Xv9-Tb2x", False)],
+    [("Kz7-TORRES-Xv9-2", True), ("Kz7-Torres-Xv9-2", True), ("Kz7-Pm4-Xv9-Tb2x", False),
+     ("Manzana-Roja-9x", False)],  # trae «ana», pero un nombre de tres letras ya no cuenta
 )
 def test_personal_data_in_any_case(password, weak):
     assert ("personal_data" in password_strength(password, **ANA).weaknesses) is weak
@@ -210,7 +211,7 @@ def test_registration_accepts_exactly_20_and_rejects_21():
     "password",
     [
         "Kzzz-Pm4-Xv",  # 11, con repetición
-        "Ana-2026-xY",  # 11, con su nombre
+        "Torres-26-xY",  # 12, con su apellido
         "Kz7-1234-xY",  # 11, con secuencia
     ],
 )
@@ -219,7 +220,7 @@ def test_registration_rejects_a_low_password(password):
 
 
 def test_the_too_weak_message_says_how_to_fix_it():
-    _, errors = validate_registration({**FORM, "password": "Ana-1234-xY"}, NOW)
+    _, errors = validate_registration({**FORM, "password": "Torres-1234-xY"}, NOW)
 
     assert len(errors) == 1
     assert errors[0].message == (

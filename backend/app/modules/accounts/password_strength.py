@@ -17,7 +17,8 @@ Debilidades (cada tipo cuenta una vez):
 
     repeated_characters   tres caracteres iguales seguidos: aaa, 111
     sequence              cuatro seguidos en orden: 1234, abcd, 4321, qwer
-    personal_data         contiene su nombre, su apellido o su correo
+    personal_data         contiene su nombre, su apellido o su correo, en
+                          palabras de cuatro letras o más
     common_word           contiene una palabra muy común: password, qwerty
 
 Las mayúsculas y los acentos no cuentan: "Contraseña" y "contrasena" son la
@@ -41,8 +42,9 @@ SEQUENCE_LENGTH = 4
 # Filas donde se buscan los caracteres seguidos: números, abecedario y teclado.
 SEQUENCE_ROWS = ("0123456789", "abcdefghijklmnopqrstuvwxyz", "qwertyuiop", "asdfghjkl", "zxcvbnm")
 COMMON_WORDS = ("password", "contrasena", "integro", "qwerty", "admin", "bienvenido", "welcome", "letmein")
-# Un dato personal de menos letras daría coincidencias por casualidad.
-PERSONAL_DATA_MIN_LENGTH = 3
+# Un dato personal de menos letras daría coincidencias por casualidad: con
+# tres, «Ana» aparecería dentro de «Manzana» (decisión del 19 de noviembre).
+PERSONAL_DATA_MIN_LENGTH = 4
 
 SHORT = "short"
 REPEATED_CHARACTERS = "repeated_characters"
