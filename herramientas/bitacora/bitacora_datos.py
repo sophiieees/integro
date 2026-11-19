@@ -71,16 +71,16 @@ PROMPTS = [
             "lineas": "Todo el contenido es nuevo; el detalle línea por línea está en el diff de los tres commits.",
         },
         "decisiones": [
-            ("0.1", "Prototipo estático (HTML, CSS, JS) en lugar de Next.js, que es lo que fija el MVP técnico.", "Disco con 734 MB libres; cero dependencias; publicación sin compilar.", "Pendiente", "Está en revisión.", "ADR 0008 como propuesta."),
-            ("0.2", "Paleta azul profundo, verde íntegro y papel cálido.", "Sophia pidió algo que comunique seguridad; vive solo en tokens.", "Pendiente", "No se ha definido la paleta de colores.", "Tokens en :root de estilos.css."),
-            ("0.3", "Serif del sistema en títulos, sans en texto.", "Diferencia frente a Airbnb y Wander; fuentes del sistema por peso.", "Pendiente", "No se ha definido tipografía.", "Tokens de tipografía."),
-            ("0.4", "Omitir el chip de ahorro frente a otras plataformas.", "Es de segunda fase en los requerimientos.", "Pendiente", "Necesita revisión del equipo.", "Se muestra el total sin cargos de servicio."),
+            ("0.1", "Prototipo estático (HTML, CSS, JS) en lugar de Next.js, que es lo que fija el MVP técnico.", "Disco con 734 MB libres; cero dependencias; publicación sin compilar.", "Aceptar", "El frontend lo desarrollo yo y les pido sugerencia, pero el diseño lo hago yo. Después Sophia eligió la opción «Seguir con HTML, CSS y JavaScript».", "El frontend sigue en HTML, CSS y JavaScript sobre web/; el ADR 0008 deja de ser propuesta."),
+            ("0.2", "Paleta azul profundo, verde íntegro y papel cálido.", "Sophia pidió algo que comunique seguridad; vive solo en tokens.", "Revisar", "Esa marca es mía, es mi sello, no depende de ellas. Después Sophia eligió la opción «Paleta y tipografía del manual; el logotipo pendiente».", "La web usará la paleta del manual de identidad: verde íntegro #1F4D3A, verde noche #142A21, dorado arena #C9A66B y arena #F3EEE4. Falta aplicarla a los tokens de estilos.css."),
+            ("0.3", "Serif del sistema en títulos, sans en texto.", "Diferencia frente a Airbnb y Wander; fuentes del sistema por peso.", "Revisar", "La tipografía ya la definimos, es el del PDF, lo que nos falta es el logo.", "La tipografía es Outfit, SemiBold en títulos y Regular en texto, como dice el manual de identidad. El logotipo queda pendiente."),
+            ("0.4", "Omitir el chip de ahorro frente a otras plataformas.", "Es de segunda fase en los requerimientos.", "Aceptar", "¿A qué te refieres con el chip de ahorro? Después de la explicación Sophia eligió la opción «Sigue fuera por ahora».", "El chip de ahorro queda para la segunda fase."),
             ("0.5", "Omitir favoritos (corazón) en las tarjetas.", "Segunda fase y Could have.", "Rechazar", "Se colocará más adelante.", "Sin corazón por ahora."),
             ("0.6", "Sin cálculo de cotización; total fijo de ejemplo.", "La función del assignment debe nacer de la especificación.", "Rechazar", "Se colocará más adelante.", "Caja de precio con nota."),
-            ("0.7", "Ciudad de México como ciudad por defecto de los datos de muestra.", "Hacía falta una ciudad; la de lanzamiento se decide antes del 30 de octubre.", "Pendiente", "Necesita revisión del equipo.", "datos.js, ciudadPorDefecto."),
-            ("0.8", "Mostrar los montos de la propuesta inicial de planes.", "Dan realismo; el pricing lo define Valeria el 30 de octubre.", "Pendiente", "Necesita revisión del equipo.", "Tabla de planes."),
+            ("0.7", "Ciudad de México como ciudad por defecto de los datos de muestra.", "Hacía falta una ciudad; la de lanzamiento se decide antes del 30 de octubre.", "Aceptar", "Sí, primero se lanza en la CDMX.", "Ciudad de México es la ciudad de lanzamiento."),
+            ("0.8", "Mostrar los montos de la propuesta inicial de planes.", "Dan realismo; el pricing lo define Valeria el 30 de octubre.", "Pendiente", "Los precios no están definidos, queda pendiente.", "Tabla de planes."),
             ("0.9", "Sin iconos ni emojis, esquinas discretas, animaciones solo al entrar.", "Preferencias que Sophia dio en otro proyecto.", "Aceptar", "La página debe verse formal.", "Reglas del sistema de diseño."),
-            ("0.10", "Plazos de ejemplo en las políticas de cancelación.", "La ficha necesitaba texto; la revisión legal los define.", "Pendiente", "Necesita revisión del equipo.", "Ficha, marcado como propuesta."),
+            ("0.10", "Plazos de ejemplo en las políticas de cancelación.", "La ficha necesitaba texto; la revisión legal los define.", "Pendiente", "Queda pendiente la revisión legal.", "Ficha, marcado como propuesta."),
         ],
     },
     # ------------------------------------------------------------------ 2
@@ -161,7 +161,7 @@ PROMPTS = [
             ("0.17", "Buscador compacto dentro de la cabecera (segunda revisión).", "Seguir la barra de Wander.", "Revisar", "Donde está la imagen vamos a colocar lo de destino, llegada, salida. En el header solo quede Íntegro y conviértete en anfitrión.", "Buscador al centro del hero; cabecera mínima."),
             ("0.18", "Sellos y tres pasos al final de la portada.", "Mantener la explicación en la misma página.", "Revisar", "Eso que va en texto lo vamos a colocar en una página aparte que va a ser cómo funciona.", "Página web/como-funciona.html."),
             ("0.19", "Pie claro con seis enlaces y el reporte como uno más.", "Pie neutro.", "Revisar", "Que tenga un color, el verde que se usa como fondo. Quitar hospedajes. Reportar un problema, eso sí es muy importante.", "Pie verde, sin Hospedajes, reporte como botón."),
-            ("0.20", "La IA quitó \"Entrar\" de las cabeceras.", "Instrucción literal; el prototipo no tiene inicio de sesión.", "Pendiente", "", "Decidir dónde vivirá Entrar."),
+            ("0.20", "La IA quitó \"Entrar\" de las cabeceras.", "Instrucción literal; el prototipo no tiene inicio de sesión.", "Revisar", "Sí, que regrese; de hecho, para que se vaya reflejando en el frontend hay que ir construyendo esa parte. Puede ser básica de momento, porque no hemos tocado el frontend.", "«Entrar» regresa a la cabecera con una pantalla básica de inicio de sesión; queda como pieza de frontend."),
         ],
     },
     # ------------------------------------------------------------------ 4
@@ -1026,10 +1026,10 @@ PROMPTS = [
             ("19.2", "La espera de 15 minutos se aplica a quien está intentando, por dispositivo y dirección, y no a la cuenta completa.", "Si se aplica a la cuenta, cualquiera que conozca el correo puede dejar fuera al dueño. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «A quien está intentando».", "ADR 0014, sección «Contraseñas incorrectas»."),
             ("19.3", "Liga de recuperación de 15 minutos en lugar de los 5 que dijo Sophia.", "Un correo puede tardar en llegar y la persona todavía tiene que abrirlo y escribir la contraseña nueva. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «15 minutos».", "ADR 0014, sección «Recuperar la contraseña»."),
             ("19.4", "Leer la respuesta dos como: cada inicio de sesión pide correo, contraseña y código, sin recordar dispositivos.", "Sophia dijo que también se pide después de cerrar sesión; recordar dispositivos necesitaría una tabla más. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Sí, siempre los tres datos», al arrancar la pieza del inicio de sesión (prompt 20).", "ADR 0014, sección «Cómo se inicia sesión mientras no haya WhatsApp»."),
-            ("19.5", "El otro factor por llamada o WhatsApp espera a tener proveedor; hoy, a los 3 fallos hay aviso y el código al correo se sigue pidiendo.", "No hay proveedor de llamadas ni de WhatsApp contratado. Campo: qué hace.", "Pendiente", "", "ADR 0014, sección «Contraseñas incorrectas»."),
-            ("19.6", "Escribir las reglas en el ADR 0014 sin que Sophia lo pidiera.", "El otro chat no ve esta conversación. Campo: qué hace.", "Pendiente", "", "Rama docs/adr-login-rules."),
+            ("19.5", "El otro factor por llamada o WhatsApp espera a tener proveedor; hoy, a los 3 fallos hay aviso y el código al correo se sigue pidiendo.", "No hay proveedor de llamadas ni de WhatsApp contratado. Campo: qué hace.", "Aceptar", "Aceptar, aún no hay proveedor de WhatsApp.", "ADR 0014, sección «Contraseñas incorrectas»."),
+            ("19.6", "Escribir las reglas en el ADR 0014 sin que Sophia lo pidiera.", "El otro chat no ve esta conversación. Campo: qué hace.", "Aceptar", "Aceptar.", "Rama docs/adr-login-rules."),
             ("19.7", "Una tabla para contar los intentos fallidos por dispositivo y dirección, y más adelante la del secreto TOTP.", "Sin guardarlos no se pueden contar. Campo: qué datos necesita.", "Aceptar", "Necesito que se comience la implementación funcional de esos puntos, ya que la contraseña debe limitar los intentos a 3.", "La tabla de intentos fallidos entra con la migración que sigue al prompt 20; la del secreto TOTP queda para el paso de huésped a anfitrión."),
-            ("19.8", "Subir el máximo de la contraseña de 12 a 64 caracteres.", "Un máximo de 12 impide las contraseñas de un gestor. Campo: cómo se sabrá que funciona.", "Pendiente", "", "Sin cambios."),
+            ("19.8", "Subir el máximo de la contraseña de 12 a 64 caracteres.", "Un máximo de 12 impide las contraseñas de un gestor. Campo: cómo se sabrá que funciona.", "Revisar", "Si la contraseña es para el usuario (la que debe crear él) sigo manteniendo la de 20 caracteres máximo y que tenga la recomendación de bajo, medio, confiable, muy confiable. Después Sophia eligió la opción «Máximo 20 y el indicador de cuatro niveles».", "El máximo sube de 12 a 20, no a 64, y se agrega un indicador de cuatro niveles. El código todavía tiene 12: queda como pieza."),
         ],
     },
     # ------------------------------------------------------------------ 20
@@ -1159,9 +1159,9 @@ PROMPTS = [
             ("21.5", "La persona puede leer su propia fila de admins.", "Para saber si ella misma es administradora; no ve a las demás. Campo: qué hace.", "Aceptar", "Acepto todas.", "Regla admins_select_own."),
             ("21.6", "Los casos 9 y 10 no están en la batería automática: se comprobaron a mano en el PostgreSQL temporal.", "Dar de alta a un administrador solo puede hacerlo el dueño de la base, y las pruebas corren con el usuario de la API. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todas.", "Salida de esos casos en el archivo de evidencia."),
             ("21.7", "Actualizar el texto de data-model.md ahora y dejar el diagrama de Chen para su pieza.", "Igual que en la migración anterior. Campo: qué hace.", "Aceptar", "Acepto todas.", "data-model.md, secciones 3, 4, 5 y 7."),
-            ("21.8", "Regenerar el diagrama de Chen con login_attempts.", "El diagrama quedó sin la tabla nueva. Campo: qué hace.", "Pendiente", "", ""),
-            ("21.9", "Avisar a la parte legal de que también se guardan la IP y el navegador de los intentos fallidos.", "Son datos personales. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("21.10", "Incluir login_attempts en la tarea de limpieza futura.", "Crece con cada intento y nunca se borra. Campo: qué hace.", "Pendiente", "", ""),
+            ("21.8", "Regenerar el diagrama de Chen con login_attempts.", "El diagrama quedó sin la tabla nueva. Campo: qué hace.", "Aceptar", "Aceptar.", "Queda como pieza de documentación."),
+            ("21.9", "Avisar a la parte legal de que también se guardan la IP y el navegador de los intentos fallidos.", "Son datos personales. Campo: qué datos necesita.", "Aceptar", "Aceptar.", "El aviso lo da Sophia junto con el de las sesiones."),
+            ("21.10", "Incluir login_attempts en la tarea de limpieza futura.", "Crece con cada intento y nunca se borra. Campo: qué hace.", "Aceptar", "Aceptar.", "Queda para la tarea de limpieza futura."),
         ],
     },
     # ------------------------------------------------------------------ 22
@@ -1225,6 +1225,56 @@ PROMPTS = [
             ("22.12", "Casos de prueba de más y un recorrido con guardado real en un PostgreSQL temporal.", "Las pruebas deshacen todo y faltaba ver el guardado de verdad. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Sin cambios."),
             ("22.13", "Traducir el aviso al inglés cuando se contrate el envío real de correos.", "La plataforma es bilingüe. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Queda para la pieza del envío real de correos."),
             ("22.14", "Un freno adicional por cuenta más adelante, como un CAPTCHA tras muchos fallos.", "Quien cambie de dirección en cada intento no llega a 6 fallos desde un mismo dispositivo. Campo: qué hace.", "Aceptar", "Acepto las sugerencias y las desviaciones.", "Queda como pieza futura."),
+        ],
+    },
+    # ------------------------------------------------------------------ 23
+    {
+        "n": 23,
+        "titulo": "Veredictos pendientes y manual de identidad",
+        "fecha": "19 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Ya se fusionó el PR. Adjunto el manual de identidad de Íntegro (versión provisional, octubre de "
+                     "2026): logotipo, color, tipografía, tono y aplicaciones. Esa marca es mía, es mi sello, no depende "
+                     "de mis socias. El frontend lo desarrollo yo y les pido sugerencia, pero el diseño lo hago yo. No "
+                     "hemos tocado el frontend."),
+        "tarea": ("1) Recuérdame los veredictos pendientes, para darles continuidad. 2) Veredictos: 19.5 aceptar, aún no "
+                  "hay proveedor de WhatsApp; 19.6 aceptar; 19.8, si la contraseña es la que debe crear el usuario, "
+                  "mantengo la de 20 caracteres como máximo y que tenga la recomendación de bajo, medio, confiable y muy "
+                  "confiable (si te refieres a otra cosa, dime); 21.8, 21.9 y 21.10 aceptar; 0.20 sí, que regrese, y "
+                  "para que se vaya reflejando en el frontend hay que ir construyendo esa parte, básica de momento. "
+                  "3) Las que eran con las socias: 0.1 el frontend lo desarrollo yo; 0.2 esa marca es mía; 0.3 la "
+                  "tipografía ya la definimos, es la del PDF, y falta el logo; 0.4 ¿a qué te refieres con el chip de "
+                  "ahorro?; 0.7 sí, primero se lanza en la CDMX; 0.8 los precios no están definidos, queda pendiente; "
+                  "0.10 queda pendiente la revisión legal. 4) /bitacora."),
+        "salida": "Registrar los veredictos en la bitácora.",
+        "respuesta": {
+            "fecha": "19 de noviembre de 2026",
+            "commits": "El commit de este registro, en la rama docs/bitacora-23",
+            "archivos": [
+                ("herramientas/bitacora/bitacora_datos.py", "catorce veredictos actualizados en sus filas (prompts 1, 3, 19 y 21) y esta entrada."),
+            ],
+            "sugerencias": [
+                ("Una pieza para subir el máximo de la contraseña de 12 a 20 y agregar el indicador de cuatro niveles.",
+                 "el veredicto 19.8 cambia una regla que el código y sus pruebas todavía tienen en 12."),
+                ("Una pieza de frontend con la pantalla básica de inicio de sesión y «Entrar» en la cabecera.",
+                 "es el veredicto 0.20; la API de inicio de sesión ya existe."),
+                ("Guardar el manual de identidad en docs/diseno/ y aplicar su paleta y su tipografía a los tokens de web/assets/css/estilos.css.",
+                 "los veredictos 0.2 y 0.3 sustituyen los colores y la tipografía que hoy tiene el prototipo."),
+                ("Actualizar el ADR 0008, que sigue como propuesta.",
+                 "el veredicto 0.1 deja firme que el frontend sigue en HTML, CSS y JavaScript."),
+            ],
+            "lineas": ("bitacora_datos.py: los campos de veredicto, razón y qué cambió de las filas 0.1, 0.2, 0.3, 0.4, 0.7, "
+                       "0.8, 0.10, 0.20, 19.5, 19.6, 19.8, 21.8, 21.9 y 21.10, y esta entrada. No se cambió código de la "
+                       "aplicación."),
+            "pruebas": "No aplica: en este prompt solo se registraron veredictos.",
+        },
+        "decisiones": [
+            ("23.1", "Leer el veredicto 19.8 como: el máximo de la contraseña sube de 12 a 20 y se agrega un indicador de cuatro niveles (bajo, medio, confiable y muy confiable).", "Sophia dijo «mantengo la de 20», pero el código tenía 12 desde el 17 de noviembre. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Máximo 20 y el indicador de cuatro niveles».", "Fila 19.8; el cambio de código queda como pieza."),
+            ("23.2", "Seguir con HTML, CSS y JavaScript para el frontend, y decidir Next.js más adelante.", "El veredicto 0.1 pedía la tecnología y Sophia había contestado quién lo diseña. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Seguir con HTML, CSS y JavaScript».", "Fila 0.1."),
+            ("23.3", "La web usa la paleta y la tipografía del manual de identidad; el logotipo queda pendiente y los documentos siguen en azul marino.", "El manual trae paleta, tipografía y un logotipo provisional, y Sophia solo había nombrado la tipografía. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Paleta y tipografía del manual; el logotipo pendiente».", "Filas 0.2 y 0.3."),
+            ("23.4", "Dejar el chip de ahorro fuera por ahora.", "Sophia preguntó qué era: una etiqueta que dice cuánto se ahorra frente a otras plataformas; necesita un precio de comparación que hoy no existe. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Sigue fuera por ahora».", "Fila 0.4."),
+            ("23.5", "Guardar el manual de identidad en docs/diseno/ y aplicar su paleta y su tipografía a los tokens del prototipo.", "Los tokens de estilos.css tienen todavía los colores de octubre. Campo: qué hace.", "Pendiente", "", ""),
+            ("23.6", "Actualizar el ADR 0008, que sigue como propuesta.", "El veredicto 0.1 ya es firme. Campo: qué hace.", "Pendiente", "", ""),
         ],
     },
 ]
