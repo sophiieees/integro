@@ -1,0 +1,42 @@
+Sesión en una cookie que la página no puede leer
+19 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+
+Última línea de la corrida completa (python -m pytest tests\backend -v -rs):
+    ================== 744 passed, 1 warning in 90.48s (0:01:30) ==================
+
+Pruebas por archivo, todas PASSED:
+    82  tests/backend/test_account_access_tables.py
+    62  tests/backend/test_accounts_login.py
+    76  tests/backend/test_accounts_registration.py
+   152  tests/backend/test_accounts_validation.py
+    37  tests/backend/test_accounts_wrong_passwords.py
+    38  tests/backend/test_config.py
+    16  tests/backend/test_health.py
+    34  tests/backend/test_login_attempts_admins_tables.py
+   171  tests/backend/test_password_strength.py
+    31  tests/backend/test_session_cookie.py
+    45  tests/backend/test_transaction.py
+
+Recorrido con la API completa dentro del programa de pruebas, sin servidor aparte.
+De la llave de sesión solo se muestra el largo.
+
+=== SESSION_COOKIE_SECURE=true
+1. POST /auth/login -> 200 {"status":"code_required"} | sin cookie
+2. POST /auth/login/verify (código incorrecto) -> 400 | sin cookie
+3. POST /auth/login/verify (código correcto) -> 200 ['expires_at', 'status'] session_opened
+   Set-Cookie: integro_session=<llave de 43 caracteres>; HttpOnly; Max-Age=2592000; Path=/; SameSite=strict; Secure
+4. GET /auth/me con la cookie -> 200 Ana | integro_session=<llave de 43 caracteres>; HttpOnly; Max-Age=2592000; Path=/; SameSite=strict; Secure
+5. GET /auth/me sin cookie -> 401 not_authenticated | sin cookie
+6. GET /auth/me con la llave en el encabezado -> 401
+=== SESSION_COOKIE_SECURE=false
+1. POST /auth/login -> 200 {"status":"code_required"} | sin cookie
+2. POST /auth/login/verify (código incorrecto) -> 400 | sin cookie
+3. POST /auth/login/verify (código correcto) -> 200 ['expires_at', 'status'] session_opened
+   Set-Cookie: integro_session=<llave de 43 caracteres>; HttpOnly; Max-Age=2592000; Path=/; SameSite=strict
+4. GET /auth/me con la cookie -> 200 Ana | integro_session=<llave de 43 caracteres>; HttpOnly; Max-Age=2592000; Path=/; SameSite=strict
+5. GET /auth/me sin cookie -> 401 not_authenticated | sin cookie
+6. GET /auth/me con la llave en el encabezado -> 401
+=== filas de prueba que quedaron: (0, 0, 0, 0) = users, login_attempts, sessions, one_time_codes

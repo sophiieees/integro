@@ -1421,4 +1421,78 @@ PROMPTS = [
             ("25.10", "Definir cómo se ve el botón al pasar el cursor.", "Sophia dijo qué pasa al dar clic, pero no al pasar el cursor. Campo: qué hace.", "Pendiente", "", "Anotado en el ADR 0008 para confirmarlo en la pieza de frontend."),
         ],
     },
+    # ------------------------------------------------------------------ 26
+    {
+        "n": 26,
+        "titulo": "Sesión en una cookie que la página no puede leer",
+        "fecha": "19 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Las reglas del ADR 0008 para la paleta y el ADR 0014 para recuperar la contraseña. El envío de correos "
+                     "continúa solo con correo; WhatsApp queda pendiente. Sobre la cookie: es para guardar la sesión y "
+                     "aplicar lo de 30 días, 7 días, etcétera; el inicio de sesión sigue siendo correo, contraseña y "
+                     "código. Lo del dominio debo hablarlo con Shakti. Ya subí el manual de estilos."),
+        "tarea": ("1) /pieza: continuemos, empezando por la pantalla de inicio de sesión y «Entrar» en la cabecera; aplicar "
+                  "la paleta y la tipografía del manual de identidad a los tokens de estilos.css, con las reglas del ADR "
+                  "0008, y guardar el manual en docs/diseno. También: cerrar sesión (terminar la sesión actual y poder "
+                  "cerrar las demás); recuperar contraseña (liga al correo de 15 minutos y cierre de todas las sesiones al "
+                  "cambiarla, como quedó en el ADR 0014); tope de sesión y panel (la regla de 30 minutos para el panel de "
+                  "administración); y envío real de correos (elegir y contratar el proveedor). 2) Desviaciones: 1, "
+                  "aceptar; 2, no, las tres pruebas siguen (revisar); 3, explica (revisar); 4, revisar, dame opciones para "
+                  "protegerlo de mejor manera; 5, aceptar; 6, revisar, es el dominio, ¿no? Acepto estas sugerencias: hacer "
+                  "«cerrar sesión» antes de la ventana de «Entrar» y publicar la web y la API bajo el mismo dominio. "
+                  "3) Lo que sigue: descarga tú la fuente Outfit; todos los otros pasos, continúa."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "19 de noviembre de 2026",
+            "commits": ("a48eb48 (rama api/session-cookie, PR #40, fusionado por Sophia en 289e54f). Ediciones directas de "
+                        "Sophia en GitHub: f39b178, 39ebaa6 y 8f34d15, con las que subió el manual de identidad a "
+                        "docs/diseno/."),
+            "archivos": [
+                ("backend/app/api/auth.py", "lee la llave de la cookie, la renueva en cada uso y ya no acepta el encabezado."),
+                ("backend/app/modules/accounts/router.py", "el paso del código entrega la cookie y su respuesta ya no trae la llave."),
+                ("backend/app/modules/accounts/login.py", "avisa cuántos días dura la sesión que abrió, para la cookie."),
+                ("backend/app/core/config.py y backend/.env.example", "variable nueva SESSION_COOKIE_SECURE."),
+                ("tests/backend/test_session_cookie.py", "nuevo: los ocho casos aceptados y sus límites; 31 pruebas."),
+                ("tests/backend/test_accounts_login.py, test_accounts_wrong_passwords.py y conftest.py", "las pruebas mandan la llave en la cookie, como un navegador."),
+                ("docs/decisiones/0015-sesiones-en-la-base-no-jwt.md", "cómo viaja la llave y lo que eso deja pendiente."),
+                ("backend/README.md", "las rutas, la cookie y el paso nuevo de preparación."),
+                ("herramientas/bitacora/evidencias/backend_session_cookie_pruebas_2026-11-19.txt", "salida real de las pruebas y del recorrido."),
+            ],
+            "sugerencias": [
+                ("Hacer «cerrar sesión» antes de la ventana de «Entrar».", "con la cookie, la página no puede cerrar la sesión por su cuenta; sin esa pieza, quien entre no tiene cómo salir."),
+                ("Publicar la web y la API bajo el mismo dominio.", "con la cookie, el deploy de Vercel no puede iniciar sesión mientras la API viva en otro sitio."),
+            ],
+            "lineas": ("auth.py: completo. router.py: dos importaciones, SessionResponse, login_verify y el texto de me. "
+                       "login.py: un campo en SessionResult y el final de finish_login. config.py: un campo. .env.example: "
+                       "un bloque al final. test_accounts_login.py: el encabezado, la función login, el caso 5, el caso 9 y "
+                       "las pruebas del encabezado Authorization, que salieron. ADR 0015: la sección «Cómo viaja la llave», "
+                       "cuatro consecuencias y «Cambios». README.md: una fila de estructura, dos de rutas, un párrafo y un "
+                       "comando."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben se deshace. IA: «744 passed, 1 warning in 90.48s» y 0 filas de prueba "
+                        "guardadas. Recorrido de la IA con la API completa dentro del programa de pruebas, sin servidor "
+                        "aparte: el paso de la contraseña, 200 sin cookie; código incorrecto, 400 sin cookie; código "
+                        "correcto, 200 «session_opened» con la cookie integro_session (HttpOnly, Max-Age=2592000, Path=/, "
+                        "SameSite=strict y Secure); /auth/me con la cookie, 200 y la cookie otra vez; sin cookie, 401 "
+                        "«not_authenticated»; con la llave en el encabezado, 401. Sophia no reportó su corrida. Salida "
+                        "copiada en herramientas/bitacora/evidencias/backend_session_cookie_pruebas_2026-11-19.txt."),
+        },
+        "decisiones": [
+            ("26.1", "Construir solo la primera de las seis piezas pedidas y proponer el orden de las demás.", "La regla es una responsabilidad por rama y, si se piden varias, construir solo la primera. Campo: qué hace.", "Aceptar", "Lo que sigue: descarga tú la fuente Outfit; todos los otros pasos, continúa.", "Orden: la API muestra la web, cerrar sesión, paleta y tipografía, ventana de «Entrar», recuperar contraseña, tope y panel, y proveedor de correo."),
+            ("26.2", "Para que la página pueda hablar con la API en la computadora de Sophia, que la API también muestre la web.", "Viven en direcciones distintas y la API no tenía permiso configurado para eso. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «La API también muestra la web».", "Queda como pieza propia, antes de la pantalla."),
+            ("26.3", "Guardar la llave de sesión en el navegador, donde la página puede leerla.", "Es lo que piden los plazos de 30 y 7 días y la web no carga código de terceros. Campo: qué datos necesita.", "Rechazar", "Sophia eligió la opción «En una cookie que la página no puede leer».", "La llave viaja en una cookie HttpOnly; fue una pieza de la API antes de la pantalla."),
+            ("26.4", "El inicio de sesión en una página aparte.", "Tiene su propia dirección y es más simple de probar. Campo: qué hace.", "Rechazar", "Sophia eligió la opción «Ventana sobre la página».", "La pantalla será una ventana sobre la página donde esté la persona."),
+            ("26.5", "Al terminar de entrar, llevar a la persona a la portada, con su nombre en la cabecera.", "Era lo más simple mientras no hubiera reservas. Campo: qué hace.", "Rechazar", "Sophia eligió la opción «A la página donde estaba».", "Al entrar se queda en la página donde estaba, con su nombre en la cabecera."),
+            ("26.6", "Aceptar la llave solo en la cookie y ya no en el encabezado Authorization.", "Una sola forma de entrar y la llave nunca la ve el código de la página. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Solo la cookie».", "auth.py."),
+            ("26.7", "La especificación de la pieza con ocho casos de prueba.", "El prompt no traía casos para la cookie. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí, con esos casos».", "31 pruebas en test_session_cookie.py."),
+            ("26.8", "La respuesta del paso del código cambia de forma: ya no trae la llave y dice «session_opened» con la fecha de vencimiento.", "Quitar la llave era lo pedido; el dato status lo agregó la IA. Campo: qué hace.", "Aceptar", "Aceptar.", "SessionResponse en router.py."),
+            ("26.9", "Quitar las 13 pruebas del encabezado Authorization y la función que lo leía.", "Sophia eligió «solo la cookie». Campo: cómo se sabrá que funciona.", "Aceptar", "No, las tres pruebas siguen: es correo, contraseña y código, y la cookie es para guardar la sesión y aplicar lo de 30 días, 7 días, etcétera. Tras la aclaración de que el inicio de sesión sigue pidiendo correo, contraseña y código, eligió la opción «Así está bien».", "Sin cambios."),
+            ("26.10", "El aviso 401 ya no lleva la etiqueta que anunciaba la llave en el encabezado.", "Anunciaba una forma de entrar que la API ya no acepta. Campo: qué hace.", "Aceptar", "Explica. Tras la explicación eligió la opción «Aceptar: se queda sin la etiqueta».", "Sin cambios."),
+            ("26.11", "Dejar para la pieza de cerrar sesión la segunda defensa contra peticiones hechas desde páginas ajenas.", "Todavía no hay ninguna ruta con sesión que cambie algo; la primera es cerrar sesión. Campo: qué hace.", "Revisar", "Revisar, dame opciones para protegerlo de mejor manera. Después eligió la opción «Las tres defensas».", "Además de SameSite=Strict, se revisa de dónde viene la petición y se agrega una clave anti-falsificación; se construyen con cerrar sesión."),
+            ("26.12", "Escribir en el ADR 0015 lo que la cookie deja pendiente.", "El ADR es el registro de la decisión. Campo: qué hace.", "Aceptar", "Aceptar.", "ADR 0015, consecuencias."),
+            ("26.13", "La plantilla .env.example trae SESSION_COOKIE_SECURE=false.", "Es la plantilla de desarrollo y el servidor local no tiene HTTPS. Campo: qué datos necesita.", "Aceptar", "Revisar, es el dominio, ¿no? Debo hablarlo con Shakti. Tras la aclaración de que la variable es del HTTPS en su computadora y no del dominio, eligió la opción «Con false, para desarrollo».", "Sin cambios."),
+            ("26.14", "Hacer «cerrar sesión» antes de la ventana de «Entrar».", "Con la cookie, la página no puede cerrar la sesión por su cuenta. Campo: qué hace.", "Aceptar", "Acepto estas sugerencias: hacer «cerrar sesión» antes de la ventana de «Entrar» y publicar la web y la API bajo el mismo dominio.", "Cambia el orden de las piezas."),
+            ("26.15", "Publicar la web y la API bajo el mismo dominio.", "Con la cookie, la página y la API tienen que estar en el mismo sitio. Campo: qué datos necesita.", "Aceptar", "Acepto estas sugerencias: hacer «cerrar sesión» antes de la ventana de «Entrar» y publicar la web y la API bajo el mismo dominio. Debo hablarlo con Shakti.", "Queda para la decisión del alojamiento."),
+        ],
+    },
 ]
