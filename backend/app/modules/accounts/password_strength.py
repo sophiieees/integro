@@ -110,7 +110,7 @@ VARIED_SYMBOLS_RAISE_HINT = "Usa dos símbolos distintos para subir un nivel."
 HINTS = {
     SHORT: "Usa al menos 10 caracteres.",
     REPEATED_CHARACTERS: "Evita repetir el mismo carácter tres veces seguidas.",
-    SEQUENCE: "Evita secuencias como 1234 o abcd.",
+    SEQUENCE: "Evita secuencias como 1234, abcd o símbolos en fila del teclado.",
     PERSONAL_DATA: "No uses tu nombre ni tu correo.",
     COMMON_WORD: "Evita palabras muy comunes.",
 }
