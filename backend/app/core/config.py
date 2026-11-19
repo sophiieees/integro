@@ -72,6 +72,10 @@ class Settings(BaseSettings):
     # propósito, y solo se apaga en desarrollo, donde el servidor local no
     # tiene HTTPS.
     session_cookie_secure: bool = True
+    # Direcciones desde las que una página puede pedir cambios con sesión,
+    # además de la dirección de la propia API, que siempre vale. Separadas por
+    # comas, por ejemplo: https://integro.mx,https://www.integro.mx
+    allowed_origins: str = ""
 
     # La API muestra también las páginas de web/ en su misma dirección, para
     # que la página y la API compartan sitio y la cookie de sesión viaje

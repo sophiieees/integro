@@ -23,6 +23,13 @@ Decidido por Sophia el 19 de noviembre de 2026, al construir la primera pantalla
 - Dura el plazo sin uso de la sesión, 30 días para un huésped y 7 para un anfitrión, y cada petición con sesión la vuelve a entregar para renovarlo.
 - Exige HTTPS (`Secure`). Solo en desarrollo se apaga, con `SESSION_COOKIE_SECURE=false`, porque el servidor local no tiene HTTPS.
 
+### Cerrar sesión y defensas
+Decidido por Sophia el 19 de noviembre de 2026.
+
+- La persona cierra su sesión actual, ve dónde tiene sesión abierta (fecha, navegador, dirección y cuál es la actual) y puede cerrar una en particular o todas las demás. Al cerrar la actual, la API borra la cookie.
+- Toda petición con sesión que cambie algo pasa tres defensas contra peticiones hechas desde páginas ajenas: la cookie solo viaja desde el mismo sitio; se revisa que la petición venga de una dirección de Íntegro; y la petición trae una clave anti-falsificación ligada a su sesión, que la API entrega a la página y una página ajena no puede leer. Si falla una, la API responde `403` y no cambia nada.
+- La clave anti-falsificación no se guarda: se calcula con la llave secreta del servidor a partir de la llave de sesión.
+
 Se descartaron el JWT solo, porque no se puede revocar, y el JWT corto con una llave de renovación guardada, porque son dos mecanismos que construir y probar para tres personas.
 
 ## Consecuencias
@@ -32,8 +39,9 @@ Se descartaron el JWT solo, porque no se puede revocar, y el JWT corto con una l
 - El sistema no borra sesiones, así que las vencidas se acumulan. Hace falta una tarea de limpieza más adelante.
 - Falta decidir cuánto dura una sesión. Se decide al construir el inicio de sesión.
 - Con la llave en una cookie, la página y la API tienen que estar en el mismo sitio para que el navegador la mande. En desarrollo la API muestra también la web; al publicar, las dos van bajo el mismo dominio. Queda por decidir con el alojamiento.
-- Una cookie viaja sola, así que las rutas con sesión que cambien algo necesitan una defensa contra peticiones hechas desde páginas ajenas. `SameSite=Strict` es la primera; la comprobación del origen de la petición se agrega con la primera de esas rutas, que es cerrar sesión.
-- La página no puede borrar la cookie: cerrar sesión tiene que hacerlo la API.
+- Una cookie viaja sola, así que las rutas con sesión que cambian algo llevan las tres defensas de arriba. Cada ruta nueva de ese tipo tiene que pedirlas, y cada pantalla nueva tiene que mandar la clave anti-falsificación.
+- La página no puede borrar la cookie: cerrar sesión lo hace la API.
+- Al publicar, las direcciones de la web van en `ALLOWED_ORIGINS`.
 - Una app de celular no usa cookies. Si llega a haberla, el encabezado se agrega en su propia pieza.
 
 ## Fuente
@@ -41,3 +49,4 @@ Decisiones de Sophia del 17 y del 19 de noviembre de 2026. Bitácora, decisiones
 
 ## Cambios
 - 19 de noviembre de 2026: se agregó cómo viaja la llave. Pasa del encabezado `Authorization: Bearer` a una cookie que la página no puede leer.
+- 19 de noviembre de 2026, más tarde: se agregaron cerrar sesión, la lista de sesiones y las tres defensas.

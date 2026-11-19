@@ -80,10 +80,10 @@ def test_the_response_text_does_not_carry_the_key(api):
 
     token = session_cookie(response).value
     body = response.json()
-    assert set(body) == {"status", "expires_at"}
+    # csrf_token es la clave anti-falsificación de la pieza de cerrar sesión: no es la llave.
+    assert set(body) == {"status", "expires_at", "csrf_token"}
     assert body["status"] == "session_opened"
     assert token not in response.text
-    assert "token" not in response.text
 
 
 def test_the_cookie_carries_the_key_whose_fingerprint_is_stored(api):

@@ -50,6 +50,17 @@ def set_session_cookie(response: Response, token: str, days: int, settings: Sett
     )
 
 
+def clear_session_cookie(response: Response, settings: Settings) -> None:
+    """Le pide al navegador que borre la cookie de sesión. La página no puede borrarla sola."""
+    response.delete_cookie(
+        key=SESSION_COOKIE,
+        path="/",
+        httponly=True,
+        samesite="strict",
+        secure=settings.session_cookie_secure,
+    )
+
+
 def require_session(request: Request, response: Response) -> CurrentSession:
     """Dependencia de FastAPI: devuelve la sesión o corta la petición con 401.
 

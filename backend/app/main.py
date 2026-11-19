@@ -12,6 +12,7 @@ from app.api.v1.router import router as api_v1_router
 from app.core.config import WEB_DIRECTORY, Settings, load_settings
 from app.database.connection import create_pool
 from app.api.auth import NotAuthenticated, not_authenticated_response
+from app.api.protection import Forbidden, forbidden_response
 from app.notifications import create_code_sender
 from app.web import mount_web
 
@@ -54,6 +55,9 @@ def create_app(settings: Settings | None = None, web_directory: Path | None = WE
     application.include_router(api_v1_router)
     # Toda ruta que pida sesión responde igual cuando no la hay: 401.
     application.add_exception_handler(NotAuthenticated, not_authenticated_response)
+    # Y toda ruta que cambia algo responde igual cuando la petición no pasa
+    # las defensas contra páginas ajenas: 403.
+    application.add_exception_handler(Forbidden, forbidden_response)
     return application
 
 

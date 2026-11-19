@@ -13,7 +13,7 @@ from uuid import UUID
 from psycopg_pool import ConnectionPool
 
 from app.core.config import Settings
-from app.database.transaction import system_transaction
+from app.database.transaction import system_transaction, user_transaction
 from app.modules.accounts.security import hash_session_token
 
 # Una llave de sesión real mide 43 caracteres. Lo que pase de este largo ni se busca.
@@ -61,3 +61,68 @@ def authenticate(pool: ConnectionPool, token: str | None, settings: Settings) ->
             (idle_days(is_host, settings), session_id),
         ).fetchone()[0]
     return CurrentSession(session_id=session_id, user_id=user_id, is_host=is_host, expires_at=expires_at)
+
+
+@dataclass(frozen=True)
+class SessionInfo:
+    """Una sesión abierta, como la ve su dueño. Sin la llave ni su huella."""
+
+    session_id: UUID
+    created_at: datetime
+    last_used_at: datetime
+    expires_at: datetime
+    ip_address: str | None
+    user_agent: str | None
+    current: bool
+
+
+def list_sessions(pool: ConnectionPool, session: CurrentSession) -> list[SessionInfo]:
+    """Las sesiones abiertas de la persona, de la más usada recientemente a la menos.
+
+    Se leen como esa persona: la base solo le deja ver las suyas, y no le
+    deja leer la huella de la llave. Las cerradas y las vencidas no salen.
+    """
+    with user_transaction(pool, session.user_id) as connection:
+        rows = connection.execute(
+            "select id, created_at, last_used_at, expires_at, host(ip_address), user_agent from sessions "
+            "where revoked_at is null and expires_at > now() "
+            "order by last_used_at desc, created_at desc, id"
+        ).fetchall()
+    return [
+        SessionInfo(
+            session_id=row[0],
+            created_at=row[1],
+            last_used_at=row[2],
+            expires_at=row[3],
+            ip_address=row[4],
+            user_agent=row[5],
+            current=row[0] == session.session_id,
+        )
+        for row in rows
+    ]
+
+
+def revoke_session(pool: ConnectionPool, user_id: UUID, session_id: UUID) -> bool:
+    """Cierra una sesión de esa persona. Devuelve si había algo que cerrar.
+
+    Cerrar lo hace el sistema, y siempre con el id de la persona: nadie
+    cierra la sesión de otro. Una sesión cerrada no vuelve a abrirse.
+    """
+    with system_transaction(pool) as connection:
+        row = connection.execute(
+            "update sessions set revoked_at = now() "
+            "where id = %s and user_id = %s and revoked_at is null and expires_at > now() returning id",
+            (session_id, user_id),
+        ).fetchone()
+    return row is not None
+
+
+def revoke_other_sessions(pool: ConnectionPool, user_id: UUID, current_session_id: UUID) -> int:
+    """Cierra todas las sesiones abiertas de la persona menos la actual. Devuelve cuántas cerró."""
+    with system_transaction(pool) as connection:
+        rows = connection.execute(
+            "update sessions set revoked_at = now() "
+            "where user_id = %s and id <> %s and revoked_at is null and expires_at > now() returning id",
+            (user_id, current_session_id),
+        ).fetchall()
+    return len(rows)

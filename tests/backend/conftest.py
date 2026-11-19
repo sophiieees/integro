@@ -34,6 +34,8 @@ SETTINGS_VARIABLES = (
     "CODE_RESEND_WAIT_SECONDS",
     "CODE_MAX_PER_HOUR",
     "SESSION_COOKIE_SECURE",
+    "ALLOWED_ORIGINS",
+    "SERVE_WEB",
 )
 
 # Llave inventada, solo para pruebas que no usan la configuración real.

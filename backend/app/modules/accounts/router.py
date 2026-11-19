@@ -8,15 +8,22 @@ ponga junto a su campo:
 
 from datetime import datetime, timezone
 from typing import Any, Literal
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from app.api.auth import require_session, set_session_cookie
+from app.api.auth import SESSION_COOKIE, clear_session_cookie, require_session, set_session_cookie
+from app.api.protection import csrf_token, require_session_for_change
 from app.database.transaction import user_transaction
 from app.modules.accounts.login import LoginOutcome, SessionOutcome, finish_login, start_login
-from app.modules.accounts.sessions import CurrentSession
+from app.modules.accounts.sessions import (
+    CurrentSession,
+    list_sessions,
+    revoke_other_sessions,
+    revoke_session,
+)
 from app.modules.accounts.registration import (
     AlreadyRegistered,
     ResendOutcome,
@@ -217,6 +224,9 @@ class SessionResponse(BaseModel):
     # La llave no va aquí: viaja en la cookie de sesión, que la página no puede leer.
     status: Literal["session_opened"]
     expires_at: datetime
+    # Clave anti-falsificación de esta sesión: la página la manda en el
+    # encabezado X-CSRF-Token en cada petición que cambie algo.
+    csrf_token: str
 
 
 class MeResponse(BaseModel):
@@ -228,6 +238,7 @@ class MeResponse(BaseModel):
     preferred_language: str
     is_host: bool
     session_expires_at: datetime
+    csrf_token: str
 
 
 def wait_response(seconds: int | None) -> JSONResponse:
@@ -315,7 +326,11 @@ def login_verify(body: LoginVerifyRequest, request: Request, response: Response)
 
     if result.outcome is SessionOutcome.OPENED:
         set_session_cookie(response, result.token, result.idle_days, state.settings)
-        return SessionResponse(status="session_opened", expires_at=result.expires_at)
+        return SessionResponse(
+            status="session_opened",
+            expires_at=result.expires_at,
+            csrf_token=csrf_token(result.token, state.settings),
+        )
     if result.outcome is SessionOutcome.CODE_EXPIRED:
         return error_response(
             400, [FieldError("code", "code_expired", "El código venció. Inicia sesión de nuevo.")]
@@ -354,7 +369,117 @@ def me(request: Request, session: CurrentSession = Depends(require_session)):
         preferred_language=row[5],
         is_host=session.is_host,
         session_expires_at=session.expires_at,
+        csrf_token=csrf_token(request.cookies[SESSION_COOKIE], request.app.state.settings),
     )
+
+
+# ---------------------------------------------------------------------------
+# Cerrar sesión y ver las sesiones abiertas (ADR 0015)
+# ---------------------------------------------------------------------------
+
+
+class SessionItem(BaseModel):
+    id: str
+    created_at: datetime
+    last_used_at: datetime
+    expires_at: datetime
+    ip_address: str | None
+    user_agent: str | None
+    current: bool
+
+
+class SessionsResponse(BaseModel):
+    sessions: list[SessionItem]
+
+
+class SignedOutResponse(BaseModel):
+    status: Literal["signed_out"]
+
+
+class ClosedResponse(BaseModel):
+    status: Literal["closed"]
+    closed: int
+
+
+def without_cookie(body: dict, settings) -> JSONResponse:
+    """Una respuesta que además le pide al navegador borrar la cookie de sesión."""
+    response = JSONResponse(status_code=200, content=body)
+    clear_session_cookie(response, settings)
+    return response
+
+
+@router.post(
+    "/logout",
+    response_model=SignedOutResponse,
+    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
+    summary="Cerrar la sesión actual",
+)
+def logout(request: Request, session: CurrentSession = Depends(require_session_for_change)):
+    """Cierra la sesión con la que llega la petición y borra su cookie. La
+    llave deja de servir en ese instante y no vuelve a servir."""
+    state = request.app.state
+    revoke_session(state.pool, session.user_id, session.session_id)
+    return without_cookie({"status": "signed_out"}, state.settings)
+
+
+@router.get(
+    "/sessions",
+    response_model=SessionsResponse,
+    responses={401: {"model": ErrorResponse}},
+    summary="Mis sesiones abiertas",
+)
+def my_sessions(request: Request, session: CurrentSession = Depends(require_session)):
+    """Dónde tiene sesión abierta la persona: cuándo se abrió cada una, su
+    último uso, el navegador, la dirección y cuál es la actual. Nunca trae la
+    llave ni su huella, ni sesiones de otra persona."""
+    return SessionsResponse(
+        sessions=[
+            SessionItem(
+                id=str(item.session_id),
+                created_at=item.created_at,
+                last_used_at=item.last_used_at,
+                expires_at=item.expires_at,
+                ip_address=item.ip_address,
+                user_agent=item.user_agent,
+                current=item.current,
+            )
+            for item in list_sessions(request.app.state.pool, session)
+        ]
+    )
+
+
+@router.post(
+    "/sessions/close-others",
+    response_model=ClosedResponse,
+    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
+    summary="Cerrar todas mis demás sesiones",
+)
+def close_other_sessions(request: Request, session: CurrentSession = Depends(require_session_for_change)):
+    """Cierra todas las sesiones de la persona menos la actual."""
+    closed = revoke_other_sessions(request.app.state.pool, session.user_id, session.session_id)
+    return ClosedResponse(status="closed", closed=closed)
+
+
+@router.delete(
+    "/sessions/{session_id}",
+    response_model=ClosedResponse,
+    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    summary="Cerrar una de mis sesiones",
+)
+def close_session(session_id: str, request: Request, session: CurrentSession = Depends(require_session_for_change)):
+    """Cierra una sesión de la persona, por su id. La de otra persona, una
+    que no existe o una ya cerrada responden igual: 404. Si es la actual,
+    además se borra la cookie."""
+    state = request.app.state
+    try:
+        target = UUID(session_id)
+    except ValueError:
+        target = None
+    if target is None or not revoke_session(state.pool, session.user_id, target):
+        return error_response(404, [FieldError("session", "not_found", "Esa sesión no existe o ya estaba cerrada.")])
+    if target == session.session_id:
+        return without_cookie({"status": "closed", "closed": 1}, state.settings)
+    return ClosedResponse(status="closed", closed=1)
 
 
 # ---------------------------------------------------------------------------
