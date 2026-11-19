@@ -252,12 +252,12 @@ def test_register_accepts_a_guest_from_another_country(api):
 @pytest.mark.parametrize(
     "password, code",
     [
-        ("Abcd-1x", "too_short"),
+        ("Abcde-1xy", "too_short"),  # 9 caracteres
         ("ejemplo-2026", "missing_uppercase"),
         ("EJEMPLO-2026", "missing_lowercase"),
         ("Ejemplo-dos", "missing_digit"),
         ("Ejemplo-2026-muy-largo", "too_long"),  # 22 caracteres
-        ("Kz7-Pm4-X", "too_weak"),  # cumple las reglas, pero con 9 caracteres sale baja
+        ("Kz7-1234-xY", "too_weak"),  # cumple las reglas, pero con una secuencia sale baja
         ("Ejem plo-26", "has_spaces"),
         ("Ejemplo2026", "missing_symbol"),
     ],

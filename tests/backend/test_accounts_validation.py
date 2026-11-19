@@ -1,7 +1,7 @@
 """Reglas del formulario de registro, sin base de datos.
 
 Decisiones de Sophia del 17 de noviembre de 2026: todos los datos obligatorios,
-18 años cumplidos, y contraseña de mínimo 8 caracteres con mayúscula,
+18 años cumplidos, y contraseña de mínimo 10 caracteres con mayúscula,
 minúscula, número y símbolo.
 """
 
@@ -263,8 +263,9 @@ def test_missing_country_does_not_add_a_wrong_age_warning():
     "password, codes",
     [
         ("Ejemplo-2026", []),
-        ("Abcde-1x", []),  # justo 8
-        ("Abcd-1x", ["too_short"]),  # 7
+        ("Abcdef-1xy", []),  # justo 10
+        ("Abcde-1xy", ["too_short"]),  # 9
+        ("Abcde-1x", ["too_short"]),  # 8: desde el 19 de noviembre el mínimo es 10
         ("ejemplo-2026", ["missing_uppercase"]),
         ("EJEMPLO-2026", ["missing_lowercase"]),
         ("Ejemplo-dos", ["missing_digit"]),
@@ -274,8 +275,8 @@ def test_missing_country_does_not_add_a_wrong_age_warning():
         (" Ejemplo-26", ["has_spaces"]),  # espacio al inicio
         ("Ejemplo-26 ", ["has_spaces"]),  # espacio al final
         ("Ejemplo-26\t", ["has_spaces"]),  # tabulador
-        ("abcdefgh", ["missing_uppercase", "missing_digit", "missing_symbol"]),
-        ("12345678", ["missing_uppercase", "missing_lowercase", "missing_symbol"]),
+        ("abcdefghij", ["missing_uppercase", "missing_digit", "missing_symbol"]),
+        ("1234567890", ["missing_uppercase", "missing_lowercase", "missing_symbol"]),
         ("a", ["too_short", "missing_uppercase", "missing_digit", "missing_symbol"]),
         ("Aa1-" + "x" * 16, []),  # justo 20
         ("Aa1-" + "x" * 17, ["too_long"]),  # 21

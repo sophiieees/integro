@@ -5,10 +5,10 @@ Decisiones de Sophia del 17 de noviembre de 2026:
   teléfono, país y fecha de nacimiento. El idioma es español si no se indica.
 - Edad mínima: 18 años cumplidos el día del registro, con la fecha del país
   que la persona eligió, porque hay huéspedes extranjeros.
-- Contraseña: de 8 a 20 caracteres, con mayúscula, minúscula, número y símbolo,
+- Contraseña: de 10 a 20 caracteres, con mayúscula, minúscula, número y símbolo,
   y sin espacios. Si trae espacios se rechaza con un aviso; no se le quitan.
-  Además debe alcanzar al menos el nivel medio (password_strength.py), lo que
-  en la práctica pide 10 caracteres o más (decisiones del 19 de noviembre).
+  Además debe alcanzar al menos el nivel medio (password_strength.py)
+  (decisiones del 19 de noviembre).
 
 Los formatos son los mismos que exige la base de datos (migraciones del
 grupo 1), para avisar por campo antes de intentar guardar.
@@ -26,7 +26,8 @@ from app.modules.accounts.password_strength import password_strength
 MINIMUM_AGE_YEARS = 18
 # La hora más adelantada del planeta (UTC+14). Se usa cuando no se sabe el país.
 MOST_ADVANCED_TIME = timezone(timedelta(hours=14))
-PASSWORD_MIN_LENGTH = 8
+# Mínimo decidido por Sophia el 19 de noviembre de 2026 (antes era 8).
+PASSWORD_MIN_LENGTH = 10
 # Máximo decidido por Sophia el 19 de noviembre de 2026 (antes era 12).
 PASSWORD_MAX_LENGTH = 20
 NAME_MAX_LENGTH = 80
