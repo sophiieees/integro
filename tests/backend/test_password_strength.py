@@ -412,7 +412,7 @@ def test_the_too_weak_message_says_how_to_fix_it():
 
     assert len(errors) == 1
     assert errors[0].message == (
-        "La contraseña es muy fácil de adivinar. Evita secuencias como 1234 o abcd. "
+        "La contraseña es muy fácil de adivinar. Evita secuencias como 1234, abcd o símbolos en fila del teclado. "
         "No uses tu nombre ni tu correo."
     )
 
@@ -497,7 +497,7 @@ def test_route_reports_symbols_in_a_row_as_a_sequence(client):
     body = client.post(STRENGTH, json={"password": "Kz7$%&/Pm4xT"}).json()
 
     assert (body["level"], body["weaknesses"]) == ("medium", ["sequence"])
-    assert body["hints"] == ["Evita secuencias como 1234 o abcd."]
+    assert body["hints"] == ["Evita secuencias como 1234, abcd o símbolos en fila del teclado."]
 
 
 def test_route_uses_the_personal_data_when_it_is_given(client):
@@ -514,7 +514,7 @@ def test_route_says_a_low_password_would_not_be_accepted(client):
 
     assert (body["level"], body["label"], body["meets_rules"], body["accepted"]) == ("low", "Bajo", True, False)
     assert body["weaknesses"] == ["sequence", "common_word"]
-    assert body["hints"] == ["Evita secuencias como 1234 o abcd.", "Evita palabras muy comunes."]
+    assert body["hints"] == ["Evita secuencias como 1234, abcd o símbolos en fila del teclado.", "Evita palabras muy comunes."]
 
 
 def test_route_says_which_rule_a_short_password_breaks(client):
