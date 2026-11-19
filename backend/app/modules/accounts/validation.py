@@ -5,8 +5,10 @@ Decisiones de Sophia del 17 de noviembre de 2026:
   teléfono, país y fecha de nacimiento. El idioma es español si no se indica.
 - Edad mínima: 18 años cumplidos el día del registro, con la fecha del país
   que la persona eligió, porque hay huéspedes extranjeros.
-- Contraseña: de 8 a 12 caracteres, con mayúscula, minúscula, número y símbolo,
+- Contraseña: de 8 a 20 caracteres, con mayúscula, minúscula, número y símbolo,
   y sin espacios. Si trae espacios se rechaza con un aviso; no se le quitan.
+  Además debe alcanzar al menos el nivel medio (password_strength.py), lo que
+  en la práctica pide 10 caracteres o más (decisiones del 19 de noviembre).
 
 Los formatos son los mismos que exige la base de datos (migraciones del
 grupo 1), para avisar por campo antes de intentar guardar.
@@ -19,12 +21,14 @@ from functools import lru_cache
 from importlib import resources
 from zoneinfo import ZoneInfo
 
+from app.modules.accounts.password_strength import password_strength
+
 MINIMUM_AGE_YEARS = 18
 # La hora más adelantada del planeta (UTC+14). Se usa cuando no se sabe el país.
 MOST_ADVANCED_TIME = timezone(timedelta(hours=14))
 PASSWORD_MIN_LENGTH = 8
-# Máximo decidido por Sophia el 17 de noviembre de 2026, al revisar la pieza.
-PASSWORD_MAX_LENGTH = 12
+# Máximo decidido por Sophia el 19 de noviembre de 2026 (antes era 12).
+PASSWORD_MAX_LENGTH = 20
 NAME_MAX_LENGTH = 80
 EMAIL_MAX_LENGTH = 254
 EARLIEST_BIRTH_DATE = date(1900, 1, 1)
@@ -169,7 +173,24 @@ def validate_registration(raw: dict, now: datetime) -> tuple[RegistrationData | 
             errors.append(FieldError("email", "invalid", "El correo no tiene un formato válido."))
 
     if "password" in text:
-        errors.extend(password_errors(text["password"]))
+        rule_errors = password_errors(text["password"])
+        errors.extend(rule_errors)
+        if not rule_errors:
+            # Cumple las reglas; falta ver que no sea fácil de adivinar.
+            strength = password_strength(
+                text["password"],
+                first_name=text.get("first_name"),
+                last_name=text.get("last_name"),
+                email=text.get("email"),
+            )
+            if not strength.is_enough:
+                errors.append(
+                    FieldError(
+                        "password",
+                        "too_weak",
+                        " ".join(("La contraseña es muy fácil de adivinar.", *strength.hints)),
+                    )
+                )
 
     if "phone" in text and not PHONE_PATTERN.match(text["phone"]):
         errors.append(

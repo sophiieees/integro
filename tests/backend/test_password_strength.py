@@ -1,0 +1,342 @@
+"""Casos de la pieza "contraseña de hasta 20 caracteres con indicador de cuatro niveles".
+
+Decisiones de Sophia del 19 de noviembre de 2026:
+
+    - La contraseña mide de 8 a 20 caracteres (antes, hasta 12).
+    - Niveles: bajo, medio, confiable y muy confiable. El largo da el nivel
+      base (8 a 9 bajo, 10 a 12 medio, 13 a 15 confiable, 16 a 20 muy
+      confiable) y cada debilidad lo baja un nivel: tres caracteres iguales
+      seguidos, cuatro seguidos en orden, su nombre o su correo, o una palabra
+      muy común.
+    - Para registrarse hace falta al menos el nivel medio.
+    - El cálculo vive en la API, con una ruta que no guarda nada.
+
+Ejemplos que Sophia aprobó:
+
+    Abcde-1x             bajo
+    Ejemplo-2026         medio
+    Lluvia-Verde-26      confiable
+    Mi-Casa-Verde-2026   muy confiable
+    Aaaa-1111-Bbbb       medio      (14, con repetición)
+    Ana-Torres-2026!     confiable  (16, trae su nombre)
+
+Ninguna de estas pruebas usa la base de datos.
+"""
+
+from datetime import datetime, timezone
+
+import pytest
+from fastapi.testclient import TestClient
+
+from app.main import create_app
+from app.modules.accounts.password_strength import (
+    has_repeated_characters,
+    has_sequence,
+    password_strength,
+    personal_words,
+    plain,
+)
+from app.modules.accounts.validation import validate_registration
+
+STRENGTH = "/api/v1/auth/password-strength"
+NOW = datetime(2026, 11, 19, 18, 0, tzinfo=timezone.utc)
+ANA = {"first_name": "Ana", "last_name": "Torres", "email": "ana.torres@example.com"}
+
+
+def level_of(password: str, **person) -> tuple[str, tuple[str, ...]]:
+    result = password_strength(password, **person)
+    return result.level, result.weaknesses
+
+
+# ---------------------------------------------------------------------------
+# Los ejemplos aprobados
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "password, person, level, label",
+    [
+        ("Abcde-1x", {}, "low", "Bajo"),
+        ("Ejemplo-2026", {}, "medium", "Medio"),
+        ("Lluvia-Verde-26", {}, "reliable", "Confiable"),
+        ("Mi-Casa-Verde-2026", {}, "very_reliable", "Muy confiable"),
+        ("Aaaa-1111-Bbbb", {}, "medium", "Medio"),
+        ("Ana-Torres-2026!", ANA, "reliable", "Confiable"),
+    ],
+)
+def test_approved_examples(password, person, level, label):
+    result = password_strength(password, **person)
+
+    assert (result.level, result.label) == (level, label)
+
+
+# ---------------------------------------------------------------------------
+# El largo da el nivel base
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "length, level",
+    [(8, "low"), (9, "low"), (10, "medium"), (12, "medium"), (13, "reliable"), (15, "reliable"),
+     (16, "very_reliable"), (20, "very_reliable")],
+)
+def test_base_level_by_length(length, level):
+    # Letras y cifras que no forman repeticiones, secuencias ni palabras comunes.
+    password = ("Kz7-Pm4-Xv9-Tb2-Rg6-")[:length]
+
+    assert len(password) == length
+    assert password_strength(password).level == level
+
+
+def test_short_is_reported_as_the_reason_for_low():
+    assert level_of("Kz7-Pm4-") == ("low", ("short",))
+    assert level_of("Kz7-Pm4-Xv") == ("medium", ())
+
+
+# ---------------------------------------------------------------------------
+# Cada debilidad baja un nivel
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "password, person, level, weaknesses",
+    [
+        # 16 caracteres: sin debilidades es muy confiable.
+        ("Kz7-Pm4-Xv9-Tb2-", {}, "very_reliable", ()),
+        ("Kzzz-Pm4-Xv9-Tb2", {}, "reliable", ("repeated_characters",)),
+        ("Kz7-1234-Xv9-Tb2", {}, "reliable", ("sequence",)),
+        ("Kz7-Torres-Xv9-2", ANA, "reliable", ("personal_data",)),
+        ("Kz7-Qwerty-Xv9-2", {}, "medium", ("sequence", "common_word")),
+        ("Kz7-Admin-Xv9-22", {}, "reliable", ("common_word",)),
+        ("Password-1234-aaa", {}, "low", ("repeated_characters", "sequence", "common_word")),
+        ("Ana-1234-aaa-Password", ANA, "low", ("repeated_characters", "sequence", "personal_data", "common_word")),
+    ],
+)
+def test_each_weakness_lowers_one_level(password, person, level, weaknesses):
+    assert level_of(password, **person) == (level, weaknesses)
+
+
+def test_level_never_goes_below_low():
+    assert password_strength("aaa-1234-Password").level == "low"
+
+
+def test_the_same_kind_of_weakness_counts_once():
+    """Tres repeticiones distintas siguen siendo una sola debilidad."""
+    assert level_of("Aaaa-1111-Bbbb") == ("medium", ("repeated_characters",))
+
+
+@pytest.mark.parametrize(
+    "text, found",
+    [("aaa", True), ("xx111yy", True), ("aabbcc", False), ("a-a-a", False), ("---", True), ("", False)],
+)
+def test_repeated_characters(text, found):
+    assert has_repeated_characters(text) is found
+
+
+@pytest.mark.parametrize(
+    "text, found",
+    [
+        ("1234", True), ("x4321x", True), ("abcd", True), ("dcba", True), ("qwer", True), ("asdf", True),
+        ("zxcv", True), ("123", False), ("abc", False), ("1357", False), ("a1b2c3d4", False), ("2026", False),
+    ],
+)
+def test_sequences(text, found):
+    assert has_sequence(text) is found
+
+
+def test_capitals_and_accents_do_not_hide_a_weakness():
+    assert "common_word" in password_strength("Mi-CONTRASEÑA-9x").weaknesses
+    assert "common_word" in password_strength("Mi-Íntegro-2026x").weaknesses
+    assert "sequence" in password_strength("Kz7-AbCd-Xv9-Tb2").weaknesses
+    assert "repeated_characters" in password_strength("KzZz-Pm4-Xv9-Tb2").weaknesses
+    assert plain("ÍNTEGRO Contraseña") == "integro contrasena"
+
+
+def test_personal_data_comes_from_name_surname_and_email():
+    assert personal_words("Ana María", "Torres-López", "anita.t_99@example.com") == {
+        "ana", "maria", "torres", "lopez", "anita",
+    }
+    # Lo que va después de la arroba no cuenta, ni las palabras de menos de tres letras.
+    assert personal_words("Jo", None, "x@example.com") == set()
+    assert personal_words(None, None, None) == set()
+
+
+@pytest.mark.parametrize(
+    "password, weak",
+    [("Kz7-ANA-Xv9-Tb2x", True), ("Kz7-Torres-Xv9-2", True), ("Kz7-Pm4-Xv9-Tb2x", False)],
+)
+def test_personal_data_in_any_case(password, weak):
+    assert ("personal_data" in password_strength(password, **ANA).weaknesses) is weak
+
+
+def test_without_personal_data_nothing_is_assumed():
+    assert password_strength("Kz7-Torres-Xv9-2").weaknesses == ()
+
+
+# ---------------------------------------------------------------------------
+# El registro: de 8 a 20 y al menos nivel medio
+# ---------------------------------------------------------------------------
+
+FORM = {
+    "first_name": "Ana",
+    "last_name": "Torres",
+    "email": "ana.torres@example.com",
+    "phone": "+525512345678",
+    "country": "MX",
+    "birth_date": "1995-03-14",
+}
+
+
+def register_errors(password: str) -> list[tuple[str, str]]:
+    _, errors = validate_registration({**FORM, "password": password}, NOW)
+    return [(error.field, error.code) for error in errors]
+
+
+@pytest.mark.parametrize(
+    "password",
+    ["Ejemplo-2026", "Kz7-Pm4-Xv", "Lluvia-Verde-26", "Mi-Casa-Verde-2026", "Kz7-Pm4-Xv9-Tb2-Rg6-"],
+)
+def test_registration_accepts_medium_or_better(password):
+    assert register_errors(password) == []
+
+
+def test_registration_accepts_exactly_20_and_rejects_21():
+    assert len("Kz7-Pm4-Xv9-Tb2-Rg6-") == 20
+    assert register_errors("Kz7-Pm4-Xv9-Tb2-Rg6-") == []
+    assert register_errors("Kz7-Pm4-Xv9-Tb2-Rg6-N") == [("password", "too_long")]
+
+
+@pytest.mark.parametrize(
+    "password",
+    [
+        "Abcde-1x",  # 8 caracteres
+        "Kz7-Pm4-X",  # 9 caracteres
+        "Kzzz-Pm4-Xv",  # 11, con repetición
+        "Ana-2026-xY",  # 11, con su nombre
+        "Kz7-1234-xY",  # 11, con secuencia
+    ],
+)
+def test_registration_rejects_a_low_password(password):
+    assert register_errors(password) == [("password", "too_weak")]
+
+
+def test_the_too_weak_message_says_how_to_fix_it():
+    _, errors = validate_registration({**FORM, "password": "Ana-1234-xY"}, NOW)
+
+    assert len(errors) == 1
+    assert errors[0].message == (
+        "La contraseña es muy fácil de adivinar. Evita secuencias como 1234 o abcd. "
+        "No uses tu nombre ni tu correo."
+    )
+    _, errors = validate_registration({**FORM, "password": "Kz7-Pm4-X"}, NOW)
+    assert errors[0].message == "La contraseña es muy fácil de adivinar. Usa al menos 10 caracteres."
+
+
+def test_rule_errors_come_before_the_strength_check():
+    """Si no cumple las reglas se avisan las reglas, no la fuerza."""
+    assert register_errors("abcde-1x") == [("password", "missing_uppercase")]
+    assert register_errors("Abc-1x") == [("password", "too_short")]
+
+
+def test_a_long_password_with_her_name_is_still_accepted():
+    """Trae su nombre, pero con 16 caracteres queda en confiable."""
+    assert register_errors("Ana-Torres-2026!") == []
+
+
+# ---------------------------------------------------------------------------
+# La ruta POST /auth/password-strength
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def client():
+    """La API sin base de datos: esta ruta no la usa."""
+    from conftest import TEST_CODE_HASH_SECRET
+    from app.core.config import Settings
+
+    settings = Settings(
+        _env_file=None,
+        database_host="127.0.0.1",
+        database_port=1,
+        database_name="integro",
+        database_user="integro_api",
+        database_password="clave-inventada-para-la-prueba",
+        code_hash_secret=TEST_CODE_HASH_SECRET,
+        email_delivery="console",
+    )
+    with TestClient(create_app(settings)) as test_client:
+        yield test_client
+
+
+def test_route_rates_a_password(client):
+    response = client.post(STRENGTH, json={"password": "Lluvia-Verde-26"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "level": "reliable",
+        "label": "Confiable",
+        "weaknesses": [],
+        "hints": [],
+        "meets_rules": True,
+        "accepted": True,
+        "errors": [],
+    }
+
+
+def test_route_uses_the_personal_data_when_it_is_given(client):
+    alone = client.post(STRENGTH, json={"password": "Ana-Torres-2026!"}).json()
+    with_person = client.post(STRENGTH, json={"password": "Ana-Torres-2026!", **ANA}).json()
+
+    assert alone["level"] == "very_reliable"
+    assert (with_person["level"], with_person["weaknesses"]) == ("reliable", ["personal_data"])
+    assert with_person["hints"] == ["No uses tu nombre ni tu correo."]
+
+
+def test_route_says_a_low_password_would_not_be_accepted(client):
+    body = client.post(STRENGTH, json={"password": "Abcde-1x"}).json()
+
+    assert (body["level"], body["label"], body["meets_rules"], body["accepted"]) == ("low", "Bajo", True, False)
+    assert body["weaknesses"] == ["short", "sequence"]
+    assert body["hints"] == ["Usa al menos 10 caracteres.", "Evita secuencias como 1234 o abcd."]
+
+
+def test_route_reports_broken_rules_and_rates_it_low(client):
+    body = client.post(STRENGTH, json={"password": "lluvia verde"}).json()
+
+    assert (body["level"], body["meets_rules"], body["accepted"]) == ("low", False, False)
+    assert [error["code"] for error in body["errors"]] == [
+        "has_spaces", "missing_uppercase", "missing_digit", "missing_symbol",
+    ]
+
+
+def test_route_rates_low_a_password_longer_than_20(client):
+    body = client.post(STRENGTH, json={"password": "Kz7-Pm4-Xv9-Tb2-Rg6-N"}).json()
+
+    assert (body["level"], body["accepted"]) == ("low", False)
+    assert [error["code"] for error in body["errors"]] == ["too_long"]
+
+
+@pytest.mark.parametrize("body", [{}, {"password": ""}, {"password": None}, {"password": 12345678}])
+def test_route_without_a_password_is_rejected(client, body):
+    response = client.post(STRENGTH, json=body)
+
+    assert response.status_code == 422
+    assert response.json()["errors"][0]["field"] == "password"
+
+
+def test_route_ignores_personal_data_that_is_not_text(client):
+    response = client.post(STRENGTH, json={"password": "Lluvia-Verde-26", "first_name": 5, "email": ["x"]})
+
+    assert response.status_code == 200
+    assert response.json()["level"] == "reliable"
+
+
+def test_route_never_echoes_the_password(client):
+    response = client.post(STRENGTH, json={"password": "Lluvia-Verde-26"})
+
+    assert "Lluvia-Verde-26" not in response.text
+
+
+def test_route_only_accepts_post_and_is_documented(client):
+    assert client.get(STRENGTH).status_code == 405
+    assert STRENGTH in client.get("/openapi.json").json()["paths"]

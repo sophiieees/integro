@@ -256,7 +256,8 @@ def test_register_accepts_a_guest_from_another_country(api):
         ("ejemplo-2026", "missing_uppercase"),
         ("EJEMPLO-2026", "missing_lowercase"),
         ("Ejemplo-dos", "missing_digit"),
-        ("Ejemplo-20260", "too_long"),  # 13 caracteres
+        ("Ejemplo-2026-muy-largo", "too_long"),  # 22 caracteres
+        ("Kz7-Pm4-X", "too_weak"),  # cumple las reglas, pero con 9 caracteres sale baja
         ("Ejem plo-26", "has_spaces"),
         ("Ejemplo2026", "missing_symbol"),
     ],
@@ -271,9 +272,9 @@ def test_register_with_weak_password_is_rejected(api, password, code):
     assert count_users(api, form["email"]) == 0
 
 
-def test_register_with_password_of_exactly_8_and_exactly_12_is_accepted(api):
-    register(api, password="Abcde-1x")
-    register(api, password="Abcde-1x2345")
+def test_register_with_password_of_exactly_10_and_exactly_20_is_accepted(api):
+    register(api, password="Kz7-Pm4-Xv")
+    register(api, password="Kz7-Pm4-Xv9-Tb2-Rg6-")
 
 
 # --- Caso 5 ----------------------------------------------------------------

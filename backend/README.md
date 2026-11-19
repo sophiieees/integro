@@ -15,7 +15,7 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/api/v1/router.py` | Reúne las rutas de la versión 1. Cada módulo agrega aquí las suyas. |
 | `app/api/v1/health.py` | Las dos rutas de comprobación. |
 | `app/modules/` | Módulos de dominio. Cada módulo crea su carpeta en su pieza. |
-| `app/modules/accounts/` | Cuentas: reglas del formulario (`validation.py`), contraseñas, códigos y llaves (`security.py`), códigos de un solo uso (`codes.py`), registro y comprobación del correo (`registration.py`), inicio de sesión (`login.py`), sesiones (`sessions.py`) y sus rutas (`router.py`). |
+| `app/modules/accounts/` | Cuentas: reglas del formulario (`validation.py`), qué tan confiable es una contraseña (`password_strength.py`), contraseñas, códigos y llaves (`security.py`), códigos de un solo uso (`codes.py`), registro y comprobación del correo (`registration.py`), inicio de sesión (`login.py`), sesiones (`sessions.py`) y sus rutas (`router.py`). |
 | `app/api/auth.py` | Quién hace la petición: lee la llave del encabezado y entrega la sesión a la ruta que la pida. |
 | `app/notifications/` | Envío de códigos. Hoy solo el modo desarrollo (`console.py`); WhatsApp queda pendiente (`whatsapp.py`). |
 | `requirements.txt` | Dependencias del backend, con versión exacta. |
@@ -33,6 +33,7 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `POST /api/v1/auth/register` | Crea la cuenta y envía un código de 6 dígitos al correo. `201 {"status": "verification_required", "email": "..."}`. `422` si falta o no sirve un dato; `409` si el correo o el teléfono ya tienen cuenta. |
 | `POST /api/v1/auth/verify-email` | Comprueba el correo con el código. `200 {"status": "verified"}`. `400` si el código es incorrecto, venció o agotó sus 5 intentos; `409` si el correo ya estaba comprobado. |
 | `POST /api/v1/auth/resend-code` | Envía otro código. `200 {"status": "sent"}`. `429` si no han pasado 60 segundos o ya van 5 en una hora. |
+| `POST /api/v1/auth/password-strength` | Califica una contraseña mientras la persona la escribe. `200 {"level": "reliable", "label": "Confiable", "weaknesses": [], "hints": [], "meets_rules": true, "accepted": true, "errors": []}`. No guarda ni anota nada. `accepted` dice si el registro la aceptaría. |
 | `POST /api/v1/auth/login` | Inicio de sesión, paso 1: correo y contraseña. `200 {"status": "code_required"}` y envía un código al correo. `401` si el correo o la contraseña no son correctos (la misma respuesta en los dos casos); `403` si el correo no está comprobado; `429` si no han pasado 60 segundos o ya van 5 códigos en una hora. |
 | `POST /api/v1/auth/login/verify` | Inicio de sesión, paso 2: el código. `200 {"token": "...", "token_type": "Bearer", "expires_at": "..."}`. `400` si el código es incorrecto, venció o agotó sus 5 intentos. |
 | `GET /api/v1/auth/me` | Los datos de la persona con sesión. Pide la llave en el encabezado `Authorization: Bearer <llave>`; sin una llave que sirva responde `401`. |
@@ -40,7 +41,9 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 
 Los avisos de las rutas de Cuentas salen siempre con la misma forma, para ponerlos junto a su campo: `{"errors": [{"field": "password", "code": "missing_symbol", "message": "..."}]}`.
 
-Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (contados con la fecha del país que la persona eligió; si el país tiene varios husos horarios, con el más adelantado), y contraseña de 8 a 12 caracteres con mayúscula, minúscula, número y símbolo, sin espacios. La cuenta no puede iniciar sesión hasta comprobar el correo.
+Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (contados con la fecha del país que la persona eligió; si el país tiene varios husos horarios, con el más adelantado), y contraseña de 8 a 20 caracteres con mayúscula, minúscula, número y símbolo, sin espacios, que alcance al menos el nivel medio.
+
+Niveles de la contraseña: bajo, medio, confiable y muy confiable. El largo da el nivel base (8 a 9 bajo, 10 a 12 medio, 13 a 15 confiable, 16 a 20 muy confiable) y cada debilidad lo baja un nivel: tres caracteres iguales seguidos, cuatro seguidos en orden (1234, abcd, qwer), el nombre o el correo de la persona, o una palabra muy común. Como 8 y 9 caracteres salen siempre bajos, en la práctica el registro pide 10 o más. La cuenta no puede iniciar sesión hasta comprobar el correo.
 
 Reglas del inicio de sesión (ADR 0014): en cada inicio se piden correo, contraseña y un código que llega al correo; no se recuerdan dispositivos. La sesión se guarda en la base (ADR 0015): la persona recibe una llave y la base guarda solo su huella. La sesión se cierra sola a los 30 días sin uso si la persona es huésped y a los 7 si es anfitriona; cada uso renueva el plazo. Una persona puede tener varias sesiones abiertas a la vez.
 
