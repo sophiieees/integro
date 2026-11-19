@@ -35,13 +35,13 @@ Decidido por Sophia el 19 de noviembre de 2026.
 | Texto | Negro o colores legibles. |
 | Tipografía Outfit | Los archivos de la fuente se guardan dentro del proyecto; no se piden a Google en cada visita. |
 
-Dos puntos que la pieza de frontend debe confirmar con Sophia: el color de la letra sobre un botón dorado (la propuesta es verde noche, porque la letra blanca sobre dorado se lee mal) y cómo se ve el botón al pasar el cursor, que no se definió.
+Los dos puntos que faltaban los decidió Sophia el 19 de noviembre de 2026, al construir la pieza: la letra sobre un botón dorado va en verde noche, y el botón verde se pone verde noche al pasar el cursor y dorado solo al dar clic.
 
 ## Consecuencias
 - A favor: se abre con doble clic, se publica sin compilar, cualquiera edita el HTML y no hay peso de dependencias.
 - En contra: no hay renderizado en servidor, así que las fichas de propiedad se indexan peor en buscadores, ni PWA (ADR 0004). Si más adelante se migra a Next.js, la maquetación se rehace como componentes.
 - El frontend habla con la API de FastAPI (ADR 0001 y ADR 0012). Las pantallas de cuenta, empezando por el inicio de sesión y «Entrar» en la cabecera, se construyen sobre este prototipo.
-- Falta guardar el manual de identidad en `docs/diseno/` y aplicar su paleta y su tipografía a los tokens de `estilos.css`, que todavía tienen los colores de octubre: botones azules, la palabra del eslogan en azul claro y tipografía del sistema.
+- El manual de identidad está en `docs/diseno/` (lo subió Sophia) y su paleta y su tipografía ya están en los tokens de `estilos.css`. La fuente Outfit está en `web/assets/fonts/`, con su licencia.
 
 ## Alternativa descartada por ahora
 Arrancar Next.js directamente. Sigue siendo lo que fija el MVP técnico; se retoma cuando haga falta el renderizado en servidor o la PWA.
@@ -52,3 +52,4 @@ Decisiones de Sophia del 19 de noviembre de 2026. Bitácora, decisiones 0.1, 0.2
 ## Cambios
 - 19 de noviembre de 2026: pasa de propuesta a aceptada. La versión anterior daba fecha a la migración a Next.js (semanas 6 y 7) y no hablaba de la identidad de marca.
 - 19 de noviembre de 2026, más tarde: se agregó cómo se aplica la paleta a los botones, al eslogan y al texto, y que la tipografía se guarda dentro del proyecto.
+- 19 de noviembre de 2026, al aplicar la paleta: quedaron decididos el color de la letra sobre el botón dorado y el botón con el cursor encima.
