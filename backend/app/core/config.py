@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     # El anfitrión maneja dinero y propiedades, por eso la suya dura menos.
     session_idle_days_guest: int = Field(default=30, ge=1)
     session_idle_days_host: int = Field(default=7, ge=1)
+    # La llave de sesión viaja en una cookie (ADR 0015). Con esto encendido el
+    # navegador solo la manda por HTTPS. Va encendido salvo que se apague a
+    # propósito, y solo se apaga en desarrollo, donde el servidor local no
+    # tiene HTTPS.
+    session_cookie_secure: bool = True
 
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:

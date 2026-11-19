@@ -16,7 +16,7 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/api/v1/health.py` | Las dos rutas de comprobación. |
 | `app/modules/` | Módulos de dominio. Cada módulo crea su carpeta en su pieza. |
 | `app/modules/accounts/` | Cuentas: reglas del formulario (`validation.py`), qué tan confiable es una contraseña (`password_strength.py`), contraseñas, códigos y llaves (`security.py`), códigos de un solo uso (`codes.py`), registro y comprobación del correo (`registration.py`), inicio de sesión (`login.py`), sesiones (`sessions.py`) y sus rutas (`router.py`). |
-| `app/api/auth.py` | Quién hace la petición: lee la llave del encabezado y entrega la sesión a la ruta que la pida. |
+| `app/api/auth.py` | Quién hace la petición: lee la llave de la cookie de sesión, entrega la sesión a la ruta que la pida y renueva la cookie. |
 | `app/notifications/` | Envío de códigos. Hoy solo el modo desarrollo (`console.py`); WhatsApp queda pendiente (`whatsapp.py`). |
 | `requirements.txt` | Dependencias del backend, con versión exacta. |
 | `requirements-dev.txt` | Lo anterior más lo necesario para correr las pruebas. |
@@ -35,8 +35,8 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `POST /api/v1/auth/resend-code` | Envía otro código. `200 {"status": "sent"}`. `429` si no han pasado 60 segundos o ya van 5 en una hora. |
 | `POST /api/v1/auth/password-strength` | Califica una contraseña mientras la persona la escribe. `200 {"level": "reliable", "label": "Confiable", "weaknesses": [], "hints": [], "strengths": [], "raise_hints": ["Usa dos símbolos distintos para subir un nivel."], "meets_rules": true, "accepted": true, "errors": []}`. No guarda ni anota nada. `accepted` dice si el registro la aceptaría. `weaknesses` y `hints` dicen lo que le resta; `strengths` y `raise_hints`, lo que le suma: `strengths` trae `varied_symbols` cuando dos símbolos distintos ya le subieron el nivel y `raise_hints` trae el consejo cuando todavía puede subir. |
 | `POST /api/v1/auth/login` | Inicio de sesión, paso 1: correo y contraseña. `200 {"status": "code_required"}` y envía un código al correo. `401` si el correo o la contraseña no son correctos (la misma respuesta en los dos casos); `403` si el correo no está comprobado; `429` si no han pasado 60 segundos o ya van 5 códigos en una hora. |
-| `POST /api/v1/auth/login/verify` | Inicio de sesión, paso 2: el código. `200 {"token": "...", "token_type": "Bearer", "expires_at": "..."}`. `400` si el código es incorrecto, venció o agotó sus 5 intentos. |
-| `GET /api/v1/auth/me` | Los datos de la persona con sesión. Pide la llave en el encabezado `Authorization: Bearer <llave>`; sin una llave que sirva responde `401`. |
+| `POST /api/v1/auth/login/verify` | Inicio de sesión, paso 2: el código. `200 {"status": "session_opened", "expires_at": "..."}` y entrega la llave en la cookie `integro_session`; el texto de la respuesta no trae la llave. `400` si el código es incorrecto, venció o agotó sus 5 intentos, y entonces no hay cookie. |
+| `GET /api/v1/auth/me` | Los datos de la persona con sesión. La llave llega en la cookie `integro_session`, que el navegador manda solo; sin una cookie que sirva responde `401`. Cada uso renueva la cookie. |
 | `GET /docs` | Documentación OpenAPI que FastAPI genera a partir del código. Desde ahí se pueden probar las rutas. |
 
 Los avisos de las rutas de Cuentas salen siempre con la misma forma, para ponerlos junto a su campo: `{"errors": [{"field": "password", "code": "missing_symbol", "message": "..."}]}`.
@@ -46,6 +46,8 @@ Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (conta
 Niveles de la contraseña: bajo, medio, confiable y muy confiable. El largo da el nivel base (10 a 12 medio, 13 a 15 confiable, 16 a 20 muy confiable) dos símbolos distintos o más lo suben un nivel (sin pasar de muy confiable; el mismo símbolo dos veces no cuenta) y después cada debilidad lo baja un nivel: tres caracteres iguales seguidos, cuatro seguidos en orden (1234, abcd, qwer, y símbolos en fila en el teclado como `!"#$` o `$%&/`), el nombre o el correo de la persona (palabras de cuatro letras o más), o una palabra de la lista de palabras comunes (password, contraseña, íntegro, qwerty, admin, bienvenido, welcome, letmein, 1234, gato, yo, perro, cuenta2026, 123456, 111111, 000000, 123123, 123456789, Pass@123, 1234567890, abcd1234), sin distinguir mayúsculas ni acentos; «yo» solo cuenta como palabra suelta, sin otra letra pegada, para que no baje el nivel de «mayo». Una misma parte puede contar dos veces: 1234 es secuencia y palabra común. La cuenta no puede iniciar sesión hasta comprobar el correo.
 
 Reglas del inicio de sesión (ADR 0014): en cada inicio se piden correo, contraseña y un código que llega al correo; no se recuerdan dispositivos. La sesión se guarda en la base (ADR 0015): la persona recibe una llave y la base guarda solo su huella. La sesión se cierra sola a los 30 días sin uso si la persona es huésped y a los 7 si es anfitriona; cada uso renueva el plazo. Una persona puede tener varias sesiones abiertas a la vez.
+
+La llave de sesión viaja en una cookie (ADR 0015): `integro_session`, con `HttpOnly` (el código de la página no puede leerla), `SameSite=Strict` (solo se manda desde el mismo sitio), `Path=/` y la duración del plazo sin uso. Lleva `Secure` (solo HTTPS) salvo que `SESSION_COOKIE_SECURE=false`, que es para desarrollo. La API no acepta la llave en el encabezado `Authorization`.
 
 Contraseñas incorrectas (ADR 0014): la cuenta nunca se bloquea. A los 3 fallos seguidos contra una cuenta se le avisa a su dueño por correo. A los 6 fallos en 15 minutos desde el mismo dispositivo (dirección IP y navegador), ese dispositivo recibe `429` con el código `try_later` y los segundos que faltan, aunque escriba la contraseña correcta; desde otro dispositivo se entra normal. Cada intento queda en la tabla `login_attempts`.
 
@@ -121,6 +123,12 @@ Si el archivo `.env` es anterior a la pieza del registro y no trae la línea del
 
 ```powershell
 Add-Content .env "EMAIL_DELIVERY=console"
+```
+
+Y la que deja que la cookie de sesión viaje sin HTTPS, porque el servidor de esta computadora no lo tiene. Solo va en desarrollo; en la nube no se pone:
+
+```powershell
+Add-Content .env "SESSION_COOKIE_SECURE=false"
 ```
 
 Cada variable va una sola vez. Si `CODE_HASH_SECRET=` quedó vacía por haber copiado la plantilla, esa línea se borra en el Bloc de notas.

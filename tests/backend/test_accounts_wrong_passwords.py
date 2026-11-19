@@ -30,6 +30,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
+from conftest import session_cookie, with_session
 
 from app.database.transaction import system_transaction
 from app.modules.accounts.attempts import clean_user_agent, email_for_record
@@ -390,9 +391,10 @@ def test_nothing_changes_in_the_account(api):
     form = register(api)
     age_codes(api, form["email"], 61)
     try_login(api, form["email"], PASSWORD, COMPUTER)
-    token = api.client.post(
-        LOGIN_VERIFY, json={"email": form["email"], "code": api.sender.last_code}, headers=COMPUTER
-    ).json()["token"]
+    token = session_cookie(
+        api.client.post(LOGIN_VERIFY, json={"email": form["email"], "code": api.sender.last_code}, headers=COMPUTER)
+    ).value
+    api.client.cookies.clear()
     before = one(
         api,
         "select c.password_hash, c.updated_at, u.updated_at, u.email_verified_at from users u "
@@ -410,7 +412,7 @@ def test_nothing_changes_in_the_account(api):
     )
     assert after == before
     # La sesión que ya estaba abierta sigue sirviendo.
-    assert api.client.get(ME, headers={"Authorization": f"Bearer {token}", **COMPUTER}).status_code == 200
+    assert api.client.get(ME, headers={**with_session(token), **COMPUTER}).status_code == 200
     open_sessions = one(
         api,
         "select count(*) from sessions where revoked_at is null "

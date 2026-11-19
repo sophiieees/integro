@@ -10,7 +10,7 @@ Especificación aceptada por Sophia el 18 de noviembre de 2026 (ADR 0014):
      3. Correo sin comprobar: 403; no se envía.
      4. Pedir otro código antes de 60 segundos: 429.
     POST /api/v1/auth/login/verify   (correo y código)
-     5. Código correcto: 200 con la llave de sesión. En la base queda la huella
+     5. Código correcto: 200 y abre la sesión. En la base queda la huella
         de la llave (no la llave), la IP y el navegador. Vence a los 30 días
         sin uso (huésped) o a los 7 (anfitrión).
      6. Código incorrecto: 400; al quinto fallo se bloquea ese código. Vencido:
@@ -22,6 +22,11 @@ Especificación aceptada por Sophia el 18 de noviembre de 2026 (ADR 0014):
     10. Dos sesiones a la vez (celular y computadora) funcionan; cada persona
         ve solo lo suyo.
 
+Desde el 19 de noviembre de 2026 la llave viaja en una cookie que la página no
+puede leer, y ya no en el texto de la respuesta ni en el encabezado
+Authorization (ADR 0015). Los casos de la cookie están en
+test_session_cookie.py; aquí las pruebas la mandan como la manda un navegador.
+
 Corren contra la base real con rollback_pool: todo se deshace al terminar
 cada prueba. Los códigos no se envían: la prueba los lee de un anotador.
 """
@@ -30,7 +35,8 @@ from uuid import uuid4
 
 import pytest
 
-from app.api.auth import bearer_token
+from conftest import session_cookie, with_session
+
 from app.database.transaction import system_transaction
 from app.modules.accounts.codes import create_code
 from app.modules.accounts.login import clean_ip
@@ -108,11 +114,10 @@ def login(api, form: dict) -> str:
     assert first.status_code == 200, first.text
     second = api.client.post(LOGIN_VERIFY, json={"email": form["email"], "code": api.sender.last_code})
     assert second.status_code == 200, second.text
-    return second.json()["token"]
-
-
-def bearer(token: str) -> dict:
-    return {"Authorization": f"Bearer {token}"}
+    token = session_cookie(second).value
+    # El cliente de pruebas no guarda la cookie: cada prueba dice qué llave manda.
+    api.client.cookies.clear()
+    return token
 
 
 def sessions_of(api, email: str) -> int:
@@ -282,9 +287,9 @@ def test_right_code_opens_a_session_and_stores_only_the_fingerprint(api):
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"token", "token_type", "expires_at"}
-    assert body["token_type"] == "Bearer"
-    token = body["token"]
+    assert set(body) == {"status", "expires_at"}
+    assert body["status"] == "session_opened"
+    token = session_cookie(response).value
     assert len(token) >= 40
 
     row = one(
@@ -492,7 +497,7 @@ def test_me_with_a_valid_key_returns_the_person(api):
     form = register(api)
     token = login(api, form)
 
-    response = api.client.get(ME, headers=bearer(token))
+    response = api.client.get(ME, headers=with_session(token))
 
     assert response.status_code == 200
     body = response.json()
@@ -518,7 +523,7 @@ def test_each_use_renews_the_30_days(api):
         form["email"],
     )
 
-    assert api.client.get(ME, headers=bearer(token)).status_code == 200
+    assert api.client.get(ME, headers=with_session(token)).status_code == 200
 
     left, used_now = one(
         api,
@@ -533,19 +538,12 @@ def test_a_person_who_becomes_host_gets_the_7_days_from_the_next_use(api):
     token = login(api, form)
     make_host(api, form["email"])
 
-    response = api.client.get(ME, headers=bearer(token))
+    response = api.client.get(ME, headers=with_session(token))
 
     assert response.json()["is_host"] is True
     assert one(
         api, "select extract(epoch from expires_at - now())::int from sessions where user_id = (select id from users where email = %s)", form["email"]
     )[0] == 7 * DAY
-
-
-def test_the_authorization_scheme_is_not_case_sensitive(api):
-    form = register(api)
-    token = login(api, form)
-
-    assert api.client.get(ME, headers={"Authorization": f"bearer {token}"}).status_code == 200
 
 
 # --- Caso 9 ----------------------------------------------------------------
@@ -555,16 +553,13 @@ def test_the_authorization_scheme_is_not_case_sensitive(api):
     "headers",
     [
         {},
-        {"Authorization": ""},
-        {"Authorization": "Bearer"},
-        {"Authorization": "Bearer "},
-        {"Authorization": "Bearer llave-inventada"},
-        {"Authorization": "Bearer " + "x" * 43},
-        {"Authorization": "Bearer " + "x" * 5000},
-        {"Authorization": "Token abc"},
-        {"Authorization": "Basic YW5hOmNsYXZl"},
-        {"Authorization": "Bearer a b"},
-        {"Authorization": "Bearer ' or 1=1 --"},
+        {"Cookie": "integro_session="},
+        {"Cookie": "integro_session=llave-inventada"},
+        {"Cookie": "integro_session=" + "x" * 43},
+        {"Cookie": "integro_session=" + "x" * 5000},
+        {"Cookie": "integro_session=' or 1=1 --"},
+        {"Cookie": "otra_cookie=abc"},
+        {"Cookie": "sin-forma-de-cookie"},
     ],
 )
 def test_me_without_a_working_key_is_401(api, headers):
@@ -574,14 +569,14 @@ def test_me_without_a_working_key_is_401(api, headers):
 
     assert response.status_code == 401
     assert errors_of(response) == [("authorization", "not_authenticated")]
-    assert response.headers["www-authenticate"] == "Bearer"
+    assert session_cookie(response) is None
 
 
 def test_the_stored_fingerprint_does_not_work_as_a_key(api):
     form = register(api)
     token = login(api, form)
 
-    response = api.client.get(ME, headers=bearer(hash_session_token(token)))
+    response = api.client.get(ME, headers=with_session(hash_session_token(token)))
 
     assert response.status_code == 401
 
@@ -596,7 +591,7 @@ def test_expired_session_is_401(api):
         form["email"],
     )
 
-    response = api.client.get(ME, headers=bearer(token))
+    response = api.client.get(ME, headers=with_session(token))
 
     assert response.status_code == 401
     # Una sesión vencida no revive por intentar usarla.
@@ -608,7 +603,7 @@ def test_session_one_second_before_expiring_still_works(api):
     token = login(api, form)
     run(api, "update sessions set expires_at = now() + interval '1 second' where user_id = (select id from users where email = %s)", form["email"])
 
-    assert api.client.get(ME, headers=bearer(token)).status_code == 200
+    assert api.client.get(ME, headers=with_session(token)).status_code == 200
 
 
 def test_revoked_session_is_401(api):
@@ -616,7 +611,7 @@ def test_revoked_session_is_401(api):
     token = login(api, form)
     run(api, "update sessions set revoked_at = now() where user_id = (select id from users where email = %s)", form["email"])
 
-    response = api.client.get(ME, headers=bearer(token))
+    response = api.client.get(ME, headers=with_session(token))
 
     assert response.status_code == 401
 
@@ -631,8 +626,8 @@ def test_two_sessions_of_the_same_person_work_at_once(api):
 
     assert phone != computer
     assert sessions_of(api, form["email"]) == 2
-    assert api.client.get(ME, headers=bearer(phone)).status_code == 200
-    assert api.client.get(ME, headers=bearer(computer)).status_code == 200
+    assert api.client.get(ME, headers=with_session(phone)).status_code == 200
+    assert api.client.get(ME, headers=with_session(computer)).status_code == 200
 
 
 def test_each_key_shows_only_its_own_person(api):
@@ -641,8 +636,8 @@ def test_each_key_shows_only_its_own_person(api):
     ana_key = login(api, ana)
     beto_key = login(api, beto)
 
-    as_ana = api.client.get(ME, headers=bearer(ana_key)).json()
-    as_beto = api.client.get(ME, headers=bearer(beto_key)).json()
+    as_ana = api.client.get(ME, headers=with_session(ana_key)).json()
+    as_beto = api.client.get(ME, headers=with_session(beto_key)).json()
 
     assert (as_ana["first_name"], as_ana["email"]) == ("Ana", ana["email"])
     assert (as_beto["first_name"], as_beto["email"]) == ("Beto", beto["email"])
@@ -655,8 +650,8 @@ def test_revoking_one_session_leaves_the_other_working(api):
     computer = login(api, form)
     run(api, "update sessions set revoked_at = now() where token_hash = %s", hash_session_token(phone))
 
-    assert api.client.get(ME, headers=bearer(phone)).status_code == 401
-    assert api.client.get(ME, headers=bearer(computer)).status_code == 200
+    assert api.client.get(ME, headers=with_session(phone)).status_code == 401
+    assert api.client.get(ME, headers=with_session(computer)).status_code == 200
 
 
 # ===========================================================================
@@ -689,24 +684,6 @@ def test_session_fingerprint_has_the_format_the_database_expects():
     assert len(fingerprint) == 64 and all(character in "0123456789abcdef" for character in fingerprint)
     assert hash_session_token("una-llave") == fingerprint
     assert hash_session_token("otra-llave") != fingerprint
-
-
-@pytest.mark.parametrize(
-    "header, token",
-    [
-        ("Bearer abc", "abc"),
-        ("bearer abc", "abc"),
-        ("BEARER   abc", "abc"),
-        ("Bearer", None),
-        ("abc", None),
-        ("Token abc", None),
-        ("Bearer a b", None),
-        ("", None),
-        (None, None),
-    ],
-)
-def test_reading_the_key_from_the_header(header, token):
-    assert bearer_token(header) == token
 
 
 def test_login_routes_are_documented(api):

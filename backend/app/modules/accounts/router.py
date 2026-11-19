@@ -9,11 +9,11 @@ ponga junto a su campo:
 from datetime import datetime, timezone
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from app.api.auth import require_session
+from app.api.auth import require_session, set_session_cookie
 from app.database.transaction import user_transaction
 from app.modules.accounts.login import LoginOutcome, SessionOutcome, finish_login, start_login
 from app.modules.accounts.sessions import CurrentSession
@@ -214,8 +214,8 @@ class LoginVerifyRequest(BaseModel):
 
 
 class SessionResponse(BaseModel):
-    token: str
-    token_type: Literal["Bearer"]
+    # La llave no va aquí: viaja en la cookie de sesión, que la página no puede leer.
+    status: Literal["session_opened"]
     expires_at: datetime
 
 
@@ -296,9 +296,10 @@ def login(body: LoginRequest, request: Request):
     responses={400: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
     summary="Iniciar sesión, paso 2: el código",
 )
-def login_verify(body: LoginVerifyRequest, request: Request):
-    """Comprueba el código y entrega la llave de la sesión. La llave se manda
-    después en cada petición, en el encabezado Authorization: Bearer."""
+def login_verify(body: LoginVerifyRequest, request: Request, response: Response):
+    """Comprueba el código y abre la sesión. La llave se entrega en la cookie
+    integro_session, que el código de la página no puede leer; el navegador la
+    manda sola en cada petición. El texto de la respuesta no trae la llave."""
     values, errors = required_text(body, ("email", "code"))
     if errors:
         return error_response(422, errors)
@@ -313,7 +314,8 @@ def login_verify(body: LoginVerifyRequest, request: Request):
     )
 
     if result.outcome is SessionOutcome.OPENED:
-        return SessionResponse(token=result.token, token_type="Bearer", expires_at=result.expires_at)
+        set_session_cookie(response, result.token, result.idle_days, state.settings)
+        return SessionResponse(status="session_opened", expires_at=result.expires_at)
     if result.outcome is SessionOutcome.CODE_EXPIRED:
         return error_response(
             400, [FieldError("code", "code_expired", "El código venció. Inicia sesión de nuevo.")]
@@ -336,8 +338,9 @@ def login_verify(body: LoginVerifyRequest, request: Request):
     summary="Quién soy: los datos de la persona con sesión",
 )
 def me(request: Request, session: CurrentSession = Depends(require_session)):
-    """Devuelve los datos de quien tiene la sesión. Los lee como esa persona,
-    así que la base solo le deja ver su propia fila."""
+    """Devuelve los datos de quien tiene la sesión, que llega en la cookie
+    integro_session. Los lee como esa persona, así que la base solo le deja
+    ver su propia fila. Cada uso renueva la cookie."""
     with user_transaction(request.app.state.pool, session.user_id) as connection:
         row = connection.execute(
             "select id, first_name, last_name, email, country, preferred_language from users"
