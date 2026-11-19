@@ -4,28 +4,36 @@ Se arranca desde la carpeta backend/ con:  uvicorn app.main:app --reload
 """
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 
 from app.api.v1.router import router as api_v1_router
-from app.core.config import Settings, load_settings
+from app.core.config import WEB_DIRECTORY, Settings, load_settings
 from app.database.connection import create_pool
 from app.api.auth import NotAuthenticated, not_authenticated_response
 from app.notifications import create_code_sender
+from app.web import mount_web
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, web_directory: Path | None = WEB_DIRECTORY) -> FastAPI:
     """Construye la aplicación.
 
     Las pruebas pasan su propia configuración. Al arrancar con uvicorn no se
     pasa nada y la configuración se lee de backend/.env en el arranque, no al
     importar este archivo.
+
+    web_directory es la carpeta de las páginas que la API también muestra.
     """
 
     @asynccontextmanager
     async def lifespan(application: FastAPI):
         application.state.settings = settings or load_settings()
         application.state.code_sender = create_code_sender(application.state.settings)
+        # Las páginas se agregan al arrancar, cuando ya se leyó la
+        # configuración, y después de las rutas de la API, que ganan siempre.
+        if application.state.settings.serve_web:
+            mount_web(application, web_directory)
         pool = create_pool(application.state.settings)
         # wait=False: la API arranca aunque la base esté apagada. Así
         # /api/v1/health sigue respondiendo y /api/v1/health/database avisa.

@@ -15,6 +15,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # Carpeta backend/, sin importar desde dónde se arranque el servidor.
 BACKEND_DIRECTORY = Path(__file__).resolve().parents[2]
 ENV_FILE = BACKEND_DIRECTORY / ".env"
+# Carpeta web/ del repositorio: las páginas que la API puede mostrar.
+WEB_DIRECTORY = BACKEND_DIRECTORY.parent / "web"
 
 
 class ConfigurationError(RuntimeError):
@@ -70,6 +72,12 @@ class Settings(BaseSettings):
     # propósito, y solo se apaga en desarrollo, donde el servidor local no
     # tiene HTTPS.
     session_cookie_secure: bool = True
+
+    # La API muestra también las páginas de web/ en su misma dirección, para
+    # que la página y la API compartan sitio y la cookie de sesión viaje
+    # (decisión de Sophia del 19 de noviembre de 2026). Solo ocurre si la
+    # carpeta web/ existe junto a backend/. Se apaga con SERVE_WEB=false.
+    serve_web: bool = True
 
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:
