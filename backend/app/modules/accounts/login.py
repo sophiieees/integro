@@ -73,9 +73,11 @@ class SessionOutcome(Enum):
 @dataclass(frozen=True)
 class SessionResult:
     outcome: SessionOutcome
-    # La llave de sesión. Solo existe aquí y en la respuesta: en la base queda su huella.
+    # La llave de sesión. Solo existe aquí y en la cookie: en la base queda su huella.
     token: str | None = None
     expires_at: datetime | None = None
+    # Días sin uso que aguanta la sesión que se abrió: lo que dura la cookie.
+    idle_days: int | None = None
     attempts_left: int | None = None
 
 
@@ -206,15 +208,16 @@ def finish_login(
             return SessionResult(SessionOutcome.INVALID_CODE, attempts_left=checked.attempts_left)
 
         token = generate_session_token()
+        days = idle_days(is_host, settings)
         expires_at = connection.execute(
             "insert into sessions (user_id, token_hash, expires_at, ip_address, user_agent) "
             "values (%s, %s, now() + make_interval(days => %s), %s, %s) returning expires_at",
             (
                 user_id,
                 hash_session_token(token),
-                idle_days(is_host, settings),
+                days,
                 clean_ip(ip_address),
                 clean_user_agent(user_agent),
             ),
         ).fetchone()[0]
-    return SessionResult(SessionOutcome.OPENED, token=token, expires_at=expires_at)
+    return SessionResult(SessionOutcome.OPENED, token=token, expires_at=expires_at, idle_days=days)

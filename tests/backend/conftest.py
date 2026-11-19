@@ -4,6 +4,7 @@ import socket
 import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
+from http.cookies import Morsel, SimpleCookie
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,7 @@ from fastapi.testclient import TestClient
 BACKEND_DIRECTORY = Path(__file__).resolve().parents[2] / "backend"
 sys.path.insert(0, str(BACKEND_DIRECTORY))
 
+from app.api.auth import SESSION_COOKIE  # noqa: E402
 from app.core.config import ENV_FILE, Settings, load_settings  # noqa: E402
 from app.database.connection import create_pool  # noqa: E402
 from app.main import create_app  # noqa: E402
@@ -31,6 +33,7 @@ SETTINGS_VARIABLES = (
     "CODE_MAX_ATTEMPTS",
     "CODE_RESEND_WAIT_SECONDS",
     "CODE_MAX_PER_HOUR",
+    "SESSION_COOKIE_SECURE",
 )
 
 # Llave inventada, solo para pruebas que no usan la configuración real.
@@ -111,6 +114,21 @@ class RecordingSender:
     @property
     def last_code(self) -> str:
         return self.sent[-1]["code"]
+
+
+def session_cookie(response) -> Morsel | None:
+    """La cookie de sesión que entrega una respuesta, con sus atributos, o None si no trae."""
+    for header in response.headers.get_list("set-cookie"):
+        cookies = SimpleCookie()
+        cookies.load(header)
+        if SESSION_COOKIE in cookies:
+            return cookies[SESSION_COOKIE]
+    return None
+
+
+def with_session(token: str) -> dict:
+    """El encabezado con el que un navegador manda la cookie de sesión."""
+    return {"Cookie": f"{SESSION_COOKIE}={token}"}
 
 
 @dataclass
