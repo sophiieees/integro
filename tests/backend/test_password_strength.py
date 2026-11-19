@@ -32,7 +32,8 @@ from fastapi.testclient import TestClient
 from app.main import create_app
 from app.modules.accounts.password_strength import (
     COMMON_WORDS,
-    COMMON_WORDS_AS_GIVEN,
+    COMMON_WORDS_FROM_AI,
+    COMMON_WORDS_FROM_SOPHIA,
     distinct_symbols,
     has_repeated_characters,
     has_sequence,
@@ -112,8 +113,7 @@ def test_short_is_reported_as_the_reason_for_low():
         # "1234" es secuencia y además está en la lista de palabras comunes: baja dos.
         ("Kz7-1234-Xv9-Tb2", {}, "medium", ("sequence", "common_word")),
         ("Kz7-Torres-Xv9-2", ANA, "reliable", ("personal_data",)),
-        # "qwerty" ya no está en la lista; sigue contando como secuencia del teclado.
-        ("Kz7-Qwerty-Xv9-2", {}, "reliable", ("sequence",)),
+        ("Kz7-Qwerty-Xv9-2", {}, "medium", ("sequence", "common_word")),
         ("Kz7-Admin-Xv9-22", {}, "reliable", ("common_word",)),
         ("Password-1234-aaa", {}, "low", ("repeated_characters", "sequence", "common_word")),
         ("Torres-1234-aaa-Password", ANA, "low", ("repeated_characters", "sequence", "personal_data", "common_word")),
@@ -211,38 +211,48 @@ def test_symbols_in_a_row_raise_and_lower():
 
 def test_capitals_and_accents_do_not_hide_a_weakness():
     assert "common_word" in password_strength("Mi-CONTRASEÑA-9x").weaknesses
-    assert "common_word" in password_strength("Mi-PERRO-Kz7-Xv9").weaknesses
+    assert "common_word" in password_strength("Mi-Íntegro-2026x").weaknesses
     assert "sequence" in password_strength("Kz7-AbCd-Xv9-Tb2").weaknesses
     assert "repeated_characters" in password_strength("KzZz-Pm4-Xv9-Tb2").weaknesses
     assert plain("ÍNTEGRO Contraseña") == "integro contrasena"
 
 
 # ---------------------------------------------------------------------------
-# La lista de palabras comunes que dio Sophia
+# La lista de palabras comunes: la de la IA más la que dio Sophia
 # ---------------------------------------------------------------------------
 
-def test_the_list_is_the_one_sophia_gave():
-    assert COMMON_WORDS_AS_GIVEN == (
+
+def test_the_list_is_the_one_of_the_ai_plus_the_one_sophia_gave():
+    """«Complementa tu lista con la mía» (Sophia, 19 de noviembre de 2026)."""
+    assert COMMON_WORDS_FROM_AI == (
+        "password", "contraseña", "íntegro", "qwerty", "admin", "bienvenido", "welcome", "letmein",
+    )
+    assert COMMON_WORDS_FROM_SOPHIA == (
         "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
         "123456789", "admin", "password", "contraseña", "Pass@123", "1234567890", "abcd1234", "ADMIN",
     )
-    # Para comparar: sin mayúsculas ni acentos, y "ADMIN" es la misma que "admin".
+    # Para comparar: sin mayúsculas ni acentos, y las que están en las dos cuentan una vez.
     assert COMMON_WORDS == (
+        "password", "contrasena", "integro", "qwerty", "admin", "bienvenido", "welcome", "letmein",
         "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
-        "123456789", "admin", "password", "contrasena", "pass@123", "1234567890", "abcd1234",
+        "123456789", "pass@123", "1234567890", "abcd1234",
     )
 
 
-@pytest.mark.parametrize("word", COMMON_WORDS_AS_GIVEN)
+@pytest.mark.parametrize("word", (*COMMON_WORDS_FROM_AI, *COMMON_WORDS_FROM_SOPHIA))
 def test_every_word_of_the_list_is_found(word):
     assert "common_word" in password_strength(f"Kz7-{word}-Xv").weaknesses
     assert "common_word" in password_strength(f"Kz7-{word.upper()}-Xv").weaknesses
 
 
-@pytest.mark.parametrize("password", ["Mi-Integro-Kz7-Xv", "Kz7-Bienvenido-9x", "Kz7-Welcome-Xv9", "Kz7-Letmein-Xv9"])
-def test_words_that_are_no_longer_in_the_list(password):
-    """Estaban en la lista anterior; Sophia dio la suya y ya no cuentan."""
-    assert password_strength(password).weaknesses == ()
+@pytest.mark.parametrize(
+    "password, level",
+    [("Mi-Integro-Kz7-Xv", "reliable"), ("Kz7-Bienvenido-9x", "reliable"), ("Kz7-Welcome-Xv9", "medium"),
+     ("Kz7-Letmein-Xv9", "medium")],
+)
+def test_the_words_of_the_first_list_count_again(password, level):
+    """Habían salido al tomar la lista de Sophia como la lista completa; ella pidió sumarlas."""
+    assert level_of(password) == (level, ("common_word",))
 
 
 @pytest.mark.parametrize("password", ["Mayo-Kz7-Xv9-Tb2", "Apoyo-Kz7-Xv9-Tb", "Rayo-Kz7-Xv9-Tb2"])

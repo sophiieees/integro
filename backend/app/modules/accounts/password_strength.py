@@ -28,8 +28,9 @@ Debilidades (cada tipo cuenta una vez):
                           también símbolos en fila en el teclado: !"#$, $%&/
     personal_data         contiene su nombre, su apellido o su correo, en
                           palabras de cuatro letras o más
-    common_word           contiene una palabra de la lista de palabras comunes
-                          que dio Sophia: 1234, gato, admin, password...
+    common_word           contiene una palabra de la lista de palabras comunes:
+                          la que propuso la IA más la que dio Sophia
+                          (password, qwerty, 1234, gato, admin...)
 
 Las mayúsculas y los acentos no cuentan: "Contraseña" y "contrasena" son la
 misma palabra.
@@ -66,10 +67,15 @@ SEQUENCE_ROWS = (
 )
 # Cuántos símbolos distintos hacen falta para subir un nivel.
 VARIED_SYMBOLS = 2
-# Lista de palabras comunes que dio Sophia el 19 de noviembre de 2026, tal como
-# la escribió. Sustituye a la lista anterior. Se compara sin mayúsculas ni
-# acentos (COMMON_WORDS, más abajo), así que "admin" y "ADMIN" son la misma.
-COMMON_WORDS_AS_GIVEN = (
+# Palabras comunes. Decisión de Sophia del 19 de noviembre de 2026: «complementa
+# tu lista con la mía». Son dos listas que se suman: la que propuso la IA al
+# construir el indicador y la que dio Sophia, tal como la escribió. Se comparan
+# sin mayúsculas ni acentos (COMMON_WORDS, más abajo), así que "admin" y
+# "ADMIN" son la misma, y una palabra que está en las dos cuenta una vez.
+COMMON_WORDS_FROM_AI = (
+    "password", "contraseña", "íntegro", "qwerty", "admin", "bienvenido", "welcome", "letmein",
+)
+COMMON_WORDS_FROM_SOPHIA = (
     "1234", "gato", "yo", "perro", "cuenta2026", "123456", "111111", "000000", "123123",
     "123456789", "admin", "password", "contraseña", "Pass@123", "1234567890", "abcd1234", "ADMIN",
 )
@@ -116,8 +122,10 @@ def plain(text: str) -> str:
     return "".join(character for character in decomposed if not unicodedata.combining(character))
 
 
-# La lista ya en la forma en que se compara, sin entradas repetidas.
-COMMON_WORDS = tuple(dict.fromkeys(plain(word) for word in COMMON_WORDS_AS_GIVEN))
+# Las dos listas juntas, ya en la forma en que se comparan y sin entradas repetidas.
+COMMON_WORDS = tuple(
+    dict.fromkeys(plain(word) for word in (*COMMON_WORDS_FROM_AI, *COMMON_WORDS_FROM_SOPHIA))
+)
 
 
 def has_repeated_characters(password: str) -> bool:
