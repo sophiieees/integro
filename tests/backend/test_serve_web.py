@@ -123,10 +123,24 @@ def test_what_does_not_exist_is_404(client, path):
     assert client.get(path).status_code == 404
 
 
-def test_pages_cannot_be_changed_through_the_api(client):
-    assert client.post("/index.html", content=b"otra cosa").status_code == 405
-    assert client.delete("/index.html").status_code == 405
+def test_pages_can_only_be_read(client):
+    for method in ("POST", "PUT", "PATCH", "DELETE"):
+        assert client.request(method, "/index.html", content=b"otra cosa").status_code == 404
     assert "<title>Íntegro</title>" in client.get("/index.html").text
+    assert client.head("/index.html").status_code == 200
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/login/verify", "/api/v1/auth/password-strength"],
+)
+def test_an_api_route_still_says_when_a_method_is_not_allowed(client, path):
+    """Pedir con GET una ruta que solo acepta POST sigue siendo 405: las páginas no lo tapan."""
+    assert client.get(path).status_code == 405
+
+
+def test_a_get_only_api_route_still_rejects_a_post(client):
+    assert client.post("/api/v1/health").status_code == 405
 
 
 # --- Caso 4 ----------------------------------------------------------------
@@ -195,8 +209,10 @@ def test_the_folder_that_is_served_is_the_one_given(settings_without_database, t
 def test_starting_twice_does_not_add_the_pages_twice(settings_without_database):
     application = create_app(settings_without_database)
 
-    for _ in range(2):
-        with TestClient(application) as test_client:
-            assert test_client.get("/").status_code == 200
+    with TestClient(application) as test_client:
+        assert test_client.get("/").status_code == 200
+    first = application.router.default
+    with TestClient(application) as test_client:
+        assert test_client.get("/").status_code == 200
 
-    assert [getattr(route, "name", None) for route in application.routes].count("web") == 1
+    assert application.router.default is first

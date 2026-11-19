@@ -5,8 +5,9 @@ muestra también la web. Así la página y la API viven en la misma dirección
 (http://127.0.0.1:8000/) y el navegador manda la cookie de sesión sin pedir
 permisos entre sitios.
 
-Las rutas de la API se registran antes y ganan siempre: /api/v1/..., /docs y
-/openapi.json siguen siendo de la API. Todo lo demás se busca en web/.
+Las páginas son lo último que se busca: primero deciden las rutas de la API,
+incluso para contestar que un método no está permitido (405). Solo cuando
+ninguna ruta de la API coincide se busca el archivo en web/.
 """
 
 from pathlib import Path
@@ -14,7 +15,8 @@ from pathlib import Path
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 
-ROUTE_NAME = "web"
+# Las páginas solo se leen.
+READ_METHODS = ("GET", "HEAD")
 
 
 class WebFiles(StaticFiles):
@@ -36,6 +38,19 @@ def mount_web(application: FastAPI, directory: Path | None) -> bool:
     """
     if directory is None or not directory.is_dir():
         return False
-    if not any(getattr(route, "name", None) == ROUTE_NAME for route in application.routes):
-        application.mount("/", WebFiles(directory=directory, html=True), name=ROUTE_NAME)
+    if getattr(application.state, "web_directory", None) is not None:
+        return True
+
+    files = WebFiles(directory=directory, html=True)
+    not_found = application.router.default
+
+    async def web_or_not_found(scope, receive, send):
+        """Lo que no es de ninguna ruta de la API: una página, o 404."""
+        if scope["type"] == "http" and scope["method"] in READ_METHODS:
+            await files(scope, receive, send)
+        else:
+            await not_found(scope, receive, send)
+
+    application.router.default = web_or_not_found
+    application.state.web_directory = directory
     return True

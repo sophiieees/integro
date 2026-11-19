@@ -31,7 +31,8 @@ def create_app(settings: Settings | None = None, web_directory: Path | None = WE
         application.state.settings = settings or load_settings()
         application.state.code_sender = create_code_sender(application.state.settings)
         # Las páginas se agregan al arrancar, cuando ya se leyó la
-        # configuración, y después de las rutas de la API, que ganan siempre.
+        # configuración. Son lo último que se busca: las rutas de la API
+        # ganan siempre.
         if application.state.settings.serve_web:
             mount_web(application, web_directory)
         pool = create_pool(application.state.settings)
