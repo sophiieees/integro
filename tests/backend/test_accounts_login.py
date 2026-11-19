@@ -287,7 +287,7 @@ def test_right_code_opens_a_session_and_stores_only_the_fingerprint(api):
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"status", "expires_at"}
+    assert set(body) == {"status", "expires_at", "csrf_token"}
     assert body["status"] == "session_opened"
     token = session_cookie(response).value
     assert len(token) >= 40
@@ -503,6 +503,7 @@ def test_me_with_a_valid_key_returns_the_person(api):
     body = response.json()
     assert set(body) == {
         "id", "first_name", "last_name", "email", "country", "preferred_language", "is_host", "session_expires_at",
+        "csrf_token",
     }
     assert (body["first_name"], body["last_name"], body["email"], body["country"]) == (
         "Ana", "Torres", form["email"], "MX",

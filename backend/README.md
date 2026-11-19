@@ -16,6 +16,7 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/api/v1/health.py` | Las dos rutas de comprobación. |
 | `app/modules/` | Módulos de dominio. Cada módulo crea su carpeta en su pieza. |
 | `app/modules/accounts/` | Cuentas: reglas del formulario (`validation.py`), qué tan confiable es una contraseña (`password_strength.py`), contraseñas, códigos y llaves (`security.py`), códigos de un solo uso (`codes.py`), registro y comprobación del correo (`registration.py`), inicio de sesión (`login.py`), sesiones (`sessions.py`) y sus rutas (`router.py`). |
+| `app/api/protection.py` | Defensas de las peticiones con sesión que cambian algo: de dónde viene la petición y la clave anti-falsificación. |
 | `app/web.py` | Muestra las páginas de `web/` desde la misma dirección de la API. |
 | `app/api/auth.py` | Quién hace la petición: lee la llave de la cookie de sesión, entrega la sesión a la ruta que la pida y renueva la cookie. |
 | `app/notifications/` | Envío de códigos. Hoy solo el modo desarrollo (`console.py`); WhatsApp queda pendiente (`whatsapp.py`). |
@@ -38,6 +39,10 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `POST /api/v1/auth/login` | Inicio de sesión, paso 1: correo y contraseña. `200 {"status": "code_required"}` y envía un código al correo. `401` si el correo o la contraseña no son correctos (la misma respuesta en los dos casos); `403` si el correo no está comprobado; `429` si no han pasado 60 segundos o ya van 5 códigos en una hora. |
 | `POST /api/v1/auth/login/verify` | Inicio de sesión, paso 2: el código. `200 {"status": "session_opened", "expires_at": "..."}` y entrega la llave en la cookie `integro_session`; el texto de la respuesta no trae la llave. `400` si el código es incorrecto, venció o agotó sus 5 intentos, y entonces no hay cookie. |
 | `GET /api/v1/auth/me` | Los datos de la persona con sesión. La llave llega en la cookie `integro_session`, que el navegador manda solo; sin una cookie que sirva responde `401`. Cada uso renueva la cookie. |
+| `POST /api/v1/auth/logout` | Cierra la sesión actual y borra su cookie. `200 {"status": "signed_out"}`. `401` sin sesión; `403` si la petición no pasa las defensas. |
+| `GET /api/v1/auth/sessions` | Las sesiones abiertas de la persona: `{"sessions": [{"id", "created_at", "last_used_at", "expires_at", "ip_address", "user_agent", "current"}]}`. Nunca la llave ni su huella. |
+| `DELETE /api/v1/auth/sessions/{id}` | Cierra una de sus sesiones. `200 {"status": "closed", "closed": 1}`. `404` si es de otra persona, no existe o ya estaba cerrada. |
+| `POST /api/v1/auth/sessions/close-others` | Cierra todas sus sesiones menos la actual. `200 {"status": "closed", "closed": 2}`. |
 | `GET /docs` | Documentación OpenAPI que FastAPI genera a partir del código. Desde ahí se pueden probar las rutas. |
 | `GET /` y lo demás | Las páginas de `web/`: la portada en `/`, y `propiedad.html`, `anfitriones.html`, `como-funciona.html` y `assets/` por su nombre. Las rutas de arriba ganan siempre. |
 
@@ -56,6 +61,8 @@ La llave de sesión viaja en una cookie (ADR 0015): `integro_session`, con `Http
 Contraseñas incorrectas (ADR 0014): la cuenta nunca se bloquea. A los 3 fallos seguidos contra una cuenta se le avisa a su dueño por correo. A los 6 fallos en 15 minutos desde el mismo dispositivo (dirección IP y navegador), ese dispositivo recibe `429` con el código `try_later` y los segundos que faltan, aunque escriba la contraseña correcta; desde otro dispositivo se entra normal. Cada intento queda en la tabla `login_attempts`.
 
 Una ruta que necesita sesión la pide con `Depends(require_session)`, de `app/api/auth.py`, y abre su transacción con `user_transaction(pool, session.user_id)`.
+
+Una ruta con sesión que cambia algo la pide con `Depends(require_session_for_change)`, de `app/api/protection.py`. Son las tres defensas contra peticiones hechas desde páginas ajenas (ADR 0015): la cookie solo viaja desde el mismo sitio; el encabezado `Origin` de la petición tiene que ser la dirección de la propia API o una de `ALLOWED_ORIGINS`; y la petición tiene que traer, en el encabezado `X-CSRF-Token`, la clave anti-falsificación de su sesión, que la API entrega como `csrf_token` en `/auth/login/verify` y en `/auth/me`. Si falla el origen o la clave responde `403` con el código `origin_not_allowed` o `csrf_failed`, y no cambia nada.
 
 En modo desarrollo (`EMAIL_DELIVERY=console`) el código no se envía: aparece en la ventana donde corre el servidor, en una línea que empieza con `[MODO DESARROLLO]`.
 
