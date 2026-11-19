@@ -41,9 +41,9 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 
 Los avisos de las rutas de Cuentas salen siempre con la misma forma, para ponerlos junto a su campo: `{"errors": [{"field": "password", "code": "missing_symbol", "message": "..."}]}`.
 
-Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (contados con la fecha del país que la persona eligió; si el país tiene varios husos horarios, con el más adelantado), y contraseña de 8 a 20 caracteres con mayúscula, minúscula, número y símbolo, sin espacios, que alcance al menos el nivel medio.
+Reglas del registro: todos los datos son obligatorios, 18 años cumplidos (contados con la fecha del país que la persona eligió; si el país tiene varios husos horarios, con el más adelantado), y contraseña de 10 a 20 caracteres con mayúscula, minúscula, número y símbolo, sin espacios, que alcance al menos el nivel medio.
 
-Niveles de la contraseña: bajo, medio, confiable y muy confiable. El largo da el nivel base (8 a 9 bajo, 10 a 12 medio, 13 a 15 confiable, 16 a 20 muy confiable) y cada debilidad lo baja un nivel: tres caracteres iguales seguidos, cuatro seguidos en orden (1234, abcd, qwer), el nombre o el correo de la persona, o una palabra muy común. Como 8 y 9 caracteres salen siempre bajos, en la práctica el registro pide 10 o más. La cuenta no puede iniciar sesión hasta comprobar el correo.
+Niveles de la contraseña: bajo, medio, confiable y muy confiable. El largo da el nivel base (10 a 12 medio, 13 a 15 confiable, 16 a 20 muy confiable) y cada debilidad lo baja un nivel: tres caracteres iguales seguidos, cuatro seguidos en orden (1234, abcd, qwer), el nombre o el correo de la persona, o una palabra muy común. La cuenta no puede iniciar sesión hasta comprobar el correo.
 
 Reglas del inicio de sesión (ADR 0014): en cada inicio se piden correo, contraseña y un código que llega al correo; no se recuerdan dispositivos. La sesión se guarda en la base (ADR 0015): la persona recibe una llave y la base guarda solo su huella. La sesión se cierra sola a los 30 días sin uso si la persona es huésped y a los 7 si es anfitriona; cada uso renueva el plazo. Una persona puede tener varias sesiones abiertas a la vez.
 

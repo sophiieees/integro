@@ -209,8 +209,6 @@ def test_registration_accepts_exactly_20_and_rejects_21():
 @pytest.mark.parametrize(
     "password",
     [
-        "Abcde-1x",  # 8 caracteres
-        "Kz7-Pm4-X",  # 9 caracteres
         "Kzzz-Pm4-Xv",  # 11, con repetición
         "Ana-2026-xY",  # 11, con su nombre
         "Kz7-1234-xY",  # 11, con secuencia
@@ -228,13 +226,17 @@ def test_the_too_weak_message_says_how_to_fix_it():
         "La contraseña es muy fácil de adivinar. Evita secuencias como 1234 o abcd. "
         "No uses tu nombre ni tu correo."
     )
-    _, errors = validate_registration({**FORM, "password": "Kz7-Pm4-X"}, NOW)
-    assert errors[0].message == "La contraseña es muy fácil de adivinar. Usa al menos 10 caracteres."
+
+
+@pytest.mark.parametrize("password", ["Abcde-1x", "Kz7-Pm4-X"])
+def test_registration_rejects_fewer_than_10_characters(password):
+    """Con 8 o 9 caracteres ya no cumple la regla del largo."""
+    assert register_errors(password) == [("password", "too_short")]
 
 
 def test_rule_errors_come_before_the_strength_check():
     """Si no cumple las reglas se avisan las reglas, no la fuerza."""
-    assert register_errors("abcde-1x") == [("password", "missing_uppercase")]
+    assert register_errors("abcdef-1xy") == [("password", "missing_uppercase")]
     assert register_errors("Abc-1x") == [("password", "too_short")]
 
 
@@ -293,11 +295,18 @@ def test_route_uses_the_personal_data_when_it_is_given(client):
 
 
 def test_route_says_a_low_password_would_not_be_accepted(client):
-    body = client.post(STRENGTH, json={"password": "Abcde-1x"}).json()
+    body = client.post(STRENGTH, json={"password": "Kz7-1234-xY"}).json()
 
     assert (body["level"], body["label"], body["meets_rules"], body["accepted"]) == ("low", "Bajo", True, False)
-    assert body["weaknesses"] == ["short", "sequence"]
-    assert body["hints"] == ["Usa al menos 10 caracteres.", "Evita secuencias como 1234 o abcd."]
+    assert body["weaknesses"] == ["sequence"]
+    assert body["hints"] == ["Evita secuencias como 1234 o abcd."]
+
+
+def test_route_says_which_rule_a_short_password_breaks(client):
+    body = client.post(STRENGTH, json={"password": "Abcde-1x"}).json()
+
+    assert (body["level"], body["meets_rules"], body["accepted"]) == ("low", False, False)
+    assert [error["code"] for error in body["errors"]] == ["too_short"]
 
 
 def test_route_reports_broken_rules_and_rates_it_low(client):
