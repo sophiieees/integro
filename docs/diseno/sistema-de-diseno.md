@@ -44,7 +44,8 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 
 | Componente | Dónde | Qué comunica |
 |---|---|---|
-| Cabecera fija con la marca y enlaces de texto (`.enlaces-cabecera`) | Todas | La marca y, junto a ella, "Conviértete en anfitrión" (y "Buscar hospedaje" en las páginas interiores) como texto sin borde. Sin menú ni "Entrar" por ahora (PROMPT_LOG 0.20) |
+| Cabecera fija con la marca y enlaces de texto (`.enlaces-cabecera`) | Todas | La marca y, junto a ella, "Conviértete en anfitrión" (y "Buscar hospedaje" en las páginas interiores) como texto sin borde. A la derecha, la cuenta (`[data-cuenta]`): "Entrar", o el nombre de la persona y "Salir" (decisión 0.20, 19 de noviembre) |
+| Ventana de "Entrar" (`.ventana`) | Todas, sobre la página | Dos pasos: correo y contraseña, y el código de 6 dígitos. Al terminar se cierra y la persona sigue donde estaba. Avisos en el color de alerta; enlace a registro.html. La lógica vive en `cuenta-logica.js`, sin pantalla, para probarse con node |
 | Eslogan (`.eslogan`) | Hero de la portada | "Su lugar, Íntegro." en blanco con "Íntegro" en dorado arena; juego de palabras con el nombre |
 | Buscador de cuatro campos y botón (`.buscador`) | Centro del hero de la portada, bajo el eslogan | Destino, llegada, salida, huéspedes, sobre la imagen de bienvenida; en celular se apila en dos columnas |
 | Botones (`.btn-primario` y `.btn-azul`) | Todas | Regla del ADR 0008: fondo verde íntegro con letra blanca; con el cursor encima, verde noche; al dar clic, dorado arena con la letra en verde noche. Las dos clases se ven igual; `.btn-azul` conserva su nombre de octubre |
@@ -86,4 +87,4 @@ Los enlaces a Cómo funciona y Anfitriones viven en el pie de página en todos l
 - Fotografías reales de propiedades en la ciudad de lanzamiento.
 - Las 12 pantallas restantes (ver `pantallas.md`).
 - Textos legales: términos, aviso de privacidad, política de cancelación con plazos definidos.
-- Menú para celular y estados de error de formularios.
+- Menú para celular. Los estados de error de la ventana de "Entrar" ya existen; faltan los del registro.
