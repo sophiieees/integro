@@ -236,6 +236,8 @@
 
   pintarCabecera();
   cargarSesion().then(function () {
+    /* Avisa que ya se supo si hay sesión y si hay servidor. Las pruebas de principio a fin esperan esta marca. */
+    document.documentElement.setAttribute("data-cuenta-lista", "");
     if (window.location.hash === "#entrar" && !estado.sesion) abrirVentana(document.querySelector(".cuenta-entrar"));
   });
 })();

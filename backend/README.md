@@ -181,6 +181,8 @@ python -m pytest ..\tests\backend -v -rs
 
 Las pruebas no dejan nada guardado en la base. Las que necesitan personas de prueba (`test_transaction.py` y `test_account_access_tables.py`) las crean dentro de una transacción en `integro` y la deshacen al terminar. Las de `test_account_access_tables.py` comprueban las tablas de `database/migrations/20261117000003_sessions_codes_password_resets.sql`; si esa migración no se ha corrido en la base, se omiten y la salida lo dice. Las de `test_login_attempts_admins_tables.py` comprueban las tablas de `database/migrations/20261118000004_login_attempts_admins.sql` y también se omiten si esa migración no se ha corrido. Las del registro (`test_accounts_registration.py`) llaman a las rutas de verdad, también dentro de una transacción que se deshace, y leen el código de un anotador en lugar de enviarlo. Las que usan la base real se omiten si no existe `backend/.env`, y la salida lo dice. Las de `test_health.py` apuntan a un puerto donde no escucha nadie, y por eso tardan unos segundos cada una.
 
+Las pruebas de la web son de dos tipos. Las que leen los archivos de `web/` y la lógica de la pantalla (sin navegador) se corren con `python -m pytest ..\tests\web -v`. Las de principio a fin abren un navegador de verdad contra la API y la base `integro`, también dentro de una transacción que se deshace, y se corren con `python -m pytest ..\tests\e2e -v -rs`; hace falta Edge o Chrome y `websocket-client` (`pip install -r requirements-dev.txt`). Detalles en `tests/e2e/README.md`.
+
 ## Si algo falla
 
 | Lo que se ve | Qué significa |

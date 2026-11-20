@@ -6,3 +6,6 @@
 pytest==9.2.0
 # Cliente HTTP que usa el cliente de pruebas de FastAPI. Publicada el 6 de diciembre de 2024.
 httpx==0.28.1
+# Habla con el navegador de las pruebas de principio a fin (tests/e2e) por su protocolo de
+# depuración. Publicada el 31 de agosto de 2026, comprobada en PyPI el 19 de noviembre de 2026.
+websocket-client==1.9.2
