@@ -1,8 +1,8 @@
 /* Íntegro, la cuenta en la pantalla
    -------------------------------------------------------------------
    1. Al cargar, pregunta a la API quién tiene sesión (GET /auth/me) y pinta
-      la cabecera: «Entrar», o el nombre y «Salir».
-   2. «Entrar» abre una ventana sobre la página con los dos pasos del inicio
+      la cabecera: «Iniciar sesión», o el nombre y «Salir».
+   2. «Iniciar sesión» abre una ventana sobre la página con los dos pasos del inicio
       de sesión (ADR 0014): correo y contraseña, y luego el código.
    3. Al terminar, la ventana se cierra y la persona sigue en la misma página.
    4. «Salir» cierra la sesión (POST /auth/logout) con la clave
@@ -65,7 +65,7 @@
         var entrar = document.createElement("a");
         entrar.className = "cuenta-entrar";
         entrar.href = "#entrar";
-        entrar.textContent = "Entrar";
+        entrar.textContent = "Iniciar sesión";
         entrar.addEventListener("click", function (e) { e.preventDefault(); abrirVentana(entrar); });
         zona.appendChild(entrar);
       }
@@ -115,10 +115,10 @@
     fondo.hidden = true;
     fondo.innerHTML =
       "<div class=\"ventana\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"ventana-entrar-titulo\">" +
-        "<h2 id=\"ventana-entrar-titulo\">Entrar</h2>" +
+        "<h2 id=\"ventana-entrar-titulo\">Iniciar sesión</h2>" +
         "<p class=\"ventana-aviso\" data-aviso role=\"alert\" hidden></p>" +
         "<form data-paso=\"correo\" novalidate>" +
-          "<label class=\"campo\"><span>Correo</span><input type=\"email\" name=\"email\" autocomplete=\"email\" inputmode=\"email\" spellcheck=\"false\"></label>" +
+          "<label class=\"campo\"><span>Correo electrónico</span><input type=\"email\" name=\"email\" autocomplete=\"email\" inputmode=\"email\" spellcheck=\"false\"></label>" +
           "<label class=\"campo\"><span>Contraseña</span><input type=\"password\" name=\"password\" autocomplete=\"current-password\"></label>" +
           "<div class=\"ventana-acciones\">" +
             "<button type=\"button\" class=\"btn-enlace\" data-cancelar>Cancelar</button>" +
@@ -130,10 +130,10 @@
           "<label class=\"campo\"><span>Código</span><input type=\"text\" name=\"code\" autocomplete=\"one-time-code\" inputmode=\"numeric\" maxlength=\"6\" pattern=\"[0-9]*\"></label>" +
           "<div class=\"ventana-acciones\">" +
             "<button type=\"button\" class=\"btn-enlace\" data-volver>Volver</button>" +
-            "<button type=\"submit\" class=\"btn btn-primario\">Entrar</button>" +
+            "<button type=\"submit\" class=\"btn btn-primario\">Iniciar sesión</button>" +
           "</div>" +
         "</form>" +
-        "<p class=\"ventana-pie\">¿No tienes cuenta? <a href=\"registro.html\">Regístrate</a></p>" +
+        "<p class=\"ventana-pie\">¿Aún no tiene una cuenta? <a href=\"registro.html\">Regístrese</a></p>" +
       "</div>";
     document.body.appendChild(fondo);
 

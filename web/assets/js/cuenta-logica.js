@@ -1,6 +1,6 @@
 /* Íntegro, lógica de la cuenta (sin pantalla)
    -------------------------------------------------------------------
-   Decide qué pasa en la ventana de «Entrar» con cada respuesta de la API y
+   Decide qué pasa en la ventana de «Iniciar sesión» con cada respuesta de la API y
    qué texto se le muestra a la persona. No toca el documento ni llama a la
    API: eso lo hace cuenta.js. Así se prueba sin navegador, con node.
 
@@ -18,8 +18,8 @@
 })(typeof window !== "undefined" ? window : this, function () {
   "use strict";
 
-  var SIN_SERVIDOR = "No hay conexión con la API de Íntegro. Arranca el servidor y abre la página desde http://127.0.0.1:8000/.";
-  var RESPUESTA_RARA = "La API respondió algo inesperado. Intenta de nuevo.";
+  var SIN_SERVIDOR = "No fue posible comunicarse con el servidor de Íntegro. Inícielo y abra la página desde http://127.0.0.1:8000/.";
+  var RESPUESTA_RARA = "El servidor respondió de forma inesperada. Intente nuevamente.";
 
   function plural(n, uno, varios) { return n + " " + (n === 1 ? uno : varios); }
 
@@ -36,16 +36,16 @@
   /* Revisa lo escrito antes de mandarlo. Devuelve el aviso, o null si está bien. */
   function revisarCorreoYContrasena(correo, contrasena) {
     var c = (correo || "").trim();
-    if (!c) return { campo: "email", aviso: "Escribe tu correo." };
-    if (c.indexOf("@") < 1 || c.indexOf("@") === c.length - 1) return { campo: "email", aviso: "El correo no tiene un formato válido." };
-    if (!contrasena) return { campo: "password", aviso: "Escribe tu contraseña." };
+    if (!c) return { campo: "email", aviso: "Escriba su correo electrónico." };
+    if (c.indexOf("@") < 1 || c.indexOf("@") === c.length - 1) return { campo: "email", aviso: "El correo electrónico no tiene un formato válido." };
+    if (!contrasena) return { campo: "password", aviso: "Escriba su contraseña." };
     return null;
   }
 
   function revisarCodigo(codigo) {
     var c = (codigo || "").trim();
-    if (!c) return { campo: "code", aviso: "Escribe el código que te llegó." };
-    if (!/^[0-9]{6}$/.test(c)) return { campo: "code", aviso: "El código son 6 números." };
+    if (!c) return { campo: "code", aviso: "Escriba el código que recibió." };
+    if (!/^[0-9]{6}$/.test(c)) return { campo: "code", aviso: "El código debe constar de 6 dígitos." };
     return null;
   }
 
@@ -56,21 +56,21 @@
     var codigo = error ? error.code : null;
     if (status === 0) return { paso: "correo", campo: null, aviso: SIN_SERVIDOR };
     if (status === 200 && cuerpo && cuerpo.status === "code_required") {
-      return { paso: "codigo", campo: "code", aviso: null, texto: "Te enviamos un código de 6 dígitos a " + correo + ". Vence en 5 minutos." };
+      return { paso: "codigo", campo: "code", aviso: null, texto: "Le enviamos un código de 6 dígitos a " + correo + ". Su vigencia es de 5 minutos." };
     }
-    if (status === 401) return { paso: "correo", campo: "password", aviso: "El correo o la contraseña no son correctos." };
+    if (status === 401) return { paso: "correo", campo: "password", aviso: "El correo electrónico o la contraseña no son correctos." };
     if (status === 403 && codigo === "email_not_verified") {
-      return { paso: "correo", campo: "email", aviso: "Todavía no has comprobado tu correo. Busca el código que te enviamos al registrarte." };
+      return { paso: "correo", campo: "email", aviso: "Aún no ha comprobado su correo electrónico. Revise el código que le enviamos al registrarse." };
     }
     if (status === 429 && codigo === "try_later") {
-      return { paso: "correo", campo: null, aviso: "Demasiados intentos desde este dispositivo. Intenta de nuevo en " + minutos(cuerpo.retry_after) + "." };
+      return { paso: "correo", campo: null, aviso: "Se recibieron demasiados intentos desde este dispositivo. Intente nuevamente en " + minutos(cuerpo.retry_after) + "." };
     }
     if (status === 429 && codigo === "wait") {
       /* Ya hay un código vigente, enviado hace menos de un minuto: se pide ese. */
-      return { paso: "codigo", campo: "code", aviso: null, texto: "Ya te enviamos un código a " + correo + " hace menos de un minuto. Escríbelo aquí." };
+      return { paso: "codigo", campo: "code", aviso: null, texto: "Ya le enviamos un código a " + correo + " hace menos de un minuto. Por favor, escríbalo aquí." };
     }
     if (status === 429 && codigo === "hourly_limit") {
-      return { paso: "correo", campo: null, aviso: "Ya pediste demasiados códigos en una hora. Intenta más tarde." };
+      return { paso: "correo", campo: null, aviso: "Ha solicitado demasiados códigos en una hora. Intente nuevamente más tarde." };
     }
     if (status === 422 && error) return { paso: "correo", campo: error.field, aviso: error.message };
     return { paso: "correo", campo: null, aviso: (error && error.message) || RESPUESTA_RARA };
@@ -84,12 +84,12 @@
     if (status === 200 && cuerpo && cuerpo.status === "session_opened") return { paso: "dentro", campo: null, aviso: null };
     if (status === 400 && codigo === "invalid_code") {
       var quedan = cuerpo.attempts_left;
-      var aviso = "El código no es correcto.";
-      if (typeof quedan === "number") aviso += quedan === 0 ? " Ya no te quedan intentos." : " Te " + (quedan === 1 ? "queda" : "quedan") + " " + plural(quedan, "intento", "intentos") + ".";
+      var aviso = "El código ingresado no es correcto.";
+      if (typeof quedan === "number") aviso += quedan === 0 ? " Ya no le quedan intentos." : " Le " + (quedan === 1 ? "queda" : "quedan") + " " + plural(quedan, "intento", "intentos") + ".";
       return { paso: quedan === 0 ? "correo" : "codigo", campo: quedan === 0 ? "email" : "code", aviso: aviso };
     }
-    if (status === 400 && codigo === "code_expired") return { paso: "correo", campo: "email", aviso: "El código venció. Vuelve a escribir tu correo y tu contraseña para recibir otro." };
-    if (status === 400 && codigo === "too_many_attempts") return { paso: "correo", campo: "email", aviso: "Demasiados intentos con ese código. Vuelve a escribir tu correo y tu contraseña para recibir otro." };
+    if (status === 400 && codigo === "code_expired") return { paso: "correo", campo: "email", aviso: "El código venció. Vuelva a escribir su correo electrónico y su contraseña para recibir uno nuevo." };
+    if (status === 400 && codigo === "too_many_attempts") return { paso: "correo", campo: "email", aviso: "Se agotaron los intentos con ese código. Vuelva a escribir su correo electrónico y su contraseña para recibir uno nuevo." };
     if (status === 422 && error) return { paso: "codigo", campo: "code", aviso: error.message };
     return { paso: "codigo", campo: null, aviso: (error && error.message) || RESPUESTA_RARA };
   }
@@ -106,7 +106,7 @@
   function despuesDeSalir(status) {
     if (status === 200 || status === 401) return { sesion: false, aviso: null };
     if (status === 0) return { sesion: true, aviso: SIN_SERVIDOR };
-    if (status === 403) return { sesion: true, aviso: "No se pudo cerrar la sesión. Recarga la página e inténtalo de nuevo." };
+    if (status === 403) return { sesion: true, aviso: "No fue posible cerrar la sesión. Recargue la página e intente nuevamente." };
     return { sesion: true, aviso: RESPUESTA_RARA };
   }
 

@@ -1,4 +1,4 @@
-"""Casos de la ventana de «Entrar», de principio a fin: navegador, servidor y base de verdad.
+"""Casos de la ventana de «Iniciar sesión», de principio a fin: navegador, servidor y base de verdad.
 
 Especificación aceptada por Sophia el 19 de noviembre de 2026:
 
@@ -9,10 +9,10 @@ Especificación aceptada por Sophia el 19 de noviembre de 2026:
      5. Código correcto: ventana cerrada, nombre y «Salir» en la cabecera, misma página.
      6. Código incorrecto: aviso con los intentos que quedan; vencido o agotado:
         aviso y vuelve al paso 1.
-     7. «Salir»: sesión cerrada en la API, vuelve «Entrar».
+     7. «Salir»: sesión cerrada en la API, vuelve «Iniciar sesión».
      8. Al recargar o cambiar de página con sesión, la cabecera muestra el nombre
         sin volver a entrar.
-     9. Sin API (archivo abierto con doble clic): «Entrar» avisa que hace falta el servidor.
+     9. Sin API (archivo abierto con doble clic): «Iniciar sesión» avisa que hace falta el servidor.
     10. Escape, clic fuera o «Cancelar» cierran la ventana; los campos quedan
         vacíos; funciona en celular.
 
@@ -33,7 +33,7 @@ PAGES = ["index.html", "propiedad.html?id=2", "anfitriones.html", "como-funciona
 FORM_1 = "#ventana-entrar form[data-paso=correo]"
 FORM_2 = "#ventana-entrar form[data-paso=codigo]"
 
-WRONG_PASSWORD = "El correo o la contraseña no son correctos."
+WRONG_PASSWORD = "El correo electrónico o la contraseña no son correctos."
 
 
 # --- Lo que hace una persona ------------------------------------------------
@@ -98,13 +98,13 @@ def log_in(page, site, account, path="index.html"):
 def test_every_page_shows_entrar_and_opens_the_window(page, site, path):
     go(page, site, path)
 
-    assert page.header() == ["Entrar"]
+    assert page.header() == ["Iniciar sesión"]
     assert page.window_open() is False
     open_window(page)
 
     assert page.window_open() is True
     assert page.step() == "correo"
-    assert page.text("#ventana-entrar h2") == "Entrar"
+    assert page.text("#ventana-entrar h2") == "Iniciar sesión"
     assert page.js("document.activeElement.name") == "email"
     assert page.js("document.body.classList.contains('con-ventana')") is True
 
@@ -122,7 +122,7 @@ def test_the_window_links_to_registro_html(page, site):
 
     link = page.js("document.querySelector('#ventana-entrar .ventana-pie a').getAttribute('href')")
     assert link == "registro.html"
-    assert page.text("#ventana-entrar .ventana-pie").strip() == "¿No tienes cuenta? Regístrate"
+    assert page.text("#ventana-entrar .ventana-pie").strip() == "¿Aún no tiene una cuenta? Regístrese"
 
 
 # --- Caso 1 ------------------------------------------------------------------------
@@ -137,7 +137,7 @@ def test_right_email_and_password_go_to_the_code_step_and_send_the_code(page, si
 
     assert page.step() == "codigo"
     assert page.warning() is None
-    assert page.text(f"{FORM_2} [data-texto]") == f"Te enviamos un código de 6 dígitos a {account['email']}. Vence en 5 minutos."
+    assert page.text(f"{FORM_2} [data-texto]") == f"Le enviamos un código de 6 dígitos a {account['email']}. Su vigencia es de 5 minutos."
     assert page.js("document.activeElement.name") == "code"
     # La contraseña ya no queda escrita en la página.
     assert page.value(f"{FORM_1} [name=password]") == ""
@@ -145,7 +145,7 @@ def test_right_email_and_password_go_to_the_code_step_and_send_the_code(page, si
     assert re.fullmatch(r"[0-9]{6}", code)
     # Todavía no hay sesión.
     assert sessions_of(site, account["email"]) == (0, 0)
-    assert page.header() == ["Entrar"]
+    assert page.header() == ["Iniciar sesión"]
 
 
 def test_the_email_is_accepted_with_capitals_and_spaces(page, site):
@@ -178,13 +178,13 @@ def test_empty_or_badly_written_fields_are_warned_without_asking_the_api(page, s
     before = page.requests()
 
     page.press("Enter")
-    assert page.warning() == "Escribe tu correo."
+    assert page.warning() == "Escriba su correo electrónico."
     page.type(f"{FORM_1} [name=email]", "ana")
     page.press("Enter")
-    assert page.warning() == "El correo no tiene un formato válido."
+    assert page.warning() == "El correo electrónico no tiene un formato válido."
     page.type(f"{FORM_1} [name=email]", "ana@prueba.invalid")
     page.press("Enter")
-    assert page.warning() == "Escribe tu contraseña."
+    assert page.warning() == "Escriba su contraseña."
 
     assert page.requests() == before
     assert page.step() == "correo"
@@ -204,7 +204,7 @@ def test_wrong_password_warns_and_stays_in_step_one(page, site):
     assert page.warning() == WRONG_PASSWORD
     assert page.window_open() is True
     assert page.js("document.activeElement.name") == "password"
-    assert page.header() == ["Entrar"]
+    assert page.header() == ["Iniciar sesión"]
     assert sessions_of(site, account["email"]) == (0, 0)
 
 
@@ -229,7 +229,7 @@ def test_an_unverified_email_is_told_to_verify_it(page, site):
     send_credentials(page, account["email"], account["password"])
 
     assert page.step() == "correo"
-    assert page.warning() == "Todavía no has comprobado tu correo. Busca el código que te enviamos al registrarte."
+    assert page.warning() == "Aún no ha comprobado su correo electrónico. Revise el código que le enviamos al registrarse."
 
 
 # --- Caso 4 ------------------------------------------------------------------------
@@ -248,7 +248,7 @@ def test_six_wrong_passwords_make_the_device_wait_and_the_window_says_how_long(p
     send_credentials(page, account["email"], account["password"])
 
     assert page.step() == "correo"
-    assert page.warning() == "Demasiados intentos desde este dispositivo. Intenta de nuevo en 15 minutos."
+    assert page.warning() == "Se recibieron demasiados intentos desde este dispositivo. Intente nuevamente en 15 minutos."
     assert sessions_of(site, account["email"]) == (0, 0)
     # La cuenta no se bloqueó: otro dispositivo (otro navegador) entra normal.
     other = page.browser.new_page()
@@ -308,8 +308,8 @@ def test_wrong_code_says_how_many_attempts_are_left(page, site):
     send_code(page, wrong_code(code))
 
     assert page.step() == "codigo"
-    assert page.warning() == "El código no es correcto. Te quedan 4 intentos."
-    assert page.header() == ["Entrar"]
+    assert page.warning() == "El código ingresado no es correcto. Le quedan 4 intentos."
+    assert page.header() == ["Iniciar sesión"]
     assert sessions_of(site, account["email"]) == (0, 0)
     # Sigue sirviendo el código correcto.
     send_code(page, code)
@@ -320,15 +320,15 @@ def test_five_wrong_codes_send_the_person_back_to_step_one(page, site):
     account = make_account(site)
     code = login_up_to_the_code(page, site, account)
 
-    for expected in ("Te quedan 4 intentos.", "Te quedan 3 intentos.", "Te quedan 2 intentos.", "Te queda 1 intento."):
+    for expected in ("Le quedan 4 intentos.", "Le quedan 3 intentos.", "Le quedan 2 intentos.", "Le queda 1 intento."):
         send_code(page, wrong_code(code))
-        assert page.warning() == f"El código no es correcto. {expected}"
+        assert page.warning() == f"El código ingresado no es correcto. {expected}"
         assert page.step() == "codigo"
     send_code(page, wrong_code(code))
 
     assert page.step() == "correo"
-    assert page.warning() == "El código no es correcto. Ya no te quedan intentos."
-    assert page.header() == ["Entrar"]
+    assert page.warning() == "El código ingresado no es correcto. Ya no le quedan intentos."
+    assert page.header() == ["Iniciar sesión"]
     assert sessions_of(site, account["email"]) == (0, 0)
 
 
@@ -340,7 +340,7 @@ def test_an_expired_code_sends_the_person_back_to_step_one(page, site):
     send_code(page, code)
 
     assert page.step() == "correo"
-    assert page.warning() == "El código venció. Vuelve a escribir tu correo y tu contraseña para recibir otro."
+    assert page.warning() == "El código venció. Vuelva a escribir su correo electrónico y su contraseña para recibir uno nuevo."
     assert sessions_of(site, account["email"]) == (0, 0)
 
 
@@ -350,10 +350,10 @@ def test_a_code_that_is_not_six_numbers_is_warned_without_asking_the_api(page, s
     before = page.requests()
 
     page.press("Enter")
-    assert page.warning() == "Escribe el código que te llegó."
+    assert page.warning() == "Escriba el código que recibió."
     page.type(f"{FORM_2} [name=code]", "12ab")
     page.press("Enter")
-    assert page.warning() == "El código son 6 números."
+    assert page.warning() == "El código debe constar de 6 dígitos."
 
     assert page.requests() == before
 
@@ -367,22 +367,22 @@ def test_salir_closes_the_session_in_the_api_and_entrar_comes_back(page, site):
     assert sessions_of(site, account["email"]) == (1, 1)
 
     page.click(".cuenta-salir")
-    page.expect("document.querySelector('[data-cuenta]').textContent.trim() === 'Entrar'")
+    page.expect("document.querySelector('[data-cuenta]').textContent.trim() === 'Iniciar sesión'")
 
-    assert page.header() == ["Entrar"]
+    assert page.header() == ["Iniciar sesión"]
     assert sessions_of(site, account["email"]) == (0, 1)
     # La cookie se borró: la API ya no reconoce a nadie.
     assert page.js("fetch('/api/v1/auth/me').then(r => r.status)") == 401
     # Y al recargar sigue sin sesión.
     go(page, site)
-    assert page.header() == ["Entrar"]
+    assert page.header() == ["Iniciar sesión"]
 
 
 def test_after_salir_the_same_person_can_enter_again(page, site):
     account = make_account(site)
     log_in(page, site, account)
     page.click(".cuenta-salir")
-    page.expect("document.querySelector('[data-cuenta]').textContent.trim() === 'Entrar'")
+    page.expect("document.querySelector('[data-cuenta]').textContent.trim() === 'Iniciar sesión'")
     age_codes(site, account["email"], 61)  # para no chocar con la espera de un minuto entre códigos
 
     open_window(page)
@@ -428,7 +428,7 @@ def test_a_person_without_session_in_a_clean_browser_sees_entrar(page, site):
     other = page.browser.new_page()
     try:
         go(other, site)
-        assert other.header() == ["Entrar"]
+        assert other.header() == ["Iniciar sesión"]
     finally:
         other.close()
 
@@ -441,12 +441,12 @@ def test_without_the_server_entrar_says_the_server_is_needed(page, site):
     page.goto((WEB / "index.html").as_uri())
     page.expect("document.documentElement.hasAttribute('data-cuenta-lista')")
 
-    assert page.header() == ["Entrar"]
+    assert page.header() == ["Iniciar sesión"]
     open_window(page)
 
     assert page.step() == "correo"
     assert page.warning() == (
-        "No hay conexión con la API de Íntegro. Arranca el servidor y abre la página desde http://127.0.0.1:8000/."
+        "No fue posible comunicarse con el servidor de Íntegro. Inícielo y abra la página desde http://127.0.0.1:8000/."
     )
 
 
