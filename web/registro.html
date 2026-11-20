@@ -67,6 +67,13 @@
                 <input type="date" id="registro-nacimiento" name="birth_date" autocomplete="bday" min="1900-01-01" aria-describedby="registro-error-birth_date">
                 <span class="campo-error" id="registro-error-birth_date" data-error-de="birth_date" hidden></span>
               </div>
+              <div class="campo ancho-completo">
+                <label class="casilla" for="registro-terminos">
+                  <input type="checkbox" id="registro-terminos" name="terminos" aria-describedby="registro-error-terms">
+                  <span>Acepto los términos y condiciones y el aviso de privacidad.</span>
+                </label>
+                <span class="campo-error" id="registro-error-terms" data-error-de="terms" hidden></span>
+              </div>
             </div>
             <div class="formulario-acciones">
               <button type="submit" class="btn btn-primario">Crear cuenta</button>

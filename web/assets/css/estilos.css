@@ -127,7 +127,7 @@ button, input, select { font: inherit; color: inherit; }
 .ventana h2 { font-size: 1.5rem; margin-bottom: 14px; }
 .ventana .campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
 .ventana .campo span { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--color-tinta-suave); font-weight: 600; }
-.ventana .campo input, .formulario-tarjeta .campo input, .formulario-tarjeta .campo select { padding: 10px 12px; border: 1px solid var(--color-borde); border-radius: var(--radio-chico); background: var(--color-superficie); font-size: 1rem; width: 100%; }
+.ventana .campo input, .formulario-tarjeta .campo input:not([type=checkbox]), .formulario-tarjeta .campo select { padding: 10px 12px; border: 1px solid var(--color-borde); border-radius: var(--radio-chico); background: var(--color-superficie); font-size: 1rem; width: 100%; }
 .ventana .campo input:focus, .formulario-tarjeta .campo input:focus, .formulario-tarjeta .campo select:focus { border-color: var(--color-primario); outline: 0; box-shadow: 0 0 0 3px var(--color-primario-suave); }
 .ventana-aviso { background: var(--color-alerta-suave); color: var(--color-alerta); border-left: 3px solid var(--color-alerta); padding: 10px 12px; margin-bottom: 14px; font-size: .92rem; }
 .ventana-texto { color: var(--color-tinta-suave); font-size: .95rem; margin-bottom: 14px; }
@@ -350,8 +350,11 @@ body.con-ventana { overflow: hidden; }
 .formulario-rejilla .ancho-completo { grid-column: 1 / -1; }
 .formulario-tarjeta .campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; min-width: 0; }
 .campo-etiqueta { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--color-tinta-suave); font-weight: 600; }
-.formulario-tarjeta .campo input, .formulario-tarjeta .campo select { border: 1px solid var(--color-borde); border-radius: var(--radio-chico); background: var(--color-superficie); font-size: 1rem; width: 100%; min-width: 0; }
+.formulario-tarjeta .campo input:not([type=checkbox]), .formulario-tarjeta .campo select { border: 1px solid var(--color-borde); border-radius: var(--radio-chico); background: var(--color-superficie); font-size: 1rem; width: 100%; min-width: 0; }
 .campo-ayuda { font-size: .85rem; color: var(--color-tinta-suave); }
+/* La casilla de términos: sin enlaces, porque todavía no hay texto legal. */
+.casilla { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: .95rem; }
+.casilla input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--color-primario); }
 .campo-error { display: grid; gap: 2px; font-size: .88rem; color: var(--color-alerta); }
 .campo-error[hidden] { display: none; }
 .campo-error a { color: var(--color-primario); font-weight: 600; }

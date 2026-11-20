@@ -15,7 +15,7 @@ const CORREO = "ana@prueba.invalid";
 const error = (field, code, message, extra) => Object.assign({ errors: [{ field, code, message }] }, extra);
 const valores = (cambios) => Object.assign({
   first_name: "Ana", last_name: "Torres López", email: CORREO, password: "Ejemplo-2026",
-  marcacion: "52", numero: "55 1234 5678", country: "MX", birth_date: "1995-03-14",
+  marcacion: "52", numero: "55 1234 5678", country: "MX", birth_date: "1995-03-14", terminos: true,
 }, cambios);
 
 /* --- Los países y el teléfono -------------------------------------------- */
@@ -107,7 +107,7 @@ test("un formulario completo no tiene avisos y sus datos van listos para la API"
 });
 
 test("cada dato vacío se avisa en su campo", () => {
-  const r = REGISTRO.revisarDatos({ first_name: "", last_name: "  ", email: "", password: "", marcacion: "52", numero: "", country: "", birth_date: "" });
+  const r = REGISTRO.revisarDatos({ first_name: "", last_name: "  ", email: "", password: "", marcacion: "52", numero: "", country: "", birth_date: "", terminos: false });
 
   assert.deepEqual(r.errores, {
     first_name: ["Escribe tu nombre."],
@@ -117,6 +117,7 @@ test("cada dato vacío se avisa en su campo", () => {
     phone: ["Escribe tu número de teléfono."],
     country: ["Elige tu país de residencia."],
     birth_date: ["Escribe tu fecha de nacimiento."],
+    terms: ["Para crear tu cuenta, acepta los términos y condiciones y el aviso de privacidad."],
   });
   assert.equal(REGISTRO.hayErrores(r.errores), true);
 });
@@ -133,6 +134,29 @@ test("el correo mal escrito, los nombres larguísimos y la fecha rara se avisan"
   assert.deepEqual(REGISTRO.revisarDatos(valores({ last_name: "a".repeat(81) })).errores.last_name, ["Los apellidos admiten hasta 80 caracteres."]);
   assert.deepEqual(REGISTRO.revisarDatos(valores({ first_name: "a".repeat(80) })).errores, {});
   assert.deepEqual(REGISTRO.revisarDatos(valores({ birth_date: "14/03/1995" })).errores.birth_date, ["La fecha de nacimiento no es válida."]);
+});
+
+test("sin aceptar los términos no se manda, y la casilla no viaja a la API", () => {
+  const sin = REGISTRO.revisarDatos(valores({ terminos: false }));
+  const con = REGISTRO.revisarDatos(valores({ terminos: true }));
+
+  assert.deepEqual(sin.errores, { terms: ["Para crear tu cuenta, acepta los términos y condiciones y el aviso de privacidad."] });
+  assert.deepEqual(con.errores, {});
+  // La API no recibe nada de la casilla: todavía no hay texto legal que registrar.
+  assert.ok(!("terminos" in con.datos) && !("terms" in con.datos));
+  assert.equal(REGISTRO.revisarDatos(valores({ terminos: undefined })).errores.terms.length, 1);
+});
+
+test("la casilla es lo último que se ve: el primer campo con aviso lo deja para el final", () => {
+  assert.equal(REGISTRO.primerCampoConError({ terms: ["x"], birth_date: ["x"] }), "birth_date");
+  assert.equal(REGISTRO.primerCampoConError({ terms: ["x"] }), "terms");
+});
+
+test("un aviso de la API para un campo «terms» no existe: sale arriba", () => {
+  const r = REGISTRO.despuesDeRegistrar(422, error("terms", "invalid", "x"), CORREO);
+
+  assert.deepEqual(r.errores, {});
+  assert.equal(r.aviso, "x");
 });
 
 test("el primer campo con aviso es el primero que se ve en la pantalla", () => {
