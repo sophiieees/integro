@@ -1580,4 +1580,71 @@ PROMPTS = [
             ("27.21", "Una pieza de encabezados de seguridad para las páginas, antes de publicar.", "Las páginas ya salen de la misma API. Campo: qué hace.", "Aceptar", "La pieza de encabezados de seguridad para las páginas está súper.", "Queda como pieza."),
         ],
     },
+    # ------------------------------------------------------------------ 28
+    {
+        "n": 28,
+        "titulo": "Ventana de «Entrar»: veredictos y pruebas de principio a fin",
+        "fecha": "19 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Vienen del prompt 27 y de la ventana de «Entrar» (PR #47, ya fusionado). Ya cambié la variable de "
+                     "backend/.env y se corrieron las pruebas. Las pruebas de la pantalla se hacen contra mi base de datos, "
+                     "arrancando el servidor, la base y el navegador, y viven en el repositorio; eso es muy importante."),
+        "tarea": ("1) Desviaciones de la ventana de «Entrar»: 1, lo acepto; 2, también lo acepto, me gustaría ver los "
+                  "avisos, pero confío en ti; 3, tenemos que armar el script, no puede haber copias de las cuatro "
+                  "páginas, ya tiene que estar armado, creo que es la siguiente pieza, ¿no?; 4, lo acepto, me gusta; 5, lo "
+                  "acepto; 6, lo acepto; 7, no, las pruebas no las tenemos que hacer en un PostgreSQL temporal, ya tiene "
+                  "que estar en mi base de datos y, por ende, la base de datos, eso es muy importante, ya tiene que estar "
+                  "en el repositorio, y arrancar el servidor, la base y el navegador; 8, lo acepto. 2) Sugerencia: sí, cuando "
+                  "exista la pieza de registro, que «Regístrate» apunte a registro.html. 3) Ya cambié la variable, la "
+                  "puedes revisar. 4) /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "19 de noviembre de 2026",
+            "commits": ("622cd53 (rama web/login-modal, PR #47, fusionado por Sophia en 94234d2). Pruebas de principio a fin: "
+                        "1c7829e (rama web/e2e-login, subida y sin fusionar)."),
+            "archivos": [
+                ("tests/e2e/e2e_support.py", "nuevo: arranca la API de verdad en un hilo y en un puerto libre, la base integro de backend/.env dentro de una transacción que se deshace, y Edge o Chrome sin ventana, que teclea y da clic de verdad."),
+                ("tests/e2e/test_entrar_e2e.py", "nuevo: los diez casos aceptados de la ventana y sus límites; 34 pruebas."),
+                ("tests/e2e/README.md", "nuevo: qué arranca la corrida, qué hace falta y cómo correrla."),
+                ("web/assets/css/estilos.css", "corrige que la ventana cerrada siguiera tapando la página: .ventana-fondo[hidden] { display: none; }."),
+                ("web/assets/js/cuenta.js", "marca data-cuenta-lista en la página cuando ya supo si hay sesión y servidor."),
+                ("backend/requirements-dev.txt", "websocket-client==1.9.2, publicada el 31 de agosto de 2026."),
+                ("backend/README.md y tests/web/test_login_modal.py", "cómo correr las pruebas de principio a fin."),
+                ("herramientas/bitacora/evidencias/web_e2e_login_pruebas_2026-11-19.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Que «Regístrate» apunte a registro.html cuando exista la pantalla de registro.", "hoy el enlace ya apunta ahí y da 404."),
+                ("Quitar la línea repetida SESSION_COOKIE_SECURE de backend/.env.", "la variable quedó escrita dos veces; las dos dicen false y no hace daño, pero conviene que quede una."),
+            ],
+            "lineas": ("Nuevos completos: e2e_support.py, test_entrar_e2e.py y README.md de tests/e2e. estilos.css: una regla "
+                       "y su comentario después de .ventana-fondo. cuenta.js: dos líneas al final, al terminar de cargar la "
+                       "sesión. requirements-dev.txt: tres líneas. backend/README.md: un párrafo en «Correr las pruebas». "
+                       "test_login_modal.py: el encabezado y una prueba nueva de la regla del atributo hidden."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben las pruebas se deshace. IA: pruebas de principio a fin, «34 passed in 83.11s»; "
+                        "pruebas de la web, «59 passed in 1.62s»; pruebas del backend, «841 passed, 1 warning in 171.32s»; "
+                        "0 filas de prueba guardadas en la base. La primera corrida de las pruebas de principio a fin falló: "
+                        "«1 failed, 20 passed»; en «Salir» la página no recibía el clic porque la ventana cerrada seguía "
+                        "tapándola. La segunda: «1 failed, 33 passed», por una prueba mal planteada (cambiar solo el ancla "
+                        "de la dirección no recarga la página). Sophia reportó que se corrieron las pruebas del PR #47. Salida "
+                        "copiada en herramientas/bitacora/evidencias/web_e2e_login_pruebas_2026-11-19.txt."),
+        },
+        "decisiones": [
+            ("28.1", "Si ya se envió un código hace menos de un minuto, la ventana pasa directo al paso del código en lugar de mostrar el aviso de espera de la API.", "Pasa cuando alguien cierra la ventana y vuelve a entrar; así no se queda sin poder escribir el código que ya tiene. Campo: qué hace.", "Aceptar", "El punto 1 lo acepto.", "Sin cambios; ahora tiene su prueba de principio a fin."),
+            ("28.2", "Los textos de los avisos los redactó la IA, uno por cada código de error de la API.", "El prompt no daba los textos. Campo: qué hace.", "Aceptar", "El 2 también lo acepto. Me gustaría ver los avisos, pero confío en ti.", "Los textos están en la respuesta de este prompt y en las pruebas de principio a fin."),
+            ("28.3", "La ventana la arma un script, no está escrita en cada página: una sola copia para las cuatro páginas.", "Para no repetir la ventana en cada página. Campo: qué hace.", "Revisar", "Para el punto 3, tenemos que armar el script. No puede haber copias de las 4 páginas. Ya tiene que estar armado. Creo que es la siguiente pieza, ¿no?", "Sin cambios todavía. La ventana ya la arma un solo script (cuenta.js); lo que sigue repetido en las cuatro páginas es la cabecera y el pie, que son de octubre. Queda por aclarar si Sophia pide que también se armen con un script."),
+            ("28.4", "«Volver» en el paso del código regresa al paso 1.", "No estaba en la especificación; sirve para corregir el correo. Campo: qué hace.", "Aceptar", "Punto 4. Lo acepto. Me gusta.", "Sin cambios."),
+            ("28.5", "Si «Salir» falla por la clave anti-falsificación, la página pide la clave otra vez y reintenta una vez antes de avisar.", "Para que la persona no vea un error cuando la clave se renovó. Campo: qué hace.", "Aceptar", "Cinco. Lo acepto.", "Sin cambios."),
+            ("28.6", "Las pruebas de la lógica de la ventana se corren con node, además de pytest.", "Node ya está en la computadora por las pruebas de la base. Campo: cómo se sabrá que funciona.", "Aceptar", "6. Lo acepto.", "Sin cambios."),
+            ("28.7", "El recorrido de principio a fin lo hizo la IA en un navegador de verdad, pero contra un PostgreSQL temporal y fuera del repositorio.", "Para no tocar la base de Sophia ni agregar dependencias al repositorio. Campo: cómo se sabrá que funciona.", "Rechazar", "No, las pruebas no las tenemos que hacer en un PostgreSQL temporal. Ya tiene que estar en mi base de datos. Y por ende, la base de datos, eso es muy importante, o sea, ya tiene que estar en el repositorio. Y arrancar en el servidor. Base y navegador.", "Las pruebas de principio a fin están en tests/e2e: arrancan el servidor, usan la base integro de Sophia y abren el navegador (commit 1c7829e)."),
+            ("28.8", "Dejar pantallas.md con el fin de línea que tiene en Git.", "En el disco estaba con el de Windows y Git lo habría marcado cambiado completo. Campo: cómo se sabrá que funciona.", "Aceptar", "Punto 8 lo acepto.", "Sin cambios."),
+            ("28.9", "Que «Regístrate» apunte a registro.html cuando exista la pantalla de registro.", "Hoy el enlace ya apunta ahí y da 404. Campo: qué hace.", "Aceptar", "Sí, cuando exista, que es la pieza que existe, la parte de regístrate, que apunte a registro.html.", "Sin cambios; ya apunta a registro.html."),
+            ("28.10", "Las pruebas de principio a fin escriben en la base real dentro de una sola transacción que se deshace al terminar, en lugar de guardar y borrar después.", "El sistema no tiene permiso de borrar personas, así que guardar de verdad dejaría filas de prueba en la base de Sophia. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("28.11", "El servidor de esas pruebas corre en un hilo del mismo proceso, no como un programa aparte.", "La transacción única solo se puede compartir dentro del mismo proceso. Campo: qué hace.", "Pendiente", "", ""),
+            ("28.12", "Una dependencia nueva, websocket-client, y un manejador del navegador de pocas líneas hecho por la IA, en lugar de Playwright o Selenium.", "Es una dependencia pequeña y ya publicada hace más de 14 días; Playwright o Selenium son mucho más grandes. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("28.13", "La página marca data-cuenta-lista cuando ya supo si hay sesión y servidor.", "Las pruebas necesitan saber cuándo terminó la cabecera de cargar; es un cambio al código de la pantalla hecho por las pruebas. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("28.14", "Corregir que la ventana cerrada siguiera tapando la página y quitando los clics.", "Error de la pieza anterior: el display: grid de la ventana le ganaba al atributo hidden. El recorrido de la IA solo miró el atributo y no si la ventana se veía; la captura de pantalla ya mostraba la ventana encima de la página después de entrar y la IA no lo notó. La pieza se fusionó con ese error. Campo: qué hace.", "Pendiente", "", "Regla .ventana-fondo[hidden] { display: none; } y pruebas que miran que la página reciba los clics."),
+            ("28.15", "Leer «la base de datos ya tiene que estar en el repositorio» como que las pruebas contra la base estén en el repositorio.", "No quedó claro si se pedía otra cosa; las migraciones y el modelo de datos ya están en database/migrations y docs/database. Campo: qué datos necesita.", "Pendiente", "", ""),
+        ],
+    },
 ]
