@@ -1417,8 +1417,8 @@ PROMPTS = [
             ("25.6", "Guardar los archivos de la tipografía Outfit dentro del proyecto, en lugar de pedirlos a Google en cada visita.", "El prototipo sigue sin depender de terceros y abre igual sin internet. Campo: qué datos necesita.", "Aceptar", "Acepto la sugerencia.", "ADR 0008, sección «Cómo se aplica la paleta»."),
             ("25.7", "No usar el dorado arena en texto corrido.", "Sobre el fondo arena tiene poco contraste y se lee mal en letras pequeñas. Campo: cómo se sabrá que funciona.", "Aceptar", "Sí, solo va en botones o en algo que resalte, el texto va en negro o colores legibles.", "ADR 0008, sección «Cómo se aplica la paleta»."),
             ("25.8", "Escribir las reglas de la paleta en el ADR 0008 sin que Sophia lo pidiera.", "El chat de programación no ve esta conversación. Campo: qué hace.", "Aceptar", "Sophia fusionó el PR #38 sin cambios.", "ADR 0008."),
-            ("25.9", "Letra en verde noche sobre los botones dorados.", "La letra blanca sobre dorado se lee mal. Campo: cómo se sabrá que funciona.", "Pendiente", "", "Anotado en el ADR 0008 para confirmarlo en la pieza de frontend."),
-            ("25.10", "Definir cómo se ve el botón al pasar el cursor.", "Sophia dijo qué pasa al dar clic, pero no al pasar el cursor. Campo: qué hace.", "Pendiente", "", "Anotado en el ADR 0008 para confirmarlo en la pieza de frontend."),
+            ("25.9", "Letra en verde noche sobre los botones dorados.", "La letra blanca sobre dorado se lee mal. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Verde noche».", "La letra del botón dorado va en verde noche (commit 5a60732)."),
+            ("25.10", "Definir cómo se ve el botón al pasar el cursor.", "Sophia dijo qué pasa al dar clic, pero no al pasar el cursor. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Verde noche»: el botón se pone verde noche al pasar el cursor y dorado solo al dar clic.", "Regla :hover de los botones en estilos.css (commit 5a60732)."),
         ],
     },
     # ------------------------------------------------------------------ 26
@@ -1493,6 +1493,91 @@ PROMPTS = [
             ("26.13", "La plantilla .env.example trae SESSION_COOKIE_SECURE=false.", "Es la plantilla de desarrollo y el servidor local no tiene HTTPS. Campo: qué datos necesita.", "Aceptar", "Revisar, es el dominio, ¿no? Debo hablarlo con Shakti. Tras la aclaración de que la variable es del HTTPS en su computadora y no del dominio, eligió la opción «Con false, para desarrollo».", "Sin cambios."),
             ("26.14", "Hacer «cerrar sesión» antes de la ventana de «Entrar».", "Con la cookie, la página no puede cerrar la sesión por su cuenta. Campo: qué hace.", "Aceptar", "Acepto estas sugerencias: hacer «cerrar sesión» antes de la ventana de «Entrar» y publicar la web y la API bajo el mismo dominio.", "Cambia el orden de las piezas."),
             ("26.15", "Publicar la web y la API bajo el mismo dominio.", "Con la cookie, la página y la API tienen que estar en el mismo sitio. Campo: qué datos necesita.", "Aceptar", "Acepto estas sugerencias: hacer «cerrar sesión» antes de la ventana de «Entrar» y publicar la web y la API bajo el mismo dominio. Debo hablarlo con Shakti.", "Queda para la decisión del alojamiento."),
+        ],
+    },
+    # ------------------------------------------------------------------ 27
+    {
+        "n": 27,
+        "titulo": "La API muestra la web, cerrar sesión con tres defensas, y paleta y tipografía del manual",
+        "fecha": "19 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Vienen del prompt 26: «descarga tú la fuente Outfit; todos los otros pasos, continúa», con el manual "
+                     "de identidad ya subido a docs/diseno/ y las reglas del ADR 0008. Ya hice la fusión."),
+        "tarea": ("1) Continuar con los otros pasos. 2) Vamos con la pieza 1: las desviaciones todas las acepto. Para la "
+                  "pieza 2, las desviaciones las acepto. Y para la pieza 3, igual las acepto. Las sugerencias: acepto, "
+                  "ahorita cambio el nombre del manual; y la pieza de encabezados de seguridad para las páginas está "
+                  "súper. 3) Con esto puedes hacer la bitácora. Después pon qué sigue para terminar el punto número 2 y "
+                  "ya poder pasar al siguiente punto, que es el 3. 4) Ponme los comandos para correr las pruebas. "
+                  "5) /bitacora."),
+        "salida": "La bitácora, qué sigue para terminar el punto 2 y los comandos para correr las pruebas.",
+        "respuesta": {
+            "fecha": "19 de noviembre de 2026",
+            "commits": ("d82fd58 y bc65290 (rama api/serve-web, PR #42, fusionado por Sophia en c5596cc); 083b98a (rama "
+                        "api/accounts-logout, PR #43, fusionado por Sophia en ab901c0); 5a60732 (rama web/brand-palette, "
+                        "PR #44, fusionado por Sophia en 925e03f). La bitácora 26 se fusionó con el PR #41 (9c9e204)."),
+            "archivos": [
+                ("backend/app/web.py, main.py y core/config.py", "la API entrega también las páginas de web/; variable SERVE_WEB."),
+                ("tests/backend/test_serve_web.py", "nuevo: 37 pruebas, sin base de datos."),
+                ("backend/app/api/protection.py", "nuevo: revisa de dónde viene la petición y la clave anti-falsificación."),
+                ("backend/app/modules/accounts/sessions.py y router.py", "cerrar la sesión actual, listar las abiertas, cerrar una y cerrar las demás."),
+                ("backend/app/api/auth.py", "borrar la cookie de sesión."),
+                ("tests/backend/test_accounts_logout.py", "nuevo: los ocho casos aceptados y sus límites; 60 pruebas."),
+                ("docs/decisiones/0015-sesiones-en-la-base-no-jwt.md", "cerrar sesión, la lista de sesiones y las tres defensas."),
+                ("web/assets/css/estilos.css y las cuatro páginas", "tokens del manual, reglas de los botones, la fuente y el color de la barra del navegador."),
+                ("web/assets/fonts/", "la tipografía Outfit (dos archivos, 47 KB) y su licencia."),
+                ("docs/diseno/sistema-de-diseno.md y docs/decisiones/0008-prototipo-estatico-antes-de-nextjs.md", "al día con el manual y con las dos decisiones que faltaban."),
+                ("tests/web/test_brand_palette.py", "nuevo, en una carpeta nueva: 44 pruebas de la paleta y la tipografía."),
+                ("backend/README.md y backend/.env.example", "las rutas nuevas y las variables SERVE_WEB y ALLOWED_ORIGINS."),
+                ("herramientas/bitacora/evidencias/web_logout_palette_pruebas_2026-11-19.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Renombrar el PDF del manual a manual-de-identidad.pdf.", "el nombre con espacios y acento da problemas en enlaces."),
+                ("Una pieza de encabezados de seguridad para las páginas, antes de publicar.", "las páginas ya salen de la misma API y todavía no llevan esos encabezados."),
+            ],
+            "lineas": ("Nuevos completos: web.py, protection.py, test_serve_web.py, test_accounts_logout.py, "
+                       "test_brand_palette.py y los archivos de la fuente. main.py: el arranque agrega las páginas y la "
+                       "respuesta 403. config.py: los campos serve_web y allowed_origins. auth.py: clear_session_cookie. "
+                       "sessions.py: list_sessions, revoke_session y revoke_other_sessions. router.py: csrf_token en las "
+                       "respuestas de /auth/login/verify y /auth/me, y el bloque «Cerrar sesión y ver las sesiones "
+                       "abiertas». estilos.css: el bloque @font-face, los tokens de :root, las reglas de los botones, el "
+                       "foco, las etiquetas, el hero, «Reportar un problema» y tres colores escritos a mano. Las cuatro "
+                       "páginas: la línea de theme-color. sistema-de-diseno.md: la introducción, la tabla de tokens, la "
+                       "tipografía y seis filas de componentes. ADR 0008 y ADR 0015: una sección o párrafo, consecuencias y "
+                       "«Cambios»."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben se deshace. Corridas de la IA por rama: api/serve-web, «781 passed, 1 warning "
+                        "in 109.49s»; api/accounts-logout, «841 passed, 1 warning in 126.40s»; web/brand-palette, «44 "
+                        "passed in 0.18s» (solo las pruebas de la web). El primer commit de api/serve-web se subió con 4 "
+                        "pruebas anteriores rotas («4 failed, 772 passed»): pedir con GET una ruta que solo acepta POST "
+                        "contestaba 404 en lugar de 405; el segundo commit lo corrige. Con el servidor de verdad en el "
+                        "puerto 8011: «/» 200 text/html; «/assets/css/estilos.css» 200 text/css; «/api/v1/health/database» "
+                        "200; «/api/v1/auth/login» 405; «/no-existe.html» 404; «/..%2fbackend%2f.env.example» 404. La "
+                        "paleta se revisó además en una captura de la portada y de anfitriones. No se contaron filas en la "
+                        "base. Sophia no reportó su corrida. Salida copiada en "
+                        "herramientas/bitacora/evidencias/web_logout_palette_pruebas_2026-11-19.txt."),
+        },
+        "decisiones": [
+            ("27.1", "Cerrar las demás sesiones con una lista de sesiones y dos formas de cerrar: una en particular o todas las demás.", "Sophia pidió «poder cerrar las demás» sin decir cómo; el ADR 0015 ya decía que la persona puede ver sus sesiones. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Lista de sesiones y dos formas de cerrar».", "GET /auth/sessions, DELETE /auth/sessions/{id} y POST /auth/sessions/close-others."),
+            ("27.2", "La especificación de cerrar sesión con ocho casos de prueba y las tres defensas.", "El prompt no traía casos. Campo: cómo se sabrá que funciona.", "Aceptar", "Sophia eligió la opción «Sí, con esos casos».", "60 pruebas en test_accounts_logout.py."),
+            ("27.3", "La API se enciende sola como servidor de las páginas si la carpeta web/ existe junto a backend/; se apaga con SERVE_WEB=false.", "Se le había dicho que no tendría nada más que configurar. Campo: qué datos necesita.", "Aceptar", "Vamos con la pieza 1. Las desviaciones todas las acepto.", "web.py y config.py."),
+            ("27.4", "Las páginas solo se leen, y el navegador pregunta siempre si cambiaron.", "Para que nada se pueda cambiar por esa vía y las ediciones se vean al recargar. Campo: qué hace.", "Aceptar", "Vamos con la pieza 1. Las desviaciones todas las acepto.", "web.py."),
+            ("27.5", "Se subió un commit con 4 pruebas rotas y se corrigió en un segundo commit.", "El comando de la IA guardó sin revisar el resultado de las pruebas. La falla era real: 404 en lugar de 405. Campo: cómo se sabrá que funciona.", "Aceptar", "Vamos con la pieza 1. Las desviaciones todas las acepto.", "Commit bc65290; desde entonces la IA solo guarda si toda la batería pasa."),
+            ("27.6", "Los nombres de las rutas de cerrar sesión los puso la IA.", "El prompt no los daba. Campo: qué hace.", "Aceptar", "Para la pieza 2, las desviaciones las acepto.", "router.py."),
+            ("27.7", "La clave anti-falsificación no se guarda: se calcula con la llave secreta que ya existe (CODE_HASH_SECRET), y la página la recibe al entrar y en /auth/me.", "Para no agregar otra variable ni otra columna. Campo: qué datos necesita.", "Aceptar", "Para la pieza 2, las desviaciones las acepto.", "protection.py."),
+            ("27.8", "La dirección de la propia API siempre vale como origen; las demás van en la variable nueva ALLOWED_ORIGINS.", "En desarrollo la página y la API viven en la misma dirección; al publicar habrá que decir cuáles valen. Campo: qué datos necesita.", "Aceptar", "Para la pieza 2, las desviaciones las acepto.", "protection.py y config.py."),
+            ("27.9", "Ver no pide defensas; solo las piden las rutas que cambian algo.", "El riesgo es que una página ajena cambie algo, no que lea. Campo: qué hace.", "Aceptar", "Para la pieza 2, las desviaciones las acepto.", "require_session_for_change en protection.py."),
+            ("27.10", "Cerrar la sesión actual por su id funciona igual que cerrar sesión y borra la cookie.", "La lista incluye la sesión actual y la persona puede elegirla. Campo: qué hace.", "Aceptar", "Para la pieza 2, las desviaciones las acepto.", "close_session en router.py."),
+            ("27.11", "La sesión de otra persona, una inventada y una ya cerrada contestan lo mismo: 404.", "Para no revelar cuál existe. Campo: qué hace.", "Aceptar", "Para la pieza 2, las desviaciones las acepto.", "close_session en router.py."),
+            ("27.12", "Cambiar tres pruebas anteriores, porque la respuesta trae ahora la clave anti-falsificación.", "Comparaban la forma exacta de la respuesta. Campo: cómo se sabrá que funciona.", "Aceptar", "Para la pieza 2, las desviaciones las acepto.", "test_accounts_login.py y test_session_cookie.py."),
+            ("27.13", "Token nuevo para el dorado de las etiquetas, con el «dorado texto» del manual (#8A6A2F).", "El dorado arena no puede ser color de letra. Campo: qué datos necesita.", "Aceptar", "Y para la pieza 3, igual las acepto.", "--color-acento-texto en estilos.css."),
+            ("27.14", "El «total» y el «$0» pasan a verde íntegro.", "Eran texto en el color de acento, que ahora es el dorado. Campo: qué hace.", "Aceptar", "Y para la pieza 3, igual las acepto.", "estilos.css."),
+            ("27.15", "Los rombos y las líneas que eran verdes ahora son dorados.", "El color de acento es el dorado arena. Campo: qué hace.", "Aceptar", "Y para la pieza 3, igual las acepto.", "estilos.css."),
+            ("27.16", "Tres tonos que el manual no trae: un verde muy claro nuevo para fondos suaves (#E4ECE7), y se conservan el gris del texto secundario y el color de las líneas.", "El manual no define esos usos. Campo: qué datos necesita.", "Aceptar", "Y para la pieza 3, igual las acepto.", "estilos.css y sistema-de-diseno.md."),
+            ("27.17", "«Reportar un problema» se oscurece un poco con el cursor encima.", "No estaba definido para el botón dorado. Campo: qué hace.", "Aceptar", "Y para la pieza 3, igual las acepto.", "estilos.css."),
+            ("27.18", "El foco del teclado va en verde íntegro.", "El dorado sobre arena casi no se ve. Campo: qué hace.", "Aceptar", "Y para la pieza 3, igual las acepto.", "estilos.css."),
+            ("27.19", "Dejar cinco archivos con el fin de línea que tienen en Git.", "En el disco estaban con el de Windows y Git los habría marcado cambiados completos. Campo: cómo se sabrá que funciona.", "Aceptar", "Y para la pieza 3, igual las acepto.", "Sin cambios de contenido."),
+            ("27.20", "Renombrar el PDF del manual a manual-de-identidad.pdf.", "El nombre con espacios y acento da problemas en enlaces. Campo: qué datos necesita.", "Aceptar", "Acepto, ahorita cambio el nombre del manual.", "Lo cambia Sophia en GitHub."),
+            ("27.21", "Una pieza de encabezados de seguridad para las páginas, antes de publicar.", "Las páginas ya salen de la misma API. Campo: qué hace.", "Aceptar", "La pieza de encabezados de seguridad para las páginas está súper.", "Queda como pieza."),
         ],
     },
 ]

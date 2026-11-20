@@ -1,0 +1,46 @@
+La API muestra la web, cerrar sesión con tres defensas, y paleta y tipografía del manual
+19 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+
+Rama api/serve-web (bc65290), python -m pytest tests\backend -v -rs:
+    ================= 781 passed, 1 warning in 109.49s (0:01:49) ==================
+  El primer commit de la rama (d82fd58) se subió con esta corrida, que tenía fallas:
+    ============ 4 failed, 772 passed, 1 warning in 111.71s (0:01:51) =============
+    test_accounts_registration.py::test_account_routes_only_accept_post (3 casos) y
+    test_password_strength.py::test_route_only_accepts_post_and_is_documented.
+
+Rama api/accounts-logout (083b98a), python -m pytest tests\backend -v -rs:
+    ================= 841 passed, 1 warning in 126.40s (0:02:06) ==================
+    82  tests/backend/test_account_access_tables.py
+    62  tests/backend/test_accounts_login.py
+    60  tests/backend/test_accounts_logout.py
+    76  tests/backend/test_accounts_registration.py
+   152  tests/backend/test_accounts_validation.py
+    37  tests/backend/test_accounts_wrong_passwords.py
+    38  tests/backend/test_config.py
+    16  tests/backend/test_health.py
+    34  tests/backend/test_login_attempts_admins_tables.py
+   171  tests/backend/test_password_strength.py
+    37  tests/backend/test_serve_web.py
+    31  tests/backend/test_session_cookie.py
+    45  tests/backend/test_transaction.py
+
+Rama web/brand-palette (5a60732), python -m pytest tests\web -v:
+    ============================= 44 passed in 0.18s ==============================
+
+main con las tres ramas fusionadas (925e03f):
+    tests\backend: ================= 841 passed, 1 warning in 140.82s (0:02:20) ==================
+    tests\web:     ============================= 44 passed in 0.36s ==============================
+
+Servidor de verdad en el puerto 8011, rama api/serve-web:
+    /                              -> 200 text/html; charset=utf-8 (3632 bytes)
+    /propiedad.html?id=1           -> 200 text/html; charset=utf-8 (7711 bytes)
+    /assets/css/estilos.css        -> 200 text/css; charset=utf-8 (24964 bytes)
+    /assets/js/app.js              -> 200 text/javascript; charset=utf-8 (11229 bytes)
+    /api/v1/health                 -> 200 application/json (15 bytes)
+    /api/v1/health/database        -> 200 application/json (72 bytes)
+    /api/v1/auth/login             -> 405
+    /no-existe.html                -> 404
+    /..%2fbackend%2f.env.example   -> 404
