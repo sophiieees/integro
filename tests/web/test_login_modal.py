@@ -80,7 +80,7 @@ def test_the_window_has_the_two_steps_and_the_register_link():
     assert 'name=\\"email\\"' in SCREEN and 'name=\\"password\\"' in SCREEN and 'name=\\"code\\"' in SCREEN
     assert 'autocomplete=\\"current-password\\"' in SCREEN and 'autocomplete=\\"one-time-code\\"' in SCREEN
     assert 'maxlength=\\"6\\"' in SCREEN and 'inputmode=\\"numeric\\"' in SCREEN
-    assert '<a href=\\"registro.html\\">Regístrese</a>' in SCREEN
+    assert '<a href=\\"registro.html\\">Regístrate</a>' in SCREEN
     assert 'role=\\"dialog\\"' in SCREEN and 'aria-modal=\\"true\\"' in SCREEN
 
 
