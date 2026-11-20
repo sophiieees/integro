@@ -1,6 +1,6 @@
 # Sistema de diseño del prototipo
 
-Nació como propuesta en octubre de 2026. Desde el 19 de noviembre de 2026 la paleta y la tipografía son las del manual de identidad de Íntegro (`Manual de identidad de Íntegro.pdf`, en esta carpeta), aplicadas con las reglas del ADR 0008. El diseño es de Sophia. Todo vive en tokens de `web/assets/css/estilos.css`, para que la identidad se aplique cambiando valores y no reescribiendo páginas. El logotipo sigue pendiente.
+Nació como propuesta en octubre de 2026. Desde el 19 de noviembre de 2026 la paleta y la tipografía son las del manual de identidad de Íntegro (`manual-de-identidad.pdf`, en esta carpeta), aplicadas con las reglas del ADR 0008. El diseño es de Sophia. Todo vive en tokens de `web/assets/css/estilos.css`, para que la identidad se aplique cambiando valores y no reescribiendo páginas. El logotipo sigue pendiente.
 
 ## Principios
 
