@@ -1,4 +1,4 @@
-/* Casos de la lógica de la ventana de «Entrar» (web/assets/js/cuenta-logica.js).
+/* Casos de la lógica de la ventana de «Iniciar sesión» (web/assets/js/cuenta-logica.js).
    Se corren con node, sin navegador ni API:  node --test tests/web
    Las respuestas de la API son las que documenta backend/README.md. */
 "use strict";
@@ -15,21 +15,21 @@ const error = (field, code, message, extra) => Object.assign({ errors: [{ field,
 /* --- Lo escrito antes de mandarlo --------------------------------------- */
 
 test("correo y contraseña vacíos o mal escritos se avisan sin llamar a la API", () => {
-  assert.deepEqual(LOGICA.revisarCorreoYContrasena("", "x"), { campo: "email", aviso: "Escribe tu correo." });
-  assert.deepEqual(LOGICA.revisarCorreoYContrasena("   ", "x"), { campo: "email", aviso: "Escribe tu correo." });
+  assert.deepEqual(LOGICA.revisarCorreoYContrasena("", "x"), { campo: "email", aviso: "Escriba su correo electrónico." });
+  assert.deepEqual(LOGICA.revisarCorreoYContrasena("   ", "x"), { campo: "email", aviso: "Escriba su correo electrónico." });
   assert.equal(LOGICA.revisarCorreoYContrasena("ana", "x").campo, "email");
   assert.equal(LOGICA.revisarCorreoYContrasena("@x", "x").campo, "email");
   assert.equal(LOGICA.revisarCorreoYContrasena("ana@", "x").campo, "email");
-  assert.deepEqual(LOGICA.revisarCorreoYContrasena(CORREO, ""), { campo: "password", aviso: "Escribe tu contraseña." });
+  assert.deepEqual(LOGICA.revisarCorreoYContrasena(CORREO, ""), { campo: "password", aviso: "Escriba su contraseña." });
   assert.equal(LOGICA.revisarCorreoYContrasena(CORREO, "Ejemplo-2026"), null);
   assert.equal(LOGICA.revisarCorreoYContrasena("  " + CORREO + " ", "x"), null);
 });
 
 test("el código tiene que ser de 6 números", () => {
   assert.equal(LOGICA.revisarCodigo("").campo, "code");
-  assert.equal(LOGICA.revisarCodigo("12345").aviso, "El código son 6 números.");
-  assert.equal(LOGICA.revisarCodigo("1234567").aviso, "El código son 6 números.");
-  assert.equal(LOGICA.revisarCodigo("12345a").aviso, "El código son 6 números.");
+  assert.equal(LOGICA.revisarCodigo("12345").aviso, "El código debe constar de 6 dígitos.");
+  assert.equal(LOGICA.revisarCodigo("1234567").aviso, "El código debe constar de 6 dígitos.");
+  assert.equal(LOGICA.revisarCodigo("12345a").aviso, "El código debe constar de 6 dígitos.");
   assert.equal(LOGICA.revisarCodigo(" 123456 "), null);
   assert.equal(LOGICA.revisarCodigo("000000"), null);
 });
@@ -42,15 +42,15 @@ test("correctos: pasa al código y dice a qué correo se envió", () => {
   assert.equal(r.paso, "codigo");
   assert.equal(r.campo, "code");
   assert.equal(r.aviso, null);
-  assert.equal(r.texto, `Te enviamos un código de 6 dígitos a ${CORREO}. Vence en 5 minutos.`);
+  assert.equal(r.texto, `Le enviamos un código de 6 dígitos a ${CORREO}. Su vigencia es de 5 minutos.`);
 });
 
 /* --- Caso 2: contraseña incorrecta -------------------------------------- */
 
 test("contraseña incorrecta o correo sin cuenta: aviso y se queda en el paso 1", () => {
-  const r = LOGICA.despuesDelCorreo(401, error("credentials", "invalid_credentials", "El correo o la contraseña no son correctos."), CORREO);
+  const r = LOGICA.despuesDelCorreo(401, error("credentials", "invalid_credentials", "El correo electrónico o la contraseña no son correctos."), CORREO);
 
-  assert.deepEqual(r, { paso: "correo", campo: "password", aviso: "El correo o la contraseña no son correctos." });
+  assert.deepEqual(r, { paso: "correo", campo: "password", aviso: "El correo electrónico o la contraseña no son correctos." });
 });
 
 /* --- Caso 3: correo sin comprobar --------------------------------------- */
@@ -60,7 +60,7 @@ test("correo sin comprobar: aviso de comprobarlo", () => {
 
   assert.equal(r.paso, "correo");
   assert.equal(r.campo, "email");
-  assert.match(r.aviso, /comprobado tu correo/);
+  assert.match(r.aviso, /comprobado su correo electrónico/);
 });
 
 /* --- Caso 4: demasiados intentos ---------------------------------------- */
@@ -69,11 +69,11 @@ test("espera por dispositivo: aviso con los minutos que faltan", () => {
   const r = LOGICA.despuesDelCorreo(429, error("credentials", "try_later", "...", { retry_after: 900 }), CORREO);
 
   assert.equal(r.paso, "correo");
-  assert.equal(r.aviso, "Demasiados intentos desde este dispositivo. Intenta de nuevo en 15 minutos.");
+  assert.equal(r.aviso, "Se recibieron demasiados intentos desde este dispositivo. Intente nuevamente en 15 minutos.");
   assert.equal(LOGICA.despuesDelCorreo(429, error("credentials", "try_later", "...", { retry_after: 61 }), CORREO).aviso,
-    "Demasiados intentos desde este dispositivo. Intenta de nuevo en 2 minutos.");
+    "Se recibieron demasiados intentos desde este dispositivo. Intente nuevamente en 2 minutos.");
   assert.equal(LOGICA.despuesDelCorreo(429, error("credentials", "try_later", "...", { retry_after: 30 }), CORREO).aviso,
-    "Demasiados intentos desde este dispositivo. Intenta de nuevo en 1 minuto.");
+    "Se recibieron demasiados intentos desde este dispositivo. Intente nuevamente en 1 minuto.");
 });
 
 test("minutos: se redondea hacia arriba y nunca es cero", () => {
@@ -118,21 +118,21 @@ test("código incorrecto: aviso con los intentos que quedan y sigue en el códig
   const cuatro = LOGICA.despuesDelCodigo(400, error("code", "invalid_code", "...", { attempts_left: 4 }));
   const uno = LOGICA.despuesDelCodigo(400, error("code", "invalid_code", "...", { attempts_left: 1 }));
 
-  assert.deepEqual(cuatro, { paso: "codigo", campo: "code", aviso: "El código no es correcto. Te quedan 4 intentos." });
-  assert.equal(uno.aviso, "El código no es correcto. Te queda 1 intento.");
+  assert.deepEqual(cuatro, { paso: "codigo", campo: "code", aviso: "El código ingresado no es correcto. Le quedan 4 intentos." });
+  assert.equal(uno.aviso, "El código ingresado no es correcto. Le queda 1 intento.");
 });
 
 test("código incorrecto sin intentos: vuelve al paso 1", () => {
   const r = LOGICA.despuesDelCodigo(400, error("code", "invalid_code", "...", { attempts_left: 0 }));
 
   assert.equal(r.paso, "correo");
-  assert.equal(r.aviso, "El código no es correcto. Ya no te quedan intentos.");
+  assert.equal(r.aviso, "El código ingresado no es correcto. Ya no le quedan intentos.");
 });
 
 test("código incorrecto sin el dato de intentos (sin paso 1 previo): solo el aviso", () => {
   const r = LOGICA.despuesDelCodigo(400, error("code", "invalid_code", "..."));
 
-  assert.deepEqual(r, { paso: "codigo", campo: "code", aviso: "El código no es correcto." });
+  assert.deepEqual(r, { paso: "codigo", campo: "code", aviso: "El código ingresado no es correcto." });
 });
 
 test("código vencido o agotado: aviso y vuelve al paso 1", () => {
@@ -142,7 +142,7 @@ test("código vencido o agotado: aviso y vuelve al paso 1", () => {
   assert.equal(vencido.paso, "correo");
   assert.match(vencido.aviso, /venció/);
   assert.equal(agotado.paso, "correo");
-  assert.match(agotado.aviso, /Demasiados intentos/);
+  assert.match(agotado.aviso, /Se agotaron los intentos/);
 });
 
 /* --- Caso 7: salir ------------------------------------------------------ */
@@ -151,7 +151,7 @@ test("salir: con 200 o 401 la sesión queda cerrada; con 403 o sin servidor sigu
   assert.deepEqual(LOGICA.despuesDeSalir(200), { sesion: false, aviso: null });
   assert.deepEqual(LOGICA.despuesDeSalir(401), { sesion: false, aviso: null });
   assert.equal(LOGICA.despuesDeSalir(403).sesion, true);
-  assert.match(LOGICA.despuesDeSalir(403).aviso, /Recarga la página/);
+  assert.match(LOGICA.despuesDeSalir(403).aviso, /Recargue la página/);
   assert.equal(LOGICA.despuesDeSalir(0).aviso, LOGICA.SIN_SERVIDOR);
   assert.equal(LOGICA.despuesDeSalir(500).sesion, true);
 });
@@ -164,7 +164,7 @@ test("con sesión la cabecera muestra el nombre y guarda la clave de la página"
   assert.deepEqual(r, { sesion: true, nombre: "Ana", clave: "clave-de-la-pagina", servidor: true });
 });
 
-test("sin sesión la cabecera muestra «Entrar»", () => {
+test("sin sesión la cabecera muestra «Iniciar sesión»", () => {
   assert.deepEqual(LOGICA.estadoDeCabecera(401, { errors: [{ code: "not_authenticated" }] }),
     { sesion: false, nombre: null, clave: null, servidor: true });
 });

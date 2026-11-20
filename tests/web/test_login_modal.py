@@ -1,6 +1,6 @@
-"""Casos de la pieza "ventana de «Entrar»" que se comprueban sin navegador.
+"""Casos de la pieza "ventana de «Iniciar sesión»" que se comprueban sin navegador.
 
-Decisiones de Sophia del 19 de noviembre de 2026: «Entrar» como texto sin
+Decisiones de Sophia del 19 de noviembre de 2026: «Iniciar sesión» como texto sin
 borde a la derecha de la cabecera, una ventana sobre la página con los dos
 pasos, el enlace a registro.html, y al terminar la persona sigue en la
 página donde estaba.
@@ -42,12 +42,12 @@ def test_the_logic_cases_pass_with_node():
 
 
 @pytest.mark.parametrize("page", PAGES, ids=lambda page: page.name)
-def test_every_page_has_entrar_on_the_right_of_the_header(page):
+def test_every_page_has_iniciar_sesion_on_the_right_of_the_header(page):
     text = page.read_text(encoding="utf-8")
     header = re.search(r"<header.*?</header>", text, re.S).group(0)
 
     assert header.count("data-cuenta") == 1
-    assert '<a class="cuenta-entrar" href="#entrar">Entrar</a>' in header
+    assert '<a class="cuenta-entrar" href="#entrar">Iniciar sesión</a>' in header
     # Texto sin borde, no botón.
     assert 'class="btn btn-primario" href="#entrar"' not in header
 
@@ -80,7 +80,7 @@ def test_the_window_has_the_two_steps_and_the_register_link():
     assert 'name=\\"email\\"' in SCREEN and 'name=\\"password\\"' in SCREEN and 'name=\\"code\\"' in SCREEN
     assert 'autocomplete=\\"current-password\\"' in SCREEN and 'autocomplete=\\"one-time-code\\"' in SCREEN
     assert 'maxlength=\\"6\\"' in SCREEN and 'inputmode=\\"numeric\\"' in SCREEN
-    assert '<a href=\\"registro.html\\">Regístrate</a>' in SCREEN
+    assert '<a href=\\"registro.html\\">Regístrese</a>' in SCREEN
     assert 'role=\\"dialog\\"' in SCREEN and 'aria-modal=\\"true\\"' in SCREEN
 
 
