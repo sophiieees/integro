@@ -134,6 +134,25 @@ def test_the_three_steps_are_there_and_only_the_data_is_shown():
     assert 'data-iniciar-sesion>Iniciar sesión</button>' in PAGE
 
 
+def test_the_email_correction_form_is_there_hidden_with_its_two_fields_and_the_link_to_open_it():
+    form = re.search(r'<form id="formulario-correccion" data-paso="correccion" novalidate hidden>.*?</form>', PAGE, re.S).group(0)
+
+    assert 'name="new_email"' in form and 'type="email"' in form and 'autocomplete="email"' in form
+    assert 'name="password"' in form and 'autocomplete="current-password"' in form
+    assert 'for="correccion-correo">Correo electrónico correcto</label>' in form
+    assert 'id="correccion-error-new_email" data-error-de="new_email" hidden' in form
+    assert 'id="correccion-error-password" data-error-de="password" hidden' in form
+    assert "data-volver-al-codigo" in form and ">Corregir correo</button>" in form
+    # El camino para llegar: un enlace en el paso del código.
+    code_form = re.search(r'<form id="formulario-codigo".*?</form>', PAGE, re.S).group(0)
+    assert '¿Te equivocaste de correo? <button type="button" class="btn-enlace" data-corregir>Corrígelo</button>' in code_form
+
+
+def test_the_correction_talks_to_its_route_and_never_keeps_the_password():
+    assert '"/correct-unverified-email"' in SCREEN
+    assert "localStorage" not in SCREEN and "document.cookie" not in SCREEN
+
+
 def test_the_page_offers_to_sign_in_and_the_notices_are_announced():
     assert '¿Ya tienes una cuenta? <a href="#entrar" data-abrir-sesion>Inicia sesión</a>' in PAGE
     assert 'data-aviso role="alert" hidden' in PAGE

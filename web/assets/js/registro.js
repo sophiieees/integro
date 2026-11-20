@@ -22,6 +22,7 @@
 
   var API = "/api/v1/auth";
   var formCodigo = document.getElementById("formulario-codigo");
+  var formCorreccion = document.getElementById("formulario-correccion");
   var listo = document.getElementById("registro-listo");
   var aviso = document.querySelector("[data-aviso]");
   var estado = { enviando: false, correo: "", telefonoCambiado: false, secuencia: 0, temporizador: null };
@@ -54,8 +55,9 @@
 
   function campo(nombre) { return form.elements[nombre]; }
 
-  function mostrarErrores(errores) {
-    Array.prototype.forEach.call(form.querySelectorAll("[data-error-de]"), function (zona) {
+  /* Pone los avisos en sus campos. raiz es el formulario donde están (el de los datos, por defecto). */
+  function mostrarErrores(errores, raiz) {
+    Array.prototype.forEach.call((raiz || form).querySelectorAll("[data-error-de]"), function (zona) {
       var nombre = zona.getAttribute("data-error-de");
       var avisos = errores[nombre] || [];
       zona.innerHTML = "";
@@ -79,10 +81,11 @@
   function mostrarPaso(paso) {
     form.hidden = paso !== "datos";
     formCodigo.hidden = paso !== "codigo";
+    formCorreccion.hidden = paso !== "correccion";
     listo.hidden = paso !== "listo";
     /* La introducción es de los datos: en el código y en listo estorba. */
     document.querySelector("[data-intro]").hidden = paso !== "datos";
-    var visible = paso === "datos" ? form : paso === "codigo" ? formCodigo : listo;
+    var visible = paso === "datos" ? form : paso === "codigo" ? formCodigo : paso === "correccion" ? formCorreccion : listo;
     var titulo = visible.querySelector("h2");
     if (titulo) { titulo.setAttribute("tabindex", "-1"); titulo.focus(); }
   }
@@ -283,6 +286,66 @@
       mostrarAviso(siguiente.aviso);
       mostrarNota(siguiente.nota);
       formCodigo.elements.code.focus();
+    });
+  });
+
+  /* ---------- Corregir el correo ---------- */
+
+  formCodigo.querySelector("[data-corregir]").addEventListener("click", function () {
+    if (estado.enviando) return;
+    mostrarAviso(null);
+    mostrarErrores({}, formCorreccion);
+    formCorreccion.reset();
+    mostrarPaso("correccion");
+    formCorreccion.elements.new_email.focus();
+  });
+
+  formCorreccion.querySelector("[data-volver-al-codigo]").addEventListener("click", function () {
+    if (estado.enviando) return;
+    mostrarAviso(null);
+    mostrarPaso("codigo");
+    formCodigo.elements.code.focus();
+  });
+
+  formCorreccion.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (estado.enviando) return;
+    mostrarAviso(null);
+    var revision = LOGICA.revisarCorreccion({
+      email: estado.correo, password: formCorreccion.elements.password.value, new_email: formCorreccion.elements.new_email.value
+    });
+    mostrarErrores(revision.errores, formCorreccion);
+    if (LOGICA.hayErrores(revision.errores)) {
+      formCorreccion.elements[revision.errores.new_email ? "new_email" : "password"].focus();
+      return;
+    }
+    ocupado(true);
+    peticion("/correct-unverified-email", revision.datos).then(function (r) {
+      ocupado(false);
+      var siguiente = LOGICA.despuesDeCorregir(r.status, r.cuerpo);
+      mostrarErrores(siguiente.errores, formCorreccion);
+      mostrarAviso(siguiente.aviso);
+      if (siguiente.paso === "codigo") {
+        estado.correo = siguiente.correo;
+        formCodigo.querySelector("[data-texto]").textContent = siguiente.texto;
+        formCodigo.elements.code.value = "";
+        mostrarNota(siguiente.nota);
+        formCorreccion.reset();
+        mostrarPaso("codigo");
+        formCodigo.elements.code.focus();
+        return;
+      }
+      if (siguiente.paso === "listo") {
+        var nota = listo.querySelector("[data-nota-final]");
+        nota.textContent = siguiente.nota || "";
+        nota.hidden = !siguiente.nota;
+        mostrarPaso("listo");
+        return;
+      }
+      /* La contraseña no se deja escrita cuando fue la que falló. */
+      if (r.status === 401) formCorreccion.elements.password.value = "";
+      var enfoque = LOGICA.hayErrores(siguiente.errores) ? (siguiente.errores.new_email ? "new_email" : "password") : "password";
+      formCorreccion.elements[enfoque].focus();
     });
   });
 

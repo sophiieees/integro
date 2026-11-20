@@ -109,15 +109,26 @@ def check_code(
     return CodeCheckResult(CodeCheck.OK)
 
 
-def send_limit(connection, user_id, purpose: str, settings: Settings) -> SendLimitResult:
-    """Dice si ya se puede enviar otro código de ese propósito a esa persona."""
+def send_limit(
+    connection, user_id, purpose: str, settings: Settings, *, ignore_wait: bool = False
+) -> SendLimitResult:
+    """Dice si ya se puede enviar otro código de ese propósito a esa persona.
+
+    ignore_wait salta la espera entre un envío y otro y deja solo el máximo por
+    hora. Lo usa la corrección del correo: el envío anterior fue a un correo
+    equivocado.
+    """
     seconds_since_last, sent_last_hour = connection.execute(
         "select extract(epoch from now() - max(created_at)), "
         "count(*) filter (where created_at > now() - interval '1 hour') "
         "from one_time_codes where user_id = %s and purpose = %s",
         (user_id, purpose),
     ).fetchone()
-    if seconds_since_last is not None and seconds_since_last < settings.code_resend_wait_seconds:
+    if (
+        not ignore_wait
+        and seconds_since_last is not None
+        and seconds_since_last < settings.code_resend_wait_seconds
+    ):
         wait = settings.code_resend_wait_seconds - int(seconds_since_last)
         return SendLimitResult(SendLimit.WAIT, retry_after_seconds=max(wait, 1))
     if sent_last_hour >= settings.code_max_per_hour:

@@ -93,6 +93,26 @@
               <button type="button" class="btn-enlace" data-reenviar>Enviar otro código</button>
               <button type="submit" class="btn btn-primario">Comprobar correo</button>
             </div>
+            <p class="formulario-pie">¿Te equivocaste de correo? <button type="button" class="btn-enlace" data-corregir>Corrígelo</button></p>
+          </form>
+
+          <form id="formulario-correccion" data-paso="correccion" novalidate hidden>
+            <h2>Corrige tu correo electrónico</h2>
+            <p class="formulario-nota">Escribe el correo correcto y la contraseña con la que te registraste. Te enviaremos un código nuevo a ese correo.</p>
+            <div class="campo">
+              <label class="campo-etiqueta" for="correccion-correo">Correo electrónico correcto</label>
+              <input type="email" id="correccion-correo" name="new_email" autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="correccion-error-new_email">
+              <span class="campo-error" id="correccion-error-new_email" data-error-de="new_email" hidden></span>
+            </div>
+            <div class="campo">
+              <label class="campo-etiqueta" for="correccion-contrasena">Contraseña</label>
+              <input type="password" id="correccion-contrasena" name="password" autocomplete="current-password" aria-describedby="correccion-error-password">
+              <span class="campo-error" id="correccion-error-password" data-error-de="password" hidden></span>
+            </div>
+            <div class="formulario-acciones formulario-acciones-dos">
+              <button type="button" class="btn-enlace" data-volver-al-codigo>Volver al código</button>
+              <button type="submit" class="btn btn-primario">Corregir correo</button>
+            </div>
           </form>
 
           <div id="registro-listo" data-paso="listo" hidden>

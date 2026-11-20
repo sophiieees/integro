@@ -254,6 +254,44 @@
     return { enviado: false, aviso: (error && error.message) || RESPUESTA_RARA, nota: null };
   }
 
+  /* ---------- Corregir el correo de una cuenta sin comprobar ---------- */
+
+  /* Revisa lo evidente: los dos datos y la forma del correo. Devuelve { errores, datos }. */
+  function revisarCorreccion(valores) {
+    var errores = {};
+    var nuevo = (valores.new_email || "").trim();
+    if (!nuevo) errores.new_email = ["Escribe el correo electrónico correcto."];
+    else if (nuevo.length > CORREO_MAX || !CORREO.test(nuevo)) errores.new_email = ["El correo electrónico no tiene un formato válido."];
+    if (!valores.password) errores.password = ["Escribe tu contraseña."];
+    return { errores: errores, datos: { email: (valores.email || "").trim(), password: valores.password || "", new_email: nuevo } };
+  }
+
+  /* Qué sigue después de pedir la corrección. */
+  function despuesDeCorregir(status, cuerpo) {
+    var error = cuerpo && cuerpo.errors && cuerpo.errors.length ? cuerpo.errors[0] : null;
+    var codigo = error ? error.code : null;
+    var base = { paso: "correccion", errores: {}, aviso: null, correo: null, texto: null, nota: null };
+    if (status === 0) { base.aviso = SIN_SERVIDOR; return base; }
+    if (status === 200 && cuerpo && cuerpo.status === "verification_required") {
+      base.paso = "codigo";
+      base.correo = cuerpo.email;
+      base.texto = "Te enviamos un código de 6 dígitos a " + cuerpo.email + ". Escríbelo aquí para comprobar tu correo electrónico. Su vigencia es de 5 minutos.";
+      base.nota = "Corregimos tu correo electrónico. El código anterior ya no sirve.";
+      return base;
+    }
+    if (status === 401) { base.aviso = "La contraseña no es correcta."; return base; }
+    if (status === 409 && codigo === "already_verified") { base.paso = "listo"; base.nota = "Tu correo electrónico ya estaba comprobado."; return base; }
+    if ((status === 409 || status === 422) && error && error.field === "new_email") { base.errores.new_email = [error.message]; return base; }
+    if (status === 422 && error && (error.field === "email" || error.field === "password")) { base.errores[error.field === "email" ? "new_email" : "password"] = [error.message]; return base; }
+    if (status === 429 && codigo === "try_later") {
+      base.aviso = "Se recibieron demasiados intentos desde este dispositivo. Inténtalo nuevamente en " + CUENTA.minutos(cuerpo.retry_after) + ".";
+      return base;
+    }
+    if (status === 429 && codigo === "hourly_limit") { base.aviso = "Has solicitado demasiados códigos. Inténtalo nuevamente más tarde."; return base; }
+    base.aviso = (error && error.message) || RESPUESTA_RARA;
+    return base;
+  }
+
   /* Cuando la API rechaza la contraseña, lo que falta ya lo dice el indicador de debajo: en el campo va una sola
      línea que remite a él, no la misma lista dos veces. */
   var AVISO_CONTRASENA = "Tu contraseña aún no cumple lo que se indica abajo.";
@@ -286,6 +324,8 @@
     despuesDeRegistrar: despuesDeRegistrar,
     despuesDeComprobar: despuesDeComprobar,
     despuesDeReenviar: despuesDeReenviar,
+    revisarCorreccion: revisarCorreccion,
+    despuesDeCorregir: despuesDeCorregir,
     AVISO_CONTRASENA: AVISO_CONTRASENA,
     resumirAvisos: resumirAvisos,
     avisoDeSesionIniciada: avisoDeSesionIniciada,
