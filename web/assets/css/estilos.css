@@ -127,8 +127,8 @@ button, input, select { font: inherit; color: inherit; }
 .ventana h2 { font-size: 1.5rem; margin-bottom: 14px; }
 .ventana .campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
 .ventana .campo span { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--color-tinta-suave); font-weight: 600; }
-.ventana .campo input { padding: 10px 12px; border: 1px solid var(--color-borde); border-radius: var(--radio-chico); background: var(--color-superficie); font-size: 1rem; width: 100%; }
-.ventana .campo input:focus { border-color: var(--color-primario); outline: 0; box-shadow: 0 0 0 3px var(--color-primario-suave); }
+.ventana .campo input, .formulario-tarjeta .campo input, .formulario-tarjeta .campo select { padding: 10px 12px; border: 1px solid var(--color-borde); border-radius: var(--radio-chico); background: var(--color-superficie); font-size: 1rem; width: 100%; }
+.ventana .campo input:focus, .formulario-tarjeta .campo input:focus, .formulario-tarjeta .campo select:focus { border-color: var(--color-primario); outline: 0; box-shadow: 0 0 0 3px var(--color-primario-suave); }
 .ventana-aviso { background: var(--color-alerta-suave); color: var(--color-alerta); border-left: 3px solid var(--color-alerta); padding: 10px 12px; margin-bottom: 14px; font-size: .92rem; }
 .ventana-texto { color: var(--color-tinta-suave); font-size: .95rem; margin-bottom: 14px; }
 .ventana-acciones { display: flex; align-items: center; justify-content: flex-end; gap: 20px; margin-top: 6px; }
@@ -337,6 +337,55 @@ body.con-ventana { overflow: hidden; }
 .caja-chapa { margin-top: 16px; padding: 12px 14px; background: var(--color-acento-suave); border-radius: var(--radio-chico); font-size: .88rem; }
 .caja-chapa strong { display: block; }
 .enlace-reporte { display: block; margin-top: 18px; font-size: .85rem; color: var(--color-tinta-suave); text-align: center; }
+
+/* Registro (registro.html) ---------------------------------------------- */
+.registro { padding: clamp(32px, 5vw, 64px) 0 var(--seccion); }
+.registro-contenedor { max-width: 680px; }
+.registro h1 { font-size: clamp(1.8rem, 3.4vw, 2.5rem); margin-bottom: 10px; }
+.registro h2 { font-size: 1.4rem; margin-bottom: 12px; }
+.registro-intro { color: var(--color-tinta-suave); margin-bottom: 28px; max-width: 42rem; }
+.registro-intro[hidden] { display: none; }
+.formulario-tarjeta { background: var(--color-superficie); border-radius: var(--radio); box-shadow: var(--sombra); padding: clamp(20px, 4vw, 36px); }
+.formulario-rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.formulario-rejilla .ancho-completo { grid-column: 1 / -1; }
+.formulario-tarjeta .campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; min-width: 0; }
+.campo-etiqueta { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--color-tinta-suave); font-weight: 600; }
+.formulario-tarjeta .campo input, .formulario-tarjeta .campo select { border: 1px solid var(--color-borde); border-radius: var(--radio-chico); background: var(--color-superficie); font-size: 1rem; width: 100%; min-width: 0; }
+.campo-ayuda { font-size: .85rem; color: var(--color-tinta-suave); }
+.campo-error { display: grid; gap: 2px; font-size: .88rem; color: var(--color-alerta); }
+.campo-error[hidden] { display: none; }
+.campo-error a { color: var(--color-primario); font-weight: 600; }
+.campo.con-error input, .campo.con-error select { border-color: var(--color-alerta); }
+.campo-telefono { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: 10px; }
+.formulario-aviso { background: var(--color-alerta-suave); color: var(--color-alerta); border-left: 3px solid var(--color-alerta); padding: 10px 12px; margin-bottom: 18px; font-size: .92rem; }
+.formulario-aviso[hidden] { display: none; }
+.formulario-nota { color: var(--color-tinta-suave); margin-bottom: 14px; }
+.formulario-nota[hidden] { display: none; }
+.formulario-acciones { display: flex; align-items: center; justify-content: flex-end; gap: 20px; margin-top: 6px; }
+.formulario-acciones-dos { justify-content: space-between; }
+.formulario-tarjeta button:disabled, .formulario-tarjeta input:disabled, .formulario-tarjeta select:disabled { opacity: .6; cursor: default; }
+.formulario-pie { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--color-borde); font-size: .92rem; color: var(--color-tinta-suave); }
+.formulario-pie a { color: var(--color-primario); font-weight: 600; text-decoration: none; }
+.formulario-pie a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Indicador de la contraseña: cuatro cuadros que se llenan según el nivel. Los colores son de la paleta:
+   alerta en bajo, dorado arena en medio y verde íntegro en confiable y muy confiable. */
+.fortaleza { margin-top: 8px; }
+.fortaleza[data-nivel=""] .fortaleza-barra { opacity: .6; }
+.fortaleza-barra { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.fortaleza-barra span { height: 6px; border-radius: 3px; background: var(--color-borde); }
+.fortaleza[data-nivel="bajo"] .fortaleza-barra span.lleno { background: var(--color-alerta); }
+.fortaleza[data-nivel="medio"] .fortaleza-barra span.lleno { background: var(--color-acento); }
+.fortaleza[data-nivel="confiable"] .fortaleza-barra span.lleno, .fortaleza[data-nivel="muy-confiable"] .fortaleza-barra span.lleno { background: var(--color-primario); }
+.fortaleza-nivel { margin-top: 6px; font-weight: 600; font-size: .92rem; min-height: 1.3em; }
+.fortaleza-consejos { display: grid; gap: 2px; margin-top: 2px; font-size: .88rem; color: var(--color-tinta-suave); }
+.fortaleza-consejos li { padding-left: 16px; position: relative; }
+.fortaleza-consejos li::before { content: ""; position: absolute; left: 2px; top: .55em; width: 6px; height: 6px; background: var(--color-acento); transform: rotate(45deg); }
+@media (max-width: 720px) {
+  .formulario-rejilla { grid-template-columns: minmax(0, 1fr); }
+  .campo-telefono { grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); }
+  .formulario-acciones, .formulario-acciones-dos { flex-wrap: wrap; justify-content: space-between; }
+}
 
 /* Revelado al entrar (solo una vez; nunca en bucle) ------------------- */
 .revelar { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }

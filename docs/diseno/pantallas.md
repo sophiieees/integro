@@ -10,7 +10,7 @@ El MVP técnico habla de 14 pantallas y remite al documento de diseño del MVP p
 | 2c | Cómo funciona: cuatro sellos de confianza y tres pasos para reservar | Ambos | Hecha: `web/como-funciona.html` (Sophia prevé que termine dentro de anfitriones) |
 | 3 | Resultados con filtros y mapa aproximado | Huésped | Parcial: la cuadrícula de inicio hace de resultados; faltan filtros de precio y servicios y el mapa |
 | 4 | Reserva y pago (tarjeta, transferencia, tienda) | Huésped | Pendiente |
-| 5 | Registro e inicio de sesión con código | Ambos | Parcial: el inicio de sesión es una ventana sobre cualquier página (`web/assets/js/cuenta.js`), con «Iniciar sesión» y «Cerrar sesión» en la cabecera; falta la pantalla de registro |
+| 5 | Registro e inicio de sesión con código | Ambos | Hecha: el inicio de sesión es una ventana sobre cualquier página (`web/assets/js/cuenta.js`), con «Iniciar sesión» y «Cerrar sesión» en la cabecera; el registro es una página aparte, `web/registro.html`, con el indicador de la contraseña y la comprobación del correo |
 | 6 | Verificación de identidad del huésped (antes de la primera reserva) | Huésped | Pendiente |
 | 7 | Mensajería por reserva | Ambos | Pendiente |
 | 8 | Historial de estancias y comprobantes | Huésped | Pendiente |

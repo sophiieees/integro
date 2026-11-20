@@ -275,10 +275,37 @@ class Page:
         assert focused, f"no se pudo enfocar {selector}\n{self.state()}"
         self.send("Input.insertText", text=text)
 
+    def clear(self, selector: str) -> None:
+        """Borra lo que tenga el campo: lo selecciona y da Retroceso, como una persona."""
+        selected = self.js(
+            "(() => { const e = document.querySelector(" + json.dumps(selector) + "); if (!e) return false; "
+            "e.focus(); e.select(); return document.activeElement === e; })()"
+        )
+        assert selected, f"no se pudo enfocar {selector}\n{self.state()}"
+        self.press("Backspace")
+
+    def set_value(self, selector: str, value: str) -> None:
+        """Pone el valor de una lista o de una fecha y avisa a la página, como al elegirlo.
+
+        La lista y el calendario del navegador son ventanas propias que no se manejan en modo sin ventana;
+        todo lo que se escribe se teclea de verdad con type().
+        """
+        found = self.js(
+            "(() => { const e = document.querySelector(" + json.dumps(selector) + "); if (!e) return false; "
+            "e.focus(); e.value = " + json.dumps(value) + "; "
+            "e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); "
+            "return e.value === " + json.dumps(value) + "; })()"
+        )
+        assert found, f"no se pudo poner {value!r} en {selector}\n{self.state()}"
+
+    def count(self, selector: str) -> int:
+        return self.js("document.querySelectorAll(" + json.dumps(selector) + ").length")
+
     def press(self, key: str) -> None:
         keys = {
             "Enter": {"key": "Enter", "code": "Enter", "windowsVirtualKeyCode": 13, "text": "\r"},
             "Escape": {"key": "Escape", "code": "Escape", "windowsVirtualKeyCode": 27},
+            "Backspace": {"key": "Backspace", "code": "Backspace", "windowsVirtualKeyCode": 8},
         }[key]
         self.send("Input.dispatchKeyEvent", type="keyDown", **keys)
         self.send("Input.dispatchKeyEvent", type="keyUp", **{k: v for k, v in keys.items() if k != "text"})

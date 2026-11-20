@@ -34,21 +34,24 @@ def test_the_logic_cases_pass_with_node():
         pytest.skip("Falta node: la lógica de la ventana se prueba con node --test.")
     result = subprocess.run(
         [node, "--test", "--test-reporter=tap", str(Path(__file__).with_name("cuenta_logica.test.js")),
-         str(Path(__file__).with_name("estructura.test.js"))],
+         str(Path(__file__).with_name("estructura.test.js")), str(Path(__file__).with_name("registro_logica.test.js"))],
         capture_output=True, text=True, encoding="utf-8", cwd=REPO, timeout=120,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert re.search(r"^# fail 0$", result.stdout, re.M), result.stdout
-    # 20 de la cuenta y 14 de la cabecera y el pie.
-    assert int(re.search(r"^# pass (\d+)$", result.stdout, re.M).group(1)) >= 34
+    # 20 de la cuenta, 14 de la cabecera y el pie y 36 del registro.
+    assert int(re.search(r"^# pass (\d+)$", result.stdout, re.M).group(1)) >= 70
 
 
 @pytest.mark.parametrize("page", PAGES, ids=lambda page: page.name)
 def test_every_page_loads_the_structure_then_the_logic_then_the_screen(page):
     """La cuenta se pinta en un espacio que arma estructura.js: tiene que cargarse antes."""
     text = page.read_text(encoding="utf-8")
-    order = [text.index(f'src="assets/js/{name}.js"') for name in ("app", "estructura", "cuenta-logica", "cuenta")]
+    # app.js solo está en las páginas que pintan propiedades; el registro no lo necesita.
+    names = [name for name in ("app", "estructura", "cuenta-logica", "cuenta") if f'src="assets/js/{name}.js"' in text]
+    order = [text.index(f'src="assets/js/{name}.js"') for name in names]
 
+    assert names[-3:] == ["estructura", "cuenta-logica", "cuenta"]
     assert order == sorted(order)
 
 

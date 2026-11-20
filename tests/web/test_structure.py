@@ -27,10 +27,11 @@ VARIANT_OF = {
     "propiedad.html": "interior",
     "como-funciona.html": "interior",
     "anfitriones.html": "anfitriones",
+    "registro.html": "interior",
 }
 
 
-def test_the_four_pages_are_the_ones_we_know():
+def test_the_pages_are_the_ones_we_know():
     assert sorted(page.name for page in PAGES) == sorted(VARIANT_OF)
 
 
