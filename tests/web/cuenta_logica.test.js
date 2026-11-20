@@ -159,14 +159,124 @@ test("salir: con 200 o 401 la sesión queda cerrada; con 403 o sin servidor sigu
 /* --- Caso 8: la cabecera al cargar -------------------------------------- */
 
 test("con sesión la cabecera muestra el nombre y guarda la clave de la página", () => {
-  const r = LOGICA.estadoDeCabecera(200, { first_name: "Ana", last_name: "Torres", csrf_token: "clave-de-la-pagina" });
+  const r = LOGICA.estadoDeCabecera(200, { first_name: "Ana", last_name: "Torres", email: CORREO, csrf_token: "clave-de-la-pagina" });
 
-  assert.deepEqual(r, { sesion: true, nombre: "Ana", clave: "clave-de-la-pagina", servidor: true });
+  assert.deepEqual(r, {
+    sesion: true, nombre: "Ana", apellidos: "Torres", correo: CORREO, clave: "clave-de-la-pagina", servidor: true,
+    esAnfitrion: false, esAdmin: false
+  });
 });
 
 test("sin sesión la cabecera muestra «Iniciar sesión»", () => {
-  assert.deepEqual(LOGICA.estadoDeCabecera(401, { errors: [{ code: "not_authenticated" }] }),
-    { sesion: false, nombre: null, clave: null, servidor: true });
+  assert.deepEqual(LOGICA.estadoDeCabecera(401, { errors: [{ code: "not_authenticated" }] }), {
+    sesion: false, nombre: null, apellidos: "", correo: "", clave: null, servidor: true, esAnfitrion: false, esAdmin: false
+  });
+});
+
+/* --- Caso 8b: las vistas -------------------------------------------------- */
+
+const ME = { first_name: "Ana", last_name: "Torres", email: CORREO, csrf_token: "c" };
+const estadoCon = (extra) => LOGICA.estadoDeCabecera(200, Object.assign({}, ME, extra));
+
+test("is_host e is_admin de /auth/me dicen qué vistas tiene la persona", () => {
+  assert.deepEqual(
+    [estadoCon({}), estadoCon({ is_host: true }), estadoCon({ is_admin: true }), estadoCon({ is_host: true, is_admin: true })]
+      .map((e) => [e.esAnfitrion, e.esAdmin]),
+    [[false, false], [true, false], [false, true], [true, true]]
+  );
+});
+
+test("solo un true de verdad cuenta: «true», 1 o un texto no hacen a nadie anfitrión ni administrador", () => {
+  for (const raro of ["true", 1, "si", {}, [], null]) {
+    const e = estadoCon({ is_host: raro, is_admin: raro });
+
+    assert.deepEqual([e.esAnfitrion, e.esAdmin], [false, false], String(raro));
+  }
+});
+
+test("la vista: visitante, cliente, anfitrión o administrador", () => {
+  assert.equal(LOGICA.vistaDe(LOGICA.estadoDeCabecera(401, null), null), "visitante");
+  assert.equal(LOGICA.vistaDe(LOGICA.estadoDeCabecera(0, null), null), "visitante");
+  assert.equal(LOGICA.vistaDe(estadoCon({}), null), "cliente");
+  assert.equal(LOGICA.vistaDe(estadoCon({ is_host: true }), null), "anfitrion");
+  assert.equal(LOGICA.vistaDe(estadoCon({ is_admin: true }), null), "administrador");
+  assert.equal(LOGICA.vistaDe(estadoCon({ is_admin: true, is_host: true }), null), "administrador");
+});
+
+test("un administrador puede elegir mirar como cliente o como anfitrión; no como otra cosa", () => {
+  const admin = estadoCon({ is_admin: true });
+
+  assert.equal(LOGICA.vistaDe(admin, "cliente"), "cliente");
+  assert.equal(LOGICA.vistaDe(admin, "anfitrion"), "anfitrion");
+  for (const raro of ["administrador", "visitante", "otra", "", undefined, null, "toString"]) {
+    assert.equal(LOGICA.vistaDe(admin, raro), "administrador", String(raro));
+  }
+});
+
+test("lo que alguien dejó elegido no sirve si no es administrador", () => {
+  assert.equal(LOGICA.vistaDe(estadoCon({}), "anfitrion"), "cliente");
+  assert.equal(LOGICA.vistaDe(estadoCon({ is_host: true }), "cliente"), "anfitrion");
+  assert.equal(LOGICA.vistaDe(LOGICA.estadoDeCabecera(401, null), "anfitrion"), "visitante");
+});
+
+/* --- Caso 8c: las páginas protegidas -------------------------------------- */
+
+const visitante = LOGICA.estadoDeCabecera(401, null);
+
+test("una página sin data-requiere la ve cualquiera", () => {
+  assert.deepEqual(LOGICA.permisoDePagina(null, visitante), { permitido: true });
+  assert.deepEqual(LOGICA.permisoDePagina("", visitante), { permitido: true });
+});
+
+test("sin sesión, las tres páginas piden iniciar sesión", () => {
+  for (const requiere of ["sesion", "anfitrion", "administrador"]) {
+    const r = LOGICA.permisoDePagina(requiere, visitante);
+
+    assert.equal(r.permitido, false, requiere);
+    assert.equal(r.titulo, "Inicia sesión para continuar", requiere);
+    assert.deepEqual(r.accion, { texto: "Iniciar sesión", iniciarSesion: true }, requiere);
+  }
+});
+
+test("«Mi cuenta» la ve cualquiera con sesión", () => {
+  for (const extra of [{}, { is_host: true }, { is_admin: true }]) {
+    assert.equal(LOGICA.permisoDePagina("sesion", estadoCon(extra)).permitido, true);
+  }
+});
+
+test("el espacio del anfitrión lo ven el anfitrión y el equipo; un cliente recibe una explicación y el camino", () => {
+  assert.equal(LOGICA.permisoDePagina("anfitrion", estadoCon({ is_host: true })).permitido, true);
+  assert.equal(LOGICA.permisoDePagina("anfitrion", estadoCon({ is_admin: true })).permitido, true);
+  const cliente = LOGICA.permisoDePagina("anfitrion", estadoCon({}));
+
+  assert.equal(cliente.permitido, false);
+  assert.equal(cliente.titulo, "Esta sección es para anfitriones");
+  assert.deepEqual(cliente.accion, { texto: "Conviértete en anfitrión", href: "anfitriones.html" });
+});
+
+test("la administración la ve solo el equipo; un anfitrión o un cliente reciben una explicación", () => {
+  assert.equal(LOGICA.permisoDePagina("administrador", estadoCon({ is_admin: true })).permitido, true);
+  for (const extra of [{}, { is_host: true }]) {
+    const r = LOGICA.permisoDePagina("administrador", estadoCon(extra));
+
+    assert.equal(r.permitido, false);
+    assert.equal(r.titulo, "Esta sección es solo para el equipo de Íntegro");
+    assert.deepEqual(r.accion, { texto: "Volver al inicio", href: "index.html" });
+  }
+});
+
+test("sin servidor no se sabe quién es: la página lo dice y no muestra nada", () => {
+  const r = LOGICA.permisoDePagina("administrador", LOGICA.estadoDeCabecera(0, null));
+
+  assert.equal(r.permitido, false);
+  assert.equal(r.texto, LOGICA.SIN_SERVIDOR);
+  assert.equal(LOGICA.permisoDePagina("sesion", undefined).permitido, false);
+});
+
+test("un requiere que no se conoce no abre la página, ni con sesión ni siendo administrador", () => {
+  for (const estado of [visitante, estadoCon({}), estadoCon({ is_admin: true })]) {
+    assert.equal(LOGICA.permisoDePagina("otra-cosa", estado).permitido, false);
+  }
 });
 
 /* --- Caso 9: sin API ---------------------------------------------------- */

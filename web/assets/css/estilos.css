@@ -111,13 +111,42 @@ button, input, select { font: inherit; color: inherit; }
 .enlaces-cabecera { text-align: left; display: flex; flex-wrap: wrap; gap: 8px 24px; margin-left: 12px; }
 .enlaces-cabecera a { text-align: left; text-decoration: none; color: var(--color-primario); font-weight: 600; }
 .enlaces-cabecera a:hover { text-align: left; text-decoration: underline; text-underline-offset: 4px; }
+/* La pestaña de la barra donde está la persona: subrayada en dorado arena, sin borde ni ícono. */
+.enlaces-cabecera a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--color-acento); text-decoration-thickness: 2px; text-underline-offset: 8px; }
 .cabecera-acciones { margin-left: auto; display: flex; align-items: center; gap: 18px; white-space: nowrap; }
 .solo-celular { display: none; }
-/* La cuenta en la cabecera: «Entrar», o el nombre y «Salir», como texto sin borde (decisión del 19 de noviembre). */
+/* La cuenta en la cabecera: «Iniciar sesión» y «Crear cuenta», o el nombre con un menú de texto que termina en
+   «Cerrar sesión». Texto sin borde (decisiones del 19 y del 20 de noviembre). */
 .cuenta { display: inline-flex; align-items: center; gap: 14px; }
-.cuenta-entrar { text-decoration: none; color: var(--color-primario); font-weight: 600; }
-.cuenta-entrar:hover { text-decoration: underline; text-underline-offset: 4px; }
-.cuenta-nombre { font-weight: 600; color: var(--color-tinta); }
+.cuenta-entrar, .cuenta-crear { text-decoration: none; color: var(--color-primario); font-weight: 600; }
+.cuenta-entrar:hover, .cuenta-crear:hover { text-decoration: underline; text-underline-offset: 4px; }
+.cuenta-menu { position: relative; display: inline-flex; align-items: center; gap: 14px; }
+.cuenta-nombre { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; font-weight: 600; color: var(--color-tinta); cursor: pointer; }
+.cuenta-nombre:hover { text-decoration: underline; text-underline-offset: 4px; }
+/* La flecha del menú se dibuja con bordes, no es un ícono; gira al abrir. */
+.cuenta-nombre::after { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--color-primario); border-bottom: 2px solid var(--color-primario); transform: translateY(-2px) rotate(45deg); transition: transform .15s ease; }
+.cuenta-nombre[aria-expanded="true"]::after { transform: translateY(2px) rotate(-135deg); }
+.cuenta-nota { color: var(--color-tinta-suave); font-size: .85rem; }
+.cuenta-lista { position: absolute; right: 0; top: calc(100% + 14px); z-index: 30; min-width: 240px; max-width: calc(100vw - 2 * var(--espacio)); padding: 8px 0; background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio); box-shadow: var(--sombra); white-space: normal; animation: ventana-entra .15s ease; }
+.cuenta-lista[hidden] { display: none; }
+.cuenta-lista li.cuenta-separada { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--color-borde); }
+.cuenta-lista a, .cuenta-salir { display: block; width: 100%; padding: 10px 18px; text-align: left; text-decoration: none; color: var(--color-tinta); background: none; border: 0; cursor: pointer; font-weight: 400; }
+.cuenta-lista a:hover, .cuenta-salir:hover { background: var(--color-primario-suave); }
+.cuenta-lista a[aria-current="true"] { font-weight: 600; color: var(--color-primario); }
+@media (prefers-reduced-motion: reduce) { .cuenta-lista, .cuenta-nombre::after { animation: none; transition: none; } }
+
+/* Páginas de cada vista: Mi cuenta, Tu espacio de anfitrión, Administración y Próximamente ------- */
+/* El alto mínimo evita que el pie quede a media pantalla en las páginas cortas. */
+.pagina-vista { padding-top: 48px; padding-bottom: var(--seccion); min-height: 62vh; }
+.pagina-vista h1 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); margin-bottom: 10px; }
+.pagina-vista .etiqueta { margin-bottom: 8px; }
+.pagina-vista-intro { color: var(--color-tinta-suave); max-width: 60ch; margin-bottom: 28px; }
+.aviso-acceso { max-width: 560px; padding: 24px 0; }
+.vista-seccion { padding: 22px 0; border-top: 1px solid var(--color-borde); scroll-margin-top: 90px; }
+.vista-seccion h2 { font-size: 1.3rem; margin-bottom: 8px; }
+.vista-datos { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: 6px 16px; margin: 0 0 10px; }
+.vista-datos dt { color: var(--color-tinta-suave); }
+.vista-datos dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 
 /* Ventana sobre la página (inicio de sesión) ---------------------------- */
 .ventana-fondo { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: var(--espacio); background: rgba(20, 42, 33, .55); }
@@ -411,6 +440,12 @@ body.con-ventana { overflow: hidden; }
 @media (max-width: 720px) {
   .solo-escritorio { display: none; }
   .solo-celular { display: inline; }
+  /* En celular la marca y la cuenta quedan en la primera fila y la barra de navegación baja a la segunda. */
+  .cabecera .contenedor { gap: 6px 16px; }
+  .enlaces-cabecera { order: 3; width: 100%; margin-left: 0; gap: 6px 16px; }
+  .cuenta { gap: 12px; }
+  .vista-datos { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .vista-datos dd { margin-bottom: 10px; }
   .buscador { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .buscador label { border-right: 0; border-bottom: 1px solid var(--color-borde); padding: 8px 14px; }
   .buscador label:first-child, .buscador label:nth-child(4) { grid-column: span 2; }

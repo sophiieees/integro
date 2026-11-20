@@ -75,7 +75,28 @@ def test_the_screen_talks_to_the_api_the_way_the_cookie_needs():
         assert route in SCREEN
     assert 'var API = "/api/v1/auth"' in SCREEN
     # Nunca lee ni escribe la llave de sesión: viaja en la cookie.
-    assert "document.cookie" not in SCREEN and "localStorage" not in SCREEN and "sessionStorage" not in SCREEN
+    assert "document.cookie" not in SCREEN and "localStorage" not in SCREEN
+
+
+def test_the_only_thing_kept_in_the_browser_is_which_view_an_admin_chose_to_look_at():
+    """sessionStorage solo guarda eso, solo en esa pestaña: nunca la llave de sesión ni la clave de la página."""
+    assert 'var VER_COMO = "integro_view_as";' in SCREEN
+    uses = re.findall(r"sessionStorage\.(\w+)\(([^)]*)\)", SCREEN)
+    assert uses, "debería usarlo para recordar la vista elegida"
+    assert {method for method, _ in uses} <= {"getItem", "setItem", "removeItem"}
+    assert all(args.startswith("VER_COMO") for _, args in uses)
+    # Y solo vale para quien es administrador: si deja de serlo, se olvida.
+    assert "if (!estado.esAdmin && leerVerComo()) guardarVerComo(null);" in SCREEN
+    assert 'if (vista === "cliente" || vista === "anfitrion")' in SCREEN
+
+
+def test_the_name_and_the_email_are_written_as_text_never_as_html():
+    """Lo que viene de la API (nombre, apellidos, correo) entra con textContent: ahí no se interpreta HTML."""
+    assert not re.search(r"innerHTML\s*=[^;]*estado\.", SCREEN)
+    assert "nombre.textContent = estado.nombre;" in SCREEN
+    assert 'if (typeof valor === "string") el.textContent = valor;' in SCREEN
+    # Sin permiso se borran: no quedan escondidos en la página.
+    assert "llenarDatos(true);" in SCREEN
 
 
 def test_the_window_has_the_two_steps_and_the_register_link():

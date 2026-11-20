@@ -94,12 +94,81 @@
     return { paso: "codigo", campo: null, aviso: (error && error.message) || RESPUESTA_RARA };
   }
 
-  /* Qué muestra la cabecera según la respuesta de GET /auth/me. */
+  /* Qué muestra la cabecera según la respuesta de GET /auth/me.
+     esAnfitrion y esAdmin salen de is_host e is_admin: dicen qué vistas tiene la persona. */
   function estadoDeCabecera(status, cuerpo) {
     if (status === 200 && cuerpo && cuerpo.first_name) {
-      return { sesion: true, nombre: cuerpo.first_name, clave: cuerpo.csrf_token || null, servidor: true };
+      return {
+        sesion: true,
+        nombre: cuerpo.first_name,
+        apellidos: cuerpo.last_name || "",
+        correo: cuerpo.email || "",
+        clave: cuerpo.csrf_token || null,
+        servidor: true,
+        esAnfitrion: cuerpo.is_host === true,
+        esAdmin: cuerpo.is_admin === true
+      };
     }
-    return { sesion: false, nombre: null, clave: null, servidor: status !== 0 };
+    return {
+      sesion: false, nombre: null, apellidos: "", correo: "", clave: null, servidor: status !== 0,
+      esAnfitrion: false, esAdmin: false
+    };
+  }
+
+  /* En qué vista está la persona (docs/diseno/vistas.md). Un administrador puede elegir mirar la de cliente o la
+     de anfitrión con su propia cuenta (verComo); para cualquier otra persona, verComo no cambia nada. */
+  function vistaDe(estado, verComo) {
+    if (!estado || !estado.sesion) return "visitante";
+    if (estado.esAdmin) return verComo === "cliente" || verComo === "anfitrion" ? verComo : "administrador";
+    return estado.esAnfitrion ? "anfitrion" : "cliente";
+  }
+
+  var SIN_SESION = {
+    titulo: "Inicia sesión para continuar",
+    texto: "Esta sección es para personas con una cuenta de Íntegro.",
+    accion: { texto: "Iniciar sesión", iniciarSesion: true }
+  };
+
+  /* Si la persona puede ver una página protegida. requiere es el data-requiere de la página:
+     "sesion", "anfitrion" o "administrador". Un administrador puede ver las páginas del anfitrión: es la manera
+     de probar la plataforma con su propio usuario. La página explica el motivo; no es un error de la API. */
+  function permisoDePagina(requiere, estado) {
+    if (!requiere) return { permitido: true };
+    if (!estado || !estado.servidor) {
+      return {
+        permitido: false,
+        titulo: "No fue posible comprobar tu sesión",
+        texto: SIN_SERVIDOR,
+        accion: { texto: "Volver al inicio", href: "index.html" }
+      };
+    }
+    if (!estado.sesion) return Object.assign({ permitido: false }, SIN_SESION);
+    if (requiere === "anfitrion" && !estado.esAnfitrion && !estado.esAdmin) {
+      return {
+        permitido: false,
+        titulo: "Esta sección es para anfitriones",
+        texto: "Tu cuenta todavía no tiene un perfil de anfitrión. Conoce cómo convertirte en anfitrión.",
+        accion: { texto: "Conviértete en anfitrión", href: "anfitriones.html" }
+      };
+    }
+    if (requiere === "administrador" && !estado.esAdmin) {
+      return {
+        permitido: false,
+        titulo: "Esta sección es solo para el equipo de Íntegro",
+        texto: "Tu cuenta no tiene acceso a esta sección.",
+        accion: { texto: "Volver al inicio", href: "index.html" }
+      };
+    }
+    /* Un requiere que no se conoce (un error al escribir la página) no abre nada. */
+    if (requiere !== "sesion" && requiere !== "anfitrion" && requiere !== "administrador") {
+      return {
+        permitido: false,
+        titulo: "Esta sección no está disponible",
+        texto: "No fue posible comprobar quién puede verla.",
+        accion: { texto: "Volver al inicio", href: "index.html" }
+      };
+    }
+    return { permitido: true };
   }
 
   /* Qué sigue después de pedir cerrar sesión. */
@@ -117,6 +186,8 @@
     despuesDelCorreo: despuesDelCorreo,
     despuesDelCodigo: despuesDelCodigo,
     estadoDeCabecera: estadoDeCabecera,
+    vistaDe: vistaDe,
+    permisoDePagina: permisoDePagina,
     despuesDeSalir: despuesDeSalir,
     minutos: minutos
   };

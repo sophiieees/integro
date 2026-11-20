@@ -2,15 +2,17 @@
 
 Decisión de Sophia del 20 de noviembre de 2026: «haz la cabecera y el pie con
 un script». Las páginas traen solo un espacio vacío para cada uno y
-web/assets/js/estructura.js los llena.
+web/assets/js/estructura.js los llena. El mismo día se decidió la barra
+«Todo, Alojamientos, Experiencias, Servicios» (docs/diseno/vistas.md). Aquí
+se prueba la cabecera del visitante; las demás vistas, en test_vistas_e2e.py.
 
-    1. Cada página muestra su cabecera y su pie, con los mismos enlaces que
-       traían escritos a mano.
-    2. La portada es solo para el huésped: su cabecera no ofrece «Buscar hospedaje».
+    1. Cada página muestra su cabecera y su pie, con la barra, «Iniciar sesión» y «Crear cuenta».
+    2. Ninguna cabecera ofrece ya «Buscar hospedaje»: lo hace la pestaña «Alojamientos».
+       Cada página marca su pestaña.
     3. Los enlaces llevan a donde dicen.
     4. «Reportar un problema» se ve en dorado arena.
     5. La cabecera ocupa su lugar desde el principio y queda fija arriba.
-    6. En celular, el botón «Publica tu propiedad» de la cabecera de anfitriones se oculta.
+    6. En celular, «Publica tu propiedad» y «Conviértete en anfitrión» de la cabecera se ocultan.
     7. Sin JavaScript, la página se ve sin cabecera ni pie (consecuencia aceptada, ADR 0008).
 
 Corren contra la base `integro` de backend/.env, dentro de una transacción que
@@ -21,11 +23,13 @@ Se corren desde backend/ con:  python -m pytest ..\\tests\\e2e -v -rs
 import pytest
 from e2e_support import browser, page, site  # noqa: F401
 
+TABS = ["Todo", "Alojamientos", "Experiencias", "Servicios"]
+ACCOUNT = ["Iniciar sesión", "Crear cuenta"]
 PAGES = {
-    "index.html": ["Íntegro", "Conviértete en anfitrión", "Iniciar sesión"],
-    "propiedad.html?id=2": ["Íntegro", "Buscar hospedaje", "Conviértete en anfitrión", "Iniciar sesión"],
-    "como-funciona.html": ["Íntegro", "Buscar hospedaje", "Conviértete en anfitrión", "Iniciar sesión"],
-    "anfitriones.html": ["Íntegro", "Buscar hospedaje", "Publica tu propiedad", "Iniciar sesión"],
+    "index.html": ["Íntegro", *TABS, "Conviértete en anfitrión", *ACCOUNT],
+    "propiedad.html?id=2": ["Íntegro", *TABS, "Conviértete en anfitrión", *ACCOUNT],
+    "como-funciona.html": ["Íntegro", *TABS, "Conviértete en anfitrión", *ACCOUNT],
+    "anfitriones.html": ["Íntegro", *TABS, "Publica tu propiedad", *ACCOUNT],
 }
 FOOTER = ["Íntegro", "Reportar un problema", "Cómo funciona", "Anfitriones", "Términos y condiciones", "Aviso de privacidad"]
 
@@ -70,17 +74,34 @@ def test_the_brand_link_goes_to_the_home_page(page, site, path):
 # --- Caso 2 ------------------------------------------------------------------------
 
 
-def test_the_home_page_header_does_not_offer_buscar_hospedaje(page, site):
-    go(page, site, "index.html")
+@pytest.mark.parametrize("path", PAGES)
+def test_no_header_offers_buscar_hospedaje_anymore_the_bar_does(page, site, path):
+    go(page, site, path)
 
     assert "Buscar hospedaje" not in page.js(HEADER_LINKS)
-    assert page.js("document.querySelectorAll('header .enlaces-cabecera a').length") == 1
+    assert page.nav() == TABS
 
 
-def test_the_other_pages_headers_do_offer_it(page, site):
-    for path in ("propiedad.html?id=2", "como-funciona.html", "anfitriones.html"):
-        go(page, site, path)
-        assert "Buscar hospedaje" in page.js(HEADER_LINKS), path
+@pytest.mark.parametrize("path, tab", [
+    ("index.html", ["Todo"]),
+    ("propiedad.html?id=2", ["Alojamientos"]),
+    ("como-funciona.html", []),
+    ("anfitriones.html", []),
+])
+def test_each_page_marks_its_own_tab(page, site, path, tab):
+    go(page, site, path)
+
+    assert page.current_tab() == tab
+
+
+def test_the_marked_tab_is_underlined_in_sand_gold(page, site):
+    go(page, site, "index.html")
+
+    style = page.js(
+        "(() => { const s = getComputedStyle(document.querySelector('header [data-pestana][aria-current=page]')); "
+        "return [s.textDecorationLine, s.textDecorationColor]; })()"
+    )
+    assert style == ["underline", "rgb(201, 166, 107)"]
 
 
 def test_the_host_page_has_the_publish_button_and_not_the_become_host_link(page, site):
@@ -106,21 +127,23 @@ def test_the_brand_goes_to_the_home_page(page, site):
 
     click_and_arrive(page, "header .marca", "/index.html")
 
-    assert page.header() == ["Iniciar sesión"]
+    assert page.header() == ["Iniciar sesión", "Crear cuenta"]
 
 
 def test_the_header_link_to_become_a_host_goes_to_the_host_page(page, site):
     go(page, site, "index.html")
 
-    click_and_arrive(page, "header .enlaces-cabecera a", "/anfitriones.html")
+    click_and_arrive(page, "header .cabecera-acciones a[href='anfitriones.html']", "/anfitriones.html")
 
     assert page.js("document.querySelector('header .btn-azul') !== null") is True
 
 
-def test_buscar_hospedaje_goes_to_the_home_page(page, site):
+def test_the_todo_tab_goes_to_the_home_page(page, site):
     go(page, site, "anfitriones.html")
 
-    click_and_arrive(page, "header .btn-enlace", "/index.html")
+    click_and_arrive(page, "header [data-pestana=todo]", "/index.html")
+
+    assert page.current_tab() == ["Todo"]
 
 
 def test_the_footer_links_go_where_they_say(page, site):
@@ -184,8 +207,28 @@ def test_on_a_phone_the_publish_button_of_the_header_is_hidden(page, site):
     go(page, site, "anfitriones.html")
 
     assert page.js("getComputedStyle(document.querySelector('header .btn-azul')).display") == "none"
-    assert page.js("document.querySelector('header .btn-enlace').getBoundingClientRect().width") > 0
+    assert page.js("document.querySelector('header [data-pestana=todo]').getBoundingClientRect().width") > 0
     assert page.is_clickable("header [data-cuenta] .cuenta-entrar") is True
+
+
+def test_on_a_phone_become_a_host_is_left_to_the_footer_and_the_bar_goes_under_the_brand(page, site):
+    page.set_viewport(390, 844, mobile=True)
+    go(page, site, "index.html")
+
+    hidden = page.js(
+        "getComputedStyle(document.querySelector(\"header .cabecera-acciones a[href='anfitriones.html']\")).display"
+    )
+    assert hidden == "none"
+    # El pie queda abajo: se baja hasta él, como lo haría una persona, y ahí se puede dar clic.
+    page.js(
+        "document.querySelector(\"footer.pie nav a[href='anfitriones.html']\").scrollIntoView({ block: 'center', behavior: 'instant' }); 1"
+    )
+    assert page.is_clickable("footer.pie nav a[href='anfitriones.html']") is True
+    page.js("window.scrollTo({ top: 0, behavior: 'instant' }); 1")
+    brand = page.js("document.querySelector('header .marca').getBoundingClientRect().bottom")
+    bar = page.js("document.querySelector('header .enlaces-cabecera').getBoundingClientRect().top")
+    assert bar >= brand - 1
+    assert page.is_clickable("header [data-pestana=servicios]") is True
 
 
 def test_on_a_phone_the_header_does_not_overflow_the_screen(page, site):

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi cuenta | Íntegro</title>
+  <meta name="description" content="Tu cuenta de Íntegro: tus datos, tus reservas, tus mensajes, tus reseñas y tus comentarios.">
+  <meta name="theme-color" content="#1F4D3A">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body data-requiere="sesion">
+  <!-- La vista del cliente. Solo la ve quien tiene sesión; cuenta.js decide qué se muestra (data-requiere). -->
+  <header class="cabecera" data-cabecera="interior"></header>
+
+  <main class="contenedor pagina-vista">
+    <section class="aviso-acceso" data-acceso>
+      <h1 data-acceso-titulo>Comprobando tu sesión</h1>
+      <p class="pagina-vista-intro" data-acceso-texto></p>
+      <p><a class="btn btn-primario" data-acceso-enlace href="#entrar" hidden></a></p>
+    </section>
+
+    <div data-contenido hidden>
+      <h1>Mi cuenta</h1>
+      <p class="pagina-vista-intro">Tus datos y lo que haces como huésped en Íntegro.</p>
+      <section class="vista-seccion" id="datos">
+        <h2>Mis datos</h2>
+        <dl class="vista-datos">
+          <dt>Nombre</dt><dd data-dato="nombre"></dd>
+          <dt>Correo electrónico</dt><dd data-dato="correo"></dd>
+        </dl>
+      </section>
+      <section class="vista-seccion" id="reservas">
+        <h2>Mis reservas</h2>
+        <p class="texto-suave">Próximamente.</p>
+      </section>
+      <section class="vista-seccion" id="mensajes">
+        <h2>Mensajes</h2>
+        <p class="texto-suave">Próximamente.</p>
+      </section>
+      <section class="vista-seccion" id="resenas">
+        <h2>Reseñas</h2>
+        <p class="texto-suave">Próximamente. Aquí verás las reseñas que escriben otras personas.</p>
+      </section>
+      <section class="vista-seccion" id="comentarios">
+        <h2>Comentarios</h2>
+        <p class="texto-suave">Próximamente. Aquí podrás redactar un comentario.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="pie" data-pie></footer>
+
+  <script src="assets/js/estructura.js"></script>
+  <script src="assets/js/cuenta-logica.js"></script>
+  <script src="assets/js/cuenta.js"></script>
+</body>
+</html>
