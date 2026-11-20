@@ -7,8 +7,8 @@ página donde estaba.
 
 La lógica (qué pasa con cada respuesta de la API) se prueba con node en
 cuenta_logica.test.js; este archivo la corre y además revisa lo que las
-páginas y los scripts tienen que traer. Los casos de principio a fin se
-recorren en un navegador de verdad contra la API (ver la evidencia).
+páginas y los scripts tienen que traer. Los casos de principio a fin, con un
+navegador de verdad, el servidor y la base, están en tests/e2e.
 
 Se corren desde backend/ con:  python -m pytest ..\\tests\\web -v
 """
@@ -90,6 +90,11 @@ def test_escape_backdrop_and_cancel_close_the_window_and_clear_it():
     assert "[data-cancelar]" in SCREEN
     body = SCREEN[SCREEN.index("function cerrarVentana"):SCREEN.index("function enviarCorreo")]
     assert body.count(".reset()") == 2
+
+
+def test_a_hidden_window_is_really_hidden():
+    """Sin esta regla el display: grid de la ventana le gana al atributo hidden y la ventana cerrada tapa la página."""
+    assert ".ventana-fondo[hidden] { display: none; }" in CSS
 
 
 def test_the_window_is_styled_with_the_palette_and_works_on_a_phone():
