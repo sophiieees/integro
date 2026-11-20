@@ -1631,20 +1631,96 @@ PROMPTS = [
         },
         "decisiones": [
             ("28.1", "Si ya se envió un código hace menos de un minuto, la ventana pasa directo al paso del código en lugar de mostrar el aviso de espera de la API.", "Pasa cuando alguien cierra la ventana y vuelve a entrar; así no se queda sin poder escribir el código que ya tiene. Campo: qué hace.", "Aceptar", "El punto 1 lo acepto.", "Sin cambios; ahora tiene su prueba de principio a fin."),
-            ("28.2", "Los textos de los avisos los redactó la IA, uno por cada código de error de la API.", "El prompt no daba los textos. Campo: qué hace.", "Aceptar", "El 2 también lo acepto. Me gustaría ver los avisos, pero confío en ti.", "Los textos están en la respuesta de este prompt y en las pruebas de principio a fin."),
-            ("28.3", "La ventana la arma un script, no está escrita en cada página: una sola copia para las cuatro páginas.", "Para no repetir la ventana en cada página. Campo: qué hace.", "Revisar", "Para el punto 3, tenemos que armar el script. No puede haber copias de las 4 páginas. Ya tiene que estar armado. Creo que es la siguiente pieza, ¿no?", "Sin cambios todavía. La ventana ya la arma un solo script (cuenta.js); lo que sigue repetido en las cuatro páginas es la cabecera y el pie, que son de octubre. Queda por aclarar si Sophia pide que también se armen con un script."),
+            ("28.2", "Los textos de los avisos los redactó la IA, uno por cada código de error de la API.", "El prompt no daba los textos. Campo: qué hace.", "Revisar", "El 2 también lo acepto. Me gustaría ver los avisos, pero confío en ti. Después de ver los avisos: Avisos: Me gustan, pero ponlo con una conotacion más formal.", "Los avisos de la ventana pasan a un tono formal, de usted (commit c14de95)."),
+            ("28.3", "La ventana la arma un script, no está escrita en cada página: una sola copia para las cuatro páginas.", "Para no repetir la ventana en cada página. Campo: qué hace.", "Revisar", "Para el punto 3, tenemos que armar el script. No puede haber copias de las 4 páginas. Ya tiene que estar armado. Creo que es la siguiente pieza, ¿no? Después: Si, haz la cabecera y el pie con un script.", "La cabecera y el pie los arma un script, una sola copia (commit c4b4dad). La ventana ya la armaba un solo script (cuenta.js)."),
             ("28.4", "«Volver» en el paso del código regresa al paso 1.", "No estaba en la especificación; sirve para corregir el correo. Campo: qué hace.", "Aceptar", "Punto 4. Lo acepto. Me gusta.", "Sin cambios."),
             ("28.5", "Si «Salir» falla por la clave anti-falsificación, la página pide la clave otra vez y reintenta una vez antes de avisar.", "Para que la persona no vea un error cuando la clave se renovó. Campo: qué hace.", "Aceptar", "Cinco. Lo acepto.", "Sin cambios."),
             ("28.6", "Las pruebas de la lógica de la ventana se corren con node, además de pytest.", "Node ya está en la computadora por las pruebas de la base. Campo: cómo se sabrá que funciona.", "Aceptar", "6. Lo acepto.", "Sin cambios."),
             ("28.7", "El recorrido de principio a fin lo hizo la IA en un navegador de verdad, pero contra un PostgreSQL temporal y fuera del repositorio.", "Para no tocar la base de Sophia ni agregar dependencias al repositorio. Campo: cómo se sabrá que funciona.", "Rechazar", "No, las pruebas no las tenemos que hacer en un PostgreSQL temporal. Ya tiene que estar en mi base de datos. Y por ende, la base de datos, eso es muy importante, o sea, ya tiene que estar en el repositorio. Y arrancar en el servidor. Base y navegador.", "Las pruebas de principio a fin están en tests/e2e: arrancan el servidor, usan la base integro de Sophia y abren el navegador (commit 1c7829e)."),
             ("28.8", "Dejar pantallas.md con el fin de línea que tiene en Git.", "En el disco estaba con el de Windows y Git lo habría marcado cambiado completo. Campo: cómo se sabrá que funciona.", "Aceptar", "Punto 8 lo acepto.", "Sin cambios."),
             ("28.9", "Que «Regístrate» apunte a registro.html cuando exista la pantalla de registro.", "Hoy el enlace ya apunta ahí y da 404. Campo: qué hace.", "Aceptar", "Sí, cuando exista, que es la pieza que existe, la parte de regístrate, que apunte a registro.html.", "Sin cambios; ya apunta a registro.html."),
-            ("28.10", "Las pruebas de principio a fin escriben en la base real dentro de una sola transacción que se deshace al terminar, en lugar de guardar y borrar después.", "El sistema no tiene permiso de borrar personas, así que guardar de verdad dejaría filas de prueba en la base de Sophia. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("28.11", "El servidor de esas pruebas corre en un hilo del mismo proceso, no como un programa aparte.", "La transacción única solo se puede compartir dentro del mismo proceso. Campo: qué hace.", "Pendiente", "", ""),
-            ("28.12", "Una dependencia nueva, websocket-client, y un manejador del navegador de pocas líneas hecho por la IA, en lugar de Playwright o Selenium.", "Es una dependencia pequeña y ya publicada hace más de 14 días; Playwright o Selenium son mucho más grandes. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("28.13", "La página marca data-cuenta-lista cuando ya supo si hay sesión y servidor.", "Las pruebas necesitan saber cuándo terminó la cabecera de cargar; es un cambio al código de la pantalla hecho por las pruebas. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("28.14", "Corregir que la ventana cerrada siguiera tapando la página y quitando los clics.", "Error de la pieza anterior: el display: grid de la ventana le ganaba al atributo hidden. El recorrido de la IA solo miró el atributo y no si la ventana se veía; la captura de pantalla ya mostraba la ventana encima de la página después de entrar y la IA no lo notó. La pieza se fusionó con ese error. Campo: qué hace.", "Pendiente", "", "Regla .ventana-fondo[hidden] { display: none; } y pruebas que miran que la página reciba los clics."),
-            ("28.15", "Leer «la base de datos ya tiene que estar en el repositorio» como que las pruebas contra la base estén en el repositorio.", "No quedó claro si se pedía otra cosa; las migraciones y el modelo de datos ya están en database/migrations y docs/database. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("28.10", "Las pruebas de principio a fin escriben en la base real dentro de una sola transacción que se deshace al terminar, en lugar de guardar y borrar después.", "El sistema no tiene permiso de borrar personas, así que guardar de verdad dejaría filas de prueba en la base de Sophia. Campo: cómo se sabrá que funciona.", "Aceptar", "Desviaciones: Aceptar.", "Sin cambios."),
+            ("28.11", "El servidor de esas pruebas corre en un hilo del mismo proceso, no como un programa aparte.", "La transacción única solo se puede compartir dentro del mismo proceso. Campo: qué hace.", "Aceptar", "Desviaciones: Aceptar.", "Sin cambios."),
+            ("28.12", "Una dependencia nueva, websocket-client, y un manejador del navegador de pocas líneas hecho por la IA, en lugar de Playwright o Selenium.", "Es una dependencia pequeña y ya publicada hace más de 14 días; Playwright o Selenium son mucho más grandes. Campo: qué datos necesita.", "Aceptar", "Desviaciones: Aceptar.", "Sin cambios."),
+            ("28.13", "La página marca data-cuenta-lista cuando ya supo si hay sesión y servidor.", "Las pruebas necesitan saber cuándo terminó la cabecera de cargar; es un cambio al código de la pantalla hecho por las pruebas. Campo: cómo se sabrá que funciona.", "Aceptar", "Desviaciones: Aceptar.", "Sin cambios."),
+            ("28.14", "Corregir que la ventana cerrada siguiera tapando la página y quitando los clics.", "Error de la pieza anterior: el display: grid de la ventana le ganaba al atributo hidden. El recorrido de la IA solo miró el atributo y no si la ventana se veía; la captura de pantalla ya mostraba la ventana encima de la página después de entrar y la IA no lo notó. La pieza se fusionó con ese error. Campo: qué hace.", "Aceptar", "Desviaciones: Aceptar.", "Regla .ventana-fondo[hidden] { display: none; } y pruebas que miran que la página reciba los clics."),
+            ("28.15", "Leer «la base de datos ya tiene que estar en el repositorio» como que las pruebas contra la base estén en el repositorio.", "No quedó claro si se pedía otra cosa; las migraciones y el modelo de datos ya están en database/migrations y docs/database. Campo: qué datos necesita.", "Aceptar", "Desviaciones: Aceptar.", "Sin cambios."),
+        ],
+    },
+    # ------------------------------------------------------------------ 29
+    {
+        "n": 29,
+        "titulo": "Avisos formales, «Iniciar sesión» y cabecera y pie con un script",
+        "fecha": "20 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Vienen del prompt 28. Las pruebas y el PR ya están hechos. Sobre la cabecera: aún no hacemos las vistas "
+                     "de los diferentes roles. La página principal debe llevar una cabecera con «Todo», «Alojamientos», "
+                     "«Experiencias» y «Servicios», por ejemplo, como la tiene Airbnb: la barra de navegación y las "
+                     "publicaciones de los alojamientos que suban los anfitriones. Como cliente, al dar clic en una "
+                     "publicación y querer reservarla, si no tiene la sesión activa o no ha creado la cuenta, se le manda a "
+                     "crear su usuario o a iniciar sesión, que también se podrá hacer desde «Entrar» (cambia el nombre a "
+                     "«Iniciar sesión»). Como cliente se puede ver cómo convertirse en anfitrión antes de crear la cuenta de "
+                     "anfitrión; cuando ya se es anfitrión ya no se ve esa página y aparecen funcionalidades como «Mis "
+                     "propiedades», «Reseñas», «Comentarios», «Chats con clientes», «Subir publicación», etc. La vista de "
+                     "administrador: solo tres personas con acceso (Shakti, Valeria y yo); debe tener todo lo necesario para "
+                     "dar mantenimiento a las páginas, ver las vistas de anfitrión y de cliente, entre otras cosas; todo lo "
+                     "podemos ir platicando y definiendo. El encabezado sí cambia dependiendo de la vista, pero depende de "
+                     "cómo organicemos las otras vistas. Referencias de encabezados y de la vista de usuario/cliente: dos "
+                     "capturas, de Airbnb (Todo, Alojamientos, Experiencias y Servicios, «Conviértete en anfitrión», cuenta y "
+                     "menú, y el buscador debajo) y de Wander (buscador en la cabecera, «For operators» y menú)."),
+        "tarea": ("1) Desviaciones: aceptar. 2) Avisos: me gustan, pero ponlo con una connotación más formal. 3) Desviación 3: "
+                  "sí, haz la cabecera y el pie con un script. 4) Pruebas y PR realizado."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "20 de noviembre de 2026",
+            "commits": ("c14de95 (rama web/login-copy, subida y sin fusionar). c4b4dad (rama web/shared-layout, apilada sobre "
+                        "la anterior, subida y sin fusionar). Sophia fusionó el PR #48 (pruebas de principio a fin, en "
+                        "975fc7b) y el #49 (bitácora 28, en d960c5e)."),
+            "archivos": [
+                ("web/assets/js/cuenta-logica.js y cuenta.js", "los avisos y los textos de la ventana en tono formal, de usted; «Entrar» pasa a «Iniciar sesión»."),
+                ("web/assets/js/estructura.js", "nuevo: la única copia de la cabecera y del pie, con una tabla de variantes (portada, interior y anfitriones)."),
+                ("Las cuatro páginas .html", "la cabecera y el pie escritos a mano salen; quedan dos espacios vacíos y un script más."),
+                ("web/assets/css/estilos.css", "el espacio de la cabecera conserva su alto mientras el script la arma."),
+                ("tests/web/estructura.test.js y test_structure.py", "nuevos: 14 casos con node y 17 con pytest; la referencia es el HTML que las páginas traían escrito."),
+                ("tests/e2e/test_estructura_e2e.py", "nuevo: 32 pruebas con navegador, servidor y base de verdad."),
+                ("tests/web/cuenta_logica.test.js, test_login_modal.py, test_brand_palette.py y tests/e2e/test_entrar_e2e.py, e2e_support.py", "puestos al día con los textos nuevos y con la cabecera armada por el script."),
+                ("docs/diseno/sistema-de-diseno.md, pantallas.md y docs/decisiones/0008-prototipo-estatico-antes-de-nextjs.md", "el tono, el nombre «Iniciar sesión» y la cabecera y el pie con un script, con su consecuencia."),
+                ("herramientas/bitacora/evidencias/web_copy_layout_pruebas_2026-11-20.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Cambiar «Salir» por «Cerrar sesión».", "hace pareja con «Iniciar sesión»; hoy sigue diciendo «Salir» porque no se pidió cambiarlo."),
+                ("Poner en tono formal el resto de la web y los mensajes de la API.", "hoy solo cambió la ventana de inicio de sesión; los mensajes de la API se traducen en la pieza de idiomas y ahí pueden salir ya en tono formal."),
+                ("Definir las vistas del huésped, del anfitrión y del administrador y su cabecera.", "la tabla de variantes de estructura.js está lista para recibirlas; con lo que Sophia describió y sus referencias se puede armar la lista de cabeceras, pantallas y permisos de cada vista."),
+                ("Quitar la línea repetida SESSION_COOKIE_SECURE de backend/.env.", "sigue escrita dos veces, las dos con false; no hace daño."),
+            ],
+            "lineas": ("Nuevos completos: estructura.js, estructura.test.js, test_structure.py y test_estructura_e2e.py. "
+                       "cuenta-logica.js: los textos de cada aviso. cuenta.js: el enlace, el título de la ventana, las "
+                       "etiquetas, el botón y el pie de la ventana. Cada página: la cabecera y el pie salen y entran dos "
+                       "espacios y un script. estilos.css: una regla. e2e_support.py: un desplazamiento sin animación al "
+                       "dar clic. Pruebas anteriores: los textos y la cabecera. Documentos: la fila de la cabecera, la del "
+                       "pie, la ventana, la pantalla 5 y las consecuencias y cambios del ADR 0008."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben las pruebas se deshace. Rama web/login-copy: web «59 passed in 0.98s», principio "
+                        "a fin «34 passed in 53.44s»; el backend no se corrió en esa rama porque no cambió. Rama "
+                        "web/shared-layout: la primera corrida de principio a fin falló, «1 failed, 31 passed», porque el clic "
+                        "en el pie se daba a mitad de un desplazamiento suave (error de la prueba); la final, «66 passed in "
+                        "56.36s»; web «73 passed in 0.53s» (node: «# pass 34»); backend «841 passed, 1 warning in 131.97s»; 0 "
+                        "filas de prueba guardadas en la base. Sophia reportó que las pruebas y el PR estaban hechos. Salida "
+                        "copiada en herramientas/bitacora/evidencias/web_copy_layout_pruebas_2026-11-20.txt."),
+        },
+        "decisiones": [
+            ("29.1", "Los avisos de la ventana en un tono formal, de usted.", "Sophia pidió «una connotación más formal» y el manual de identidad pide un tono cercano, de tú; la IA ofreció dos redacciones. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Formal, de usted».", "Los avisos están en tono formal, de usted (commit c14de95)."),
+            ("29.2", "Cambiar «Entrar» por «Iniciar sesión» en el enlace de la cabecera, en el título de la ventana y en el botón del paso del código.", "Para que la persona vea siempre el mismo nombre. Campo: qué hace.", "Aceptar", "Cambia el nombre a Iniciar Sesión. Sophia eligió la opción «En todos los lugares».", "Commit c14de95."),
+            ("29.3", "Escribir «Iniciar sesión» con la s minúscula.", "Sophia lo escribió con mayúscula; la IA usó la ortografía del español. Campo: qué hace.", "Pendiente", "", ""),
+            ("29.4", "«Correo» pasa a «Correo electrónico» y el enlace de registro dice «¿Aún no tiene una cuenta? Regístrese».", "Para que toda la ventana quede en el mismo tono formal; Sophia habló de los avisos. Campo: qué hace.", "Pendiente", "", ""),
+            ("29.5", "Los mensajes que manda la API no cambian de tono todavía; se redactan en la pieza de idiomas.", "Los textos viven en la API y se traducirán todos juntos. Campo: qué hace.", "Pendiente", "", ""),
+            ("29.6", "El enlace «Salir» de la cabecera no cambia de nombre.", "Sophia pidió cambiar «Entrar», no «Salir». Campo: qué hace.", "Pendiente", "", ""),
+            ("29.7", "La cabecera armada por el script reproduce las tres que ya existían (portada, interior y anfitriones), que cada página elige con data-cabecera; no se inventa ninguna vista nueva.", "Sophia dijo que la cabecera cambia según la vista y que depende de cómo se organicen las vistas, que todavía no se definen. Campo: qué hace.", "Pendiente", "", ""),
+            ("29.8", "Sin JavaScript, la página se ve sin cabecera ni pie.", "Es lo que implica una sola copia armada por un script; las tarjetas y la ficha ya dependían de JavaScript. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Sí, lo acepto».", "Anotado en el ADR 0008, consecuencias."),
+            ("29.9", "El espacio vacío de la cabecera conserva su alto (69 px) mientras el script la arma.", "Para que la página no se corra hacia abajo cuando aparece la cabecera. Campo: qué hace.", "Pendiente", "", ""),
+            ("29.10", "La zona de la cuenta la deja vacía el script de la estructura y la pinta cuenta.js, que se carga después.", "Para que el texto «Iniciar sesión» viva en un solo lugar. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("29.11", "Cambiar pruebas anteriores (textos de los avisos, la cabecera dentro de la página y el botón dorado del pie) y agregar 14 de node, 17 de pytest y 32 de principio a fin.", "Los textos y el lugar de la cabecera y del pie cambiaron. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("29.12", "Anotar las referencias de Airbnb y Wander sin construir todavía ninguna cabecera de huésped, de anfitrión ni de administrador.", "Sophia dijo que las vistas se van a platicar y definir. Campo: qué hace.", "Pendiente", "", ""),
         ],
     },
 ]
