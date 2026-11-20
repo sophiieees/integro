@@ -44,7 +44,7 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 
 | Componente | Dónde | Qué comunica |
 |---|---|---|
-| Cabecera fija con la marca y enlaces de texto (`.enlaces-cabecera`) | Todas | La marca y, junto a ella, "Conviértete en anfitrión" (y "Buscar hospedaje" en las páginas interiores) como texto sin borde. A la derecha, la cuenta (`[data-cuenta]`): "Iniciar sesión", o el nombre de la persona y "Salir" (decisión 0.20, 19 de noviembre) |
+| Cabecera fija con la marca y enlaces de texto (`.enlaces-cabecera`) | Todas | La marca y, junto a ella, "Conviértete en anfitrión" (y "Buscar hospedaje" en las páginas interiores) como texto sin borde. A la derecha, la cuenta (`[data-cuenta]`): "Iniciar sesión", o el nombre de la persona y "Salir" (decisión 0.20, 19 de noviembre). La arma `web/assets/js/estructura.js`, una sola copia, según la vista de la página (`data-cabecera`: `portada`, `interior` o `anfitriones`). Las vistas del huésped, del anfitrión y del administrador serán variantes nuevas de esa tabla |
 | Ventana de "Iniciar sesión" (`.ventana`) | Todas, sobre la página | Dos pasos: correo y contraseña, y el código de 6 dígitos. Al terminar se cierra y la persona sigue donde estaba. Avisos en el color de alerta y en tono formal, de usted; enlace a registro.html. La lógica vive en `cuenta-logica.js`, sin pantalla, para probarse con node |
 | Eslogan (`.eslogan`) | Hero de la portada | "Su lugar, Íntegro." en blanco con "Íntegro" en dorado arena; juego de palabras con el nombre |
 | Buscador de cuatro campos y botón (`.buscador`) | Centro del hero de la portada, bajo el eslogan | Destino, llegada, salida, huéspedes, sobre la imagen de bienvenida; en celular se apila en dos columnas |
@@ -52,7 +52,7 @@ Para cambiar la paleta: editar `:root` en `estilos.css`. Nada más.
 | Hero con imagen de fondo (`.hero`) | Portada y anfitriones | Foto a lo ancho con velo oscuro. En la portada solo lleva el buscador; en anfitriones lleva titular. Sin imagen, degradado y marcador que dice qué archivo guardar |
 | Encabezado de página interior (`.encabezado-pagina`) | Cómo funciona | Etiqueta, titular de las tres promesas e introducción, sobre el fondo papel |
 | Sello de confianza (`.sello`) | Cómo funciona | Cuatro promesas con línea superior dorada; elementos libres, sin cajas ni iconos |
-| Pie de página blanco (`.pie`) con botón "Reportar un problema" | Todas | Fondo `--color-pie`, enlaces a Cómo funciona, Anfitriones, Términos y Aviso; el reporte es un botón en dorado arena con letra verde noche (ADR 0008), porque es la vía de protección del huésped y debe verse |
+| Pie de página blanco (`.pie`) con botón "Reportar un problema" | Todas | Lo arma `estructura.js`, igual en todas. Fondo `--color-pie`, enlaces a Cómo funciona, Anfitriones, Términos y Aviso; el reporte es un botón en dorado arena con letra verde noche (ADR 0008), porque es la vía de protección del huésped y debe verse |
 | Secciones a lo ancho de la ficha (`.bloque-ancho`) | Ficha | Ubicación (mapa de zona que abre Google Maps con colonia y ciudad) y reseñas en dos columnas, debajo de la descripción y la caja de precio, para que la columna de texto no deje hueco junto a la caja |
 | Textos sin separador " · " | Todas | Sophia pidió quitar todos los puntos medios: se usan comas, paréntesis y líneas separadas |
 | Tarjeta de propiedad (`.tarjeta`) | Inicio | Foto, insignias "Anfitrión verificado" y "Chapa inteligente", título, zona, calificación, precio por noche y total de 2 noches sin cargos |

@@ -128,8 +128,11 @@ def test_report_a_problem_is_gold_with_night_green_letter():
 
     assert "background: var(--color-acento)" in report
     assert "color: var(--color-tinta)" in report
+    # El botón lo arma estructura.js, una sola vez, y todas las páginas traen su espacio.
+    script = (WEB / "assets" / "js" / "estructura.js").read_text(encoding="utf-8")
+    assert 'class=\\"btn btn-reportar\\" href=\\"#\\">Reportar un problema</a>' in script
     for page in PAGES:
-        assert 'class="btn btn-reportar"' in page.read_text(encoding="utf-8"), page.name
+        assert "data-pie" in page.read_text(encoding="utf-8"), page.name
 
 
 # --- Caso 4 ----------------------------------------------------------------

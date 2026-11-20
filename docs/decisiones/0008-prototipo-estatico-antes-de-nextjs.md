@@ -40,7 +40,8 @@ Los dos puntos que faltaban los decidió Sophia el 19 de noviembre de 2026, al c
 ## Consecuencias
 - A favor: se abre con doble clic, se publica sin compilar, cualquiera edita el HTML y no hay peso de dependencias.
 - En contra: no hay renderizado en servidor, así que las fichas de propiedad se indexan peor en buscadores, ni PWA (ADR 0004). Si más adelante se migra a Next.js, la maquetación se rehace como componentes.
-- El frontend habla con la API de FastAPI (ADR 0001 y ADR 0012). Las pantallas de cuenta, empezando por el inicio de sesión y «Entrar» en la cabecera, se construyen sobre este prototipo.
+- El frontend habla con la API de FastAPI (ADR 0001 y ADR 0012). Las pantallas de cuenta, empezando por el inicio de sesión y «Iniciar sesión» en la cabecera, se construyen sobre este prototipo.
+- La cabecera y el pie se arman con un script (`web/assets/js/estructura.js`), una sola copia para todas las páginas (decisión de Sophia del 20 de noviembre de 2026). Sin JavaScript la página se ve sin ellos; las tarjetas y la ficha ya dependían de JavaScript. La cabecera cambia según la vista de la página; las vistas del huésped, del anfitrión y del administrador se agregan como variantes cuando se definan.
 - El manual de identidad está en `docs/diseno/` (lo subió Sophia) y su paleta y su tipografía ya están en los tokens de `estilos.css`. La fuente Outfit está en `web/assets/fonts/`, con su licencia.
 
 ## Alternativa descartada por ahora
@@ -53,3 +54,4 @@ Decisiones de Sophia del 19 de noviembre de 2026. Bitácora, decisiones 0.1, 0.2
 - 19 de noviembre de 2026: pasa de propuesta a aceptada. La versión anterior daba fecha a la migración a Next.js (semanas 6 y 7) y no hablaba de la identidad de marca.
 - 19 de noviembre de 2026, más tarde: se agregó cómo se aplica la paleta a los botones, al eslogan y al texto, y que la tipografía se guarda dentro del proyecto.
 - 19 de noviembre de 2026, al aplicar la paleta: quedaron decididos el color de la letra sobre el botón dorado y el botón con el cursor encima.
+- 20 de noviembre de 2026: la cabecera y el pie pasan a armarse con un script; «Entrar» pasa a llamarse «Iniciar sesión».

@@ -10,16 +10,7 @@
 </head>
 <body>
   <!-- Página para el anfitrión. Separada de la portada a propósito: la portada es solo para el huésped. -->
-  <header class="cabecera">
-    <div class="contenedor">
-      <a class="marca" href="index.html" aria-label="Íntegro, inicio"><span class="marca-punto" aria-hidden="true"></span>Íntegro</a>
-      <div class="cabecera-acciones">
-        <a class="btn-enlace" href="index.html">Buscar hospedaje</a>
-        <a class="btn btn-azul solo-escritorio" href="#publicar">Publica tu propiedad</a>
-        <span class="cuenta" data-cuenta><a class="cuenta-entrar" href="#entrar">Iniciar sesión</a></span>
-      </div>
-    </div>
-  </header>
+  <header class="cabecera" data-cabecera="anfitriones"></header>
 
   <main>
     <section class="hero hero-anfitriones sin-imagen">
@@ -102,23 +93,11 @@
     </section>
   </main>
 
-  <footer class="pie">
-    <div class="contenedor">
-      <div class="pie-fila">
-        <p><strong>Íntegro</strong></p>
-        <a class="btn btn-reportar" href="#">Reportar un problema</a>
-      </div>
-      <nav aria-label="Pie de página">
-        <a href="como-funciona.html">Cómo funciona</a>
-        <a href="anfitriones.html">Anfitriones</a>
-        <a href="#">Términos y condiciones</a>
-        <a href="#">Aviso de privacidad</a>
-      </nav>
-    </div>
-  </footer>
+  <footer class="pie" data-pie></footer>
 
   <script src="assets/js/datos.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/estructura.js"></script>
   <script src="assets/js/cuenta-logica.js"></script>
   <script src="assets/js/cuenta.js"></script>
 </body>
