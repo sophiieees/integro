@@ -1709,18 +1709,99 @@ PROMPTS = [
                         "copiada en herramientas/bitacora/evidencias/web_copy_layout_pruebas_2026-11-20.txt."),
         },
         "decisiones": [
-            ("29.1", "Los avisos de la ventana en un tono formal, de usted.", "Sophia pidió «una connotación más formal» y el manual de identidad pide un tono cercano, de tú; la IA ofreció dos redacciones. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Formal, de usted».", "Los avisos están en tono formal, de usted (commit c14de95)."),
+            ("29.1", "Los avisos de la ventana en un tono formal, de usted.", "Sophia pidió «una connotación más formal» y el manual de identidad pide un tono cercano, de tú; la IA ofreció dos redacciones. Campo: qué hace.", "Revisar", "Sophia eligió la opción «Formal, de usted». Después: Los demás puntos los acepto, solo que creo que para los textos es mejor hablar de tú pero formalmente y no de usted, creo que genera más confianza.", "Los textos vuelven al trato de tú, con vocabulario formal (commit 780df7f)."),
             ("29.2", "Cambiar «Entrar» por «Iniciar sesión» en el enlace de la cabecera, en el título de la ventana y en el botón del paso del código.", "Para que la persona vea siempre el mismo nombre. Campo: qué hace.", "Aceptar", "Cambia el nombre a Iniciar Sesión. Sophia eligió la opción «En todos los lugares».", "Commit c14de95."),
-            ("29.3", "Escribir «Iniciar sesión» con la s minúscula.", "Sophia lo escribió con mayúscula; la IA usó la ortografía del español. Campo: qué hace.", "Pendiente", "", ""),
-            ("29.4", "«Correo» pasa a «Correo electrónico» y el enlace de registro dice «¿Aún no tiene una cuenta? Regístrese».", "Para que toda la ventana quede en el mismo tono formal; Sophia habló de los avisos. Campo: qué hace.", "Pendiente", "", ""),
-            ("29.5", "Los mensajes que manda la API no cambian de tono todavía; se redactan en la pieza de idiomas.", "Los textos viven en la API y se traducirán todos juntos. Campo: qué hace.", "Pendiente", "", ""),
-            ("29.6", "El enlace «Salir» de la cabecera no cambia de nombre.", "Sophia pidió cambiar «Entrar», no «Salir». Campo: qué hace.", "Pendiente", "", ""),
-            ("29.7", "La cabecera armada por el script reproduce las tres que ya existían (portada, interior y anfitriones), que cada página elige con data-cabecera; no se inventa ninguna vista nueva.", "Sophia dijo que la cabecera cambia según la vista y que depende de cómo se organicen las vistas, que todavía no se definen. Campo: qué hace.", "Pendiente", "", ""),
+            ("29.3", "Escribir «Iniciar sesión» con la s minúscula.", "Sophia lo escribió con mayúscula; la IA usó la ortografía del español. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("29.4", "«Correo» pasa a «Correo electrónico» y el enlace de registro dice «¿Aún no tiene una cuenta? Regístrese».", "Para que toda la ventana quede en el mismo tono formal; Sophia habló de los avisos. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Con el tú: «¿Aún no tienes una cuenta? Regístrate» (commit 780df7f)."),
+            ("29.5", "Los mensajes que manda la API no cambian de tono todavía; se redactan en la pieza de idiomas.", "Los textos viven en la API y se traducirán todos juntos. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("29.6", "El enlace «Salir» de la cabecera no cambia de nombre.", "Sophia pidió cambiar «Entrar», no «Salir». Campo: qué hace.", "Rechazar", "Veredictos 4. Cambiar Salir por «Cerrar sesión».", "«Salir» pasa a «Cerrar sesión» (commit 780df7f)."),
+            ("29.7", "La cabecera armada por el script reproduce las tres que ya existían (portada, interior y anfitriones), que cada página elige con data-cabecera; no se inventa ninguna vista nueva.", "Sophia dijo que la cabecera cambia según la vista y que depende de cómo se organicen las vistas, que todavía no se definen. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
             ("29.8", "Sin JavaScript, la página se ve sin cabecera ni pie.", "Es lo que implica una sola copia armada por un script; las tarjetas y la ficha ya dependían de JavaScript. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Sí, lo acepto».", "Anotado en el ADR 0008, consecuencias."),
-            ("29.9", "El espacio vacío de la cabecera conserva su alto (69 px) mientras el script la arma.", "Para que la página no se corra hacia abajo cuando aparece la cabecera. Campo: qué hace.", "Pendiente", "", ""),
-            ("29.10", "La zona de la cuenta la deja vacía el script de la estructura y la pinta cuenta.js, que se carga después.", "Para que el texto «Iniciar sesión» viva en un solo lugar. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("29.11", "Cambiar pruebas anteriores (textos de los avisos, la cabecera dentro de la página y el botón dorado del pie) y agregar 14 de node, 17 de pytest y 32 de principio a fin.", "Los textos y el lugar de la cabecera y del pie cambiaron. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("29.12", "Anotar las referencias de Airbnb y Wander sin construir todavía ninguna cabecera de huésped, de anfitrión ni de administrador.", "Sophia dijo que las vistas se van a platicar y definir. Campo: qué hace.", "Pendiente", "", ""),
+            ("29.9", "El espacio vacío de la cabecera conserva su alto (69 px) mientras el script la arma.", "Para que la página no se corra hacia abajo cuando aparece la cabecera. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("29.10", "La zona de la cuenta la deja vacía el script de la estructura y la pinta cuenta.js, que se carga después.", "Para que el texto «Iniciar sesión» viva en un solo lugar. Campo: qué datos necesita.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("29.11", "Cambiar pruebas anteriores (textos de los avisos, la cabecera dentro de la página y el botón dorado del pie) y agregar 14 de node, 17 de pytest y 32 de principio a fin.", "Los textos y el lugar de la cabecera y del pie cambiaron. Campo: cómo se sabrá que funciona.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("29.12", "Anotar las referencias de Airbnb y Wander sin construir todavía ninguna cabecera de huésped, de anfitrión ni de administrador.", "Sophia dijo que las vistas se van a platicar y definir. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+        ],
+    },
+    # ------------------------------------------------------------------ 30
+    {
+        "n": 30,
+        "titulo": "Tú formal, «Cerrar sesión», pantalla de registro y propuesta de las vistas",
+        "fecha": "20 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Los PR ya están fusionados. Para los textos, creo que es mejor hablar de tú pero formalmente y no de "
+                     "usted, creo que genera más confianza. Sobre el registro, cuestionamiento: me gustaría que fuera como "
+                     "la ventana de iniciar sesión porque es moderno, pero como va a pedir más cosas, como nombre completo, "
+                     "apellidos, teléfono, etc., creo que es mejor que sea aparte; se muestra el indicador de la contraseña. "
+                     "Pregunté cómo quito la línea repetida de backend/.env."),
+        "tarea": ("1) Veredictos: 4, cambiar «Salir» por «Cerrar sesión»; sí hay que definir las vistas de una vez; ¿cómo "
+                  "quito la línea repetida?; los demás puntos los acepto, solo que para los textos el tú formal. "
+                  "2) /pieza: construir las vistas, realizar los cambios solicitados y la pantalla de registro (se muestra "
+                  "el indicador de la contraseña; página aparte)."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "20 de noviembre de 2026",
+            "commits": ("780df7f (rama web/copy-tu, subida y sin fusionar). 782dcea (rama web/register-page, apilada sobre "
+                        "la anterior, subida y sin fusionar). fc6ccb5 (rama docs/views, desde main, subida y sin fusionar). "
+                        "Sophia fusionó los PR #50 (textos formales y «Iniciar sesión», en 3f82ee7), #51 (cabecera y pie con "
+                        "un script, en ba35d43) y #52 (bitácora 29, en 688b8b4)."),
+            "archivos": [
+                ("web/assets/js/cuenta-logica.js y cuenta.js", "los avisos y los textos de la ventana vuelven al trato de tú, con vocabulario formal; «Salir» pasa a «Cerrar sesión»."),
+                ("web/registro.html", "nuevo: la pantalla de registro, con sus tres pasos (los datos, el código del correo y «Tu cuenta está lista»)."),
+                ("web/assets/js/registro-logica.js y registro.js", "nuevos: lo que se manda y lo que se dice con cada respuesta de la API; y la pantalla."),
+                ("web/assets/js/paises.js y tools/countries/generate_countries.py", "nuevos: los 247 países que conoce la API con su código de marcación, y lo que los genera."),
+                ("web/assets/css/estilos.css", "el formulario, los avisos de cada campo y el indicador de la contraseña."),
+                ("tests/web/registro_logica.test.js y test_register_page.py", "nuevos: 36 casos con node y 37 con pytest."),
+                ("tests/e2e/test_registro_e2e.py y e2e_support.py", "nuevos: 40 pruebas de la pantalla con navegador, servidor y tu base; el apoyo aprende a borrar con Retroceso y a elegir de una lista."),
+                ("tests/web y tests/e2e (pruebas de «Iniciar sesión»)", "al día con el tú formal, «Cerrar sesión» y la quinta página."),
+                ("docs/diseno/pantallas.md, sistema-de-diseno.md y tests/e2e/README.md", "la pantalla 5, el registro y el indicador como componentes, y la prueba nueva."),
+                ("docs/diseno/vistas.md", "nuevo: la propuesta de las cuatro vistas, con diez decisiones por tomar."),
+                ("herramientas/bitacora/evidencias/web_tu_registro_vistas_pruebas_2026-11-20.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Que una cuenta sin comprobar pueda corregir su correo.", "si alguien se equivoca de correo al registrarse, esa cuenta queda ocupando su correo y su teléfono, y no puede registrarse otra vez con el mismo teléfono ni recibir el código."),
+                ("Una casilla para aceptar los términos y el aviso de privacidad en el registro.", "se agrega cuando haya revisión legal (0.10); hoy los dos enlaces del pie no llevan a ningún lado."),
+                ("Decidir las diez decisiones de las vistas.", "con ellas se construye la cabecera de cada vista y el camino de reservar sin sesión."),
+                ("Quitar la línea repetida de backend/.env.", "la variable SESSION_COOKIE_SECURE sigue escrita dos veces; se quita en el Bloc de notas."),
+            ],
+            "lineas": ("Nuevos completos: registro.html, registro-logica.js, registro.js, paises.js, generate_countries.py, "
+                       "vistas.md y las pruebas de registro. cuenta-logica.js: los textos de cada aviso. cuenta.js: el nombre "
+                       "del botón de cerrar sesión y el enlace de registro de la ventana. estilos.css: un bloque «Registro» y "
+                       "dos reglas de los campos. Pruebas anteriores: los textos, «Cerrar sesión» y la lista de páginas. "
+                       "Documentos: la fila 5 de las pantallas y dos filas de componentes."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben las pruebas se deshace. Rama web/copy-tu: web «73 passed in 0.56s», principio a "
+                        "fin «66 passed in 74.73s»; el backend no se corrió porque no cambió. Rama web/register-page: "
+                        "node «# pass 70», web «115 passed in 0.94s», principio a fin «106 passed in 98.61s», backend «841 "
+                        "passed, 1 warning in 130.57s»; 0 filas de prueba guardadas en la base. La primera corrida de la "
+                        "pantalla de registro pasó completa, «39 passed in 34.54s», pero al ver las capturas la IA encontró "
+                        "que, tras un rechazo de la API, la lista de lo que le faltaba a la contraseña salía dos veces (en el "
+                        "campo y en el indicador) y que la introducción estorbaba en los pasos siguientes; las pruebas no lo "
+                        "habían notado y se corrigió. Los mensajes de los commits c4b4dad, 13fb27c y 782dcea traen conteos "
+                        "de pruebas equivocados (dicen 14, 10 pendientes y 28; son 17, 9 y 37). Sophia reportó que los PR "
+                        "estaban fusionados. Salida copiada en "
+                        "herramientas/bitacora/evidencias/web_tu_registro_vistas_pruebas_2026-11-20.txt."),
+        },
+        "decisiones": [
+            ("30.1", "Hacer primero los cambios pedidos (tú formal y «Cerrar sesión») y la pantalla de registro; las vistas, como una propuesta escrita y no construidas.", "La regla es una responsabilidad por rama y las vistas dependen de decisiones de Sophia que todavía no existen. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.2", "El teléfono se captura con un selector del código de marcación y un campo para el número.", "La API guarda el teléfono en formato internacional. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Selector de código y número».", "Commit 782dcea."),
+            ("30.3", "La lista de países trae todos los que conoce la API, con México primero y ya elegido.", "Hay huéspedes extranjeros. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Todos los países, México primero».", "Commit 782dcea."),
+            ("30.4", "El indicador de la contraseña son cuatro cuadros que se llenan según el nivel, con el nombre del nivel y los consejos.", "El diseño es de Sophia; la IA ofreció dos formas. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Cuatro segmentos con el nombre del nivel».", "Commit 782dcea."),
+            ("30.5", "El registro es una página aparte, no una ventana como la de iniciar sesión.", "Sophia lo planteó como cuestionamiento: la ventana es moderna, pero el registro pide más datos. Campo: qué hace.", "Aceptar", "Como va a pedir más cosas, como nombre completo, apellidos, teléfono, etc., creo que es mejor que sea aparte.", "web/registro.html."),
+            ("30.6", "Los textos de la ventana en el tono formal pero de tú: «Aún no has comprobado tu correo electrónico. Revisa el código que te enviamos al registrarte.»", "Sophia dijo que el tú formal genera más confianza que el usted. Campo: qué hace.", "Revisar", "Los demás puntos los acepto, solo que para los textos es mejor hablar de tú pero formalmente y no de usted, creo que genera más confianza.", "Los textos vuelven al trato de tú (commit 780df7f); el registro nace en ese tono."),
+            ("30.7", "«Salir» pasa a «Cerrar sesión».", "Hace pareja con «Iniciar sesión». Campo: qué hace.", "Aceptar", "Veredictos 4. Cambiar Salir por «Cerrar sesión».", "Commit 780df7f."),
+            ("30.8", "«Apellidos» es un solo campo.", "La API tiene un solo dato para los apellidos (last_name, hasta 80 caracteres); Sophia habló de «nombre completo, apellidos». Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("30.9", "Las verificaciones de la pantalla son solo lo evidente (vacío, formato del correo, teléfono y fecha); lo demás lo decide la API y sus avisos salen en el campo, con el texto de la API.", "La API es la que manda y así no se repiten las reglas en dos lugares. Algunos textos de la API están en un tono distinto. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.10", "Cuando la API rechaza la contraseña, en el campo va una sola línea («Tu contraseña aún no cumple lo que se indica abajo.») y el indicador se actualiza con lo que falta.", "Al ver la captura se notó que la misma lista salía dos veces. Campo: qué hace.", "Pendiente", "", "registro-logica.js (resumirAvisos) y registro.js."),
+            ("30.11", "El código de marcación del teléfono sigue al país de residencia mientras la persona no lo cambie a mano.", "Quien vive en un país suele tener su teléfono de ahí. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.12", "Los nombres de los países los da el navegador, en español; la lista y sus códigos de marcación se generan con una librería que no es dependencia del proyecto (phonenumbers 9.0.42, publicada hace más de 14 días).", "Para no mantener 247 nombres ni códigos a mano. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("30.13", "Con una sesión iniciada, la página de registro dice «Ya iniciaste sesión como (nombre). Para crear otra cuenta, primero cierra sesión.» y oculta el formulario.", "No hay a quién registrar con una sesión abierta. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.14", "En el paso del código y en el de «Tu cuenta está lista» se oculta la introducción de la página.", "Habla de los datos y estorba después. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.15", "Al terminar el registro, «Iniciar sesión» abre la ventana de la cabecera: hay que escribir otra vez el correo y la contraseña y un código nuevo.", "El inicio de sesión siempre pide correo, contraseña y código (ADR 0014). Campo: qué hace.", "Pendiente", "", ""),
+            ("30.16", "Si el correo ya tiene cuenta, el aviso del campo ofrece «Inicia sesión», que abre la ventana.", "Es lo que la persona necesita después de ese aviso. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.17", "Los textos de la página (por ejemplo, «Con una sola cuenta puedes reservar y, más adelante, publicar tu propiedad. Todos los datos son obligatorios.») los redactó la IA.", "El prompt no daba los textos. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.18", "La pantalla no trae casilla de términos y aviso de privacidad.", "La revisión legal sigue pendiente (0.10) y los dos enlaces del pie todavía no llevan a ningún lado. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.19", "Una propuesta escrita de las vistas (visitante, cliente, anfitrión y administrador), con diez decisiones por tomar y el orden para construirlas.", "Sophia pidió definir las vistas de una vez y dijo que se van platicando y definiendo. Campo: qué hace.", "Aceptar", "Sí hay que definir las vistas de una vez.", "docs/diseno/vistas.md (commit fc6ccb5)."),
         ],
     },
 ]

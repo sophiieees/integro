@@ -1,0 +1,57 @@
+Tú formal, «Cerrar sesión», pantalla de registro y propuesta de las vistas
+20 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+
+Rama web/copy-tu (780df7f): los textos de la ventana de tú formal y «Cerrar sesión».
+  web (desde backend\, python -m pytest ..\tests\web -v):     ============================= 73 passed in 0.56s ==============================
+  principio a fin (python -m pytest ..\tests\e2e -v -rs):      ======================== 66 passed in 74.73s (0:01:14) ========================
+  El backend no se corrió en esa rama: no cambió ningún archivo del backend.
+
+Rama web/register-page (782dcea): la pantalla de registro.
+  Primera corrida de test_registro_e2e.py, antes de ver las capturas:
+    ============================= 39 passed in 34.54s =============================
+    Al ver las capturas la IA encontró dos cosas que las pruebas no habían notado: tras un rechazo de la API la
+    lista de lo que le faltaba a la contraseña salía dos veces (en el campo y en el indicador), y la introducción
+    de la página estorbaba en el paso del código. Se corrigieron, y se cambiaron o agregaron pruebas para eso.
+
+  Corrida final de principio a fin:
+    ======================= 106 passed in 98.61s (0:01:38) ========================
+      34  test_entrar_e2e.py
+      32  test_estructura_e2e.py
+      40  test_registro_e2e.py
+
+  Web (node y pytest):
+    ============================= 115 passed in 0.94s =============================
+      45  test_brand_palette.py
+      13  test_login_modal.py
+      37  test_register_page.py
+      20  test_structure.py
+    node --test (cuenta, estructura y registro): # tests 70, # pass 70, # fail 0
+
+  Backend (python -m pytest ..\tests\backend -v -rs):
+    ================= 841 passed, 1 warning in 130.57s (0:02:10) ==================
+      82  tests/backend/test_account_access_tables.py
+      62  tests/backend/test_accounts_login.py
+      60  tests/backend/test_accounts_logout.py
+      76  tests/backend/test_accounts_registration.py
+     152  tests/backend/test_accounts_validation.py
+      37  tests/backend/test_accounts_wrong_passwords.py
+      38  tests/backend/test_config.py
+      16  tests/backend/test_health.py
+      34  tests/backend/test_login_attempts_admins_tables.py
+     171  tests/backend/test_password_strength.py
+      37  tests/backend/test_serve_web.py
+      31  tests/backend/test_session_cookie.py
+      45  tests/backend/test_transaction.py
+
+Filas de prueba que quedaron en la base integro después de correr todo:
+    (0, 0, 0, 0) = users, login_attempts, sessions, one_time_codes
+
+Capturas revisadas por la IA: el formulario con el indicador en «Medio» (dos cuadros en dorado arena y el consejo
+«Usa dos símbolos distintos para subir un nivel.»), el rechazo con el aviso de la fecha de nacimiento, el paso del
+código y la pantalla en un celular de 390 píxeles.
+
+Aviso: los mensajes de los commits c4b4dad, 13fb27c y 782dcea traen conteos de pruebas equivocados (dicen 14, 10
+pendientes y 28; son 17, 9 y 37). Los números buenos son los de este archivo.
