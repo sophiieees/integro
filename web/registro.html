@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crea tu cuenta | Íntegro</title>
+  <meta name="description" content="Crea tu cuenta en Íntegro para reservar hospedaje con anfitriones verificados.">
+  <meta name="theme-color" content="#1F4D3A">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body>
+  <header class="cabecera" data-cabecera="interior"></header>
+
+  <main>
+    <section class="registro" aria-labelledby="registro-titulo">
+      <div class="contenedor registro-contenedor">
+        <h1 id="registro-titulo">Crea tu cuenta</h1>
+        <p class="registro-intro" data-intro>Con una sola cuenta puedes reservar y, más adelante, publicar tu propiedad. Todos los datos son obligatorios.</p>
+
+        <div class="formulario-tarjeta">
+          <p class="formulario-aviso" data-aviso role="alert" hidden></p>
+          <p class="formulario-nota" data-ya-con-sesion role="status" hidden></p>
+
+          <form id="formulario-registro" data-paso="datos" novalidate>
+            <div class="formulario-rejilla">
+              <div class="campo">
+                <label class="campo-etiqueta" for="registro-nombre">Nombre</label>
+                <input type="text" id="registro-nombre" name="first_name" autocomplete="given-name" aria-describedby="registro-error-first_name">
+                <span class="campo-error" id="registro-error-first_name" data-error-de="first_name" hidden></span>
+              </div>
+              <div class="campo">
+                <label class="campo-etiqueta" for="registro-apellidos">Apellidos</label>
+                <input type="text" id="registro-apellidos" name="last_name" autocomplete="family-name" aria-describedby="registro-error-last_name">
+                <span class="campo-error" id="registro-error-last_name" data-error-de="last_name" hidden></span>
+              </div>
+              <div class="campo ancho-completo">
+                <label class="campo-etiqueta" for="registro-correo">Correo electrónico</label>
+                <input type="email" id="registro-correo" name="email" autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="registro-error-email">
+                <span class="campo-error" id="registro-error-email" data-error-de="email" hidden></span>
+              </div>
+              <div class="campo ancho-completo">
+                <label class="campo-etiqueta" for="registro-contrasena">Contraseña</label>
+                <input type="password" id="registro-contrasena" name="password" autocomplete="new-password" aria-describedby="registro-ayuda-contrasena registro-error-password">
+                <span class="campo-ayuda" id="registro-ayuda-contrasena">De 10 a 20 caracteres, con mayúscula, minúscula, número y símbolo, sin espacios.</span>
+                <span class="campo-error" id="registro-error-password" data-error-de="password" hidden></span>
+                <div class="fortaleza" data-fortaleza data-nivel="" aria-live="polite">
+                  <div class="fortaleza-barra" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                  <p class="fortaleza-nivel" data-fortaleza-nivel></p>
+                  <ul class="fortaleza-consejos" data-fortaleza-consejos></ul>
+                </div>
+              </div>
+              <div class="campo ancho-completo">
+                <span class="campo-etiqueta" id="registro-etiqueta-telefono">Teléfono</span>
+                <div class="campo-telefono" role="group" aria-labelledby="registro-etiqueta-telefono">
+                  <select name="marcacion" aria-label="Código de marcación del país"></select>
+                  <input type="tel" name="numero" autocomplete="tel-national" inputmode="tel" aria-label="Número de teléfono" aria-describedby="registro-error-phone">
+                </div>
+                <span class="campo-error" id="registro-error-phone" data-error-de="phone" hidden></span>
+              </div>
+              <div class="campo">
+                <label class="campo-etiqueta" for="registro-pais">País de residencia</label>
+                <select id="registro-pais" name="country" autocomplete="country" aria-describedby="registro-error-country"></select>
+                <span class="campo-error" id="registro-error-country" data-error-de="country" hidden></span>
+              </div>
+              <div class="campo">
+                <label class="campo-etiqueta" for="registro-nacimiento">Fecha de nacimiento</label>
+                <input type="date" id="registro-nacimiento" name="birth_date" autocomplete="bday" min="1900-01-01" aria-describedby="registro-error-birth_date">
+                <span class="campo-error" id="registro-error-birth_date" data-error-de="birth_date" hidden></span>
+              </div>
+            </div>
+            <div class="formulario-acciones">
+              <button type="submit" class="btn btn-primario">Crear cuenta</button>
+            </div>
+            <p class="formulario-pie">¿Ya tienes una cuenta? <a href="#entrar" data-abrir-sesion>Inicia sesión</a></p>
+          </form>
+
+          <form id="formulario-codigo" data-paso="codigo" novalidate hidden>
+            <h2>Comprueba tu correo electrónico</h2>
+            <p class="formulario-nota" data-texto></p>
+            <p class="formulario-nota" data-nota role="status" hidden></p>
+            <div class="campo">
+              <label class="campo-etiqueta" for="registro-codigo">Código</label>
+              <input type="text" id="registro-codigo" name="code" autocomplete="one-time-code" inputmode="numeric" maxlength="6" pattern="[0-9]*">
+            </div>
+            <div class="formulario-acciones formulario-acciones-dos">
+              <button type="button" class="btn-enlace" data-reenviar>Enviar otro código</button>
+              <button type="submit" class="btn btn-primario">Comprobar correo</button>
+            </div>
+          </form>
+
+          <div id="registro-listo" data-paso="listo" hidden>
+            <h2>Tu cuenta está lista</h2>
+            <p class="formulario-nota" data-nota-final role="status" hidden></p>
+            <p class="formulario-nota">Tu correo electrónico quedó comprobado. Ya puedes iniciar sesión.</p>
+            <div class="formulario-acciones">
+              <button type="button" class="btn btn-primario" data-iniciar-sesion>Iniciar sesión</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie" data-pie></footer>
+
+  <script src="assets/js/estructura.js"></script>
+  <script src="assets/js/cuenta-logica.js"></script>
+  <script src="assets/js/cuenta.js"></script>
+  <script src="assets/js/paises.js"></script>
+  <script src="assets/js/registro-logica.js"></script>
+  <script src="assets/js/registro.js"></script>
+</body>
+</html>

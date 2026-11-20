@@ -37,6 +37,7 @@ Tardan unos dos minutos.
 |---|---|
 | `e2e_support.py` | Servidor, base y navegador, y lo que una persona hace en la pantalla (teclear, dar clic, esperar). |
 | `test_entrar_e2e.py` | La ventana de «Iniciar sesión»: los 10 casos aceptados y sus límites. |
+| `test_registro_e2e.py` | La pantalla de registro: el formulario, el indicador de la contraseña, los avisos, la cuenta creada en tu base, el código del correo, el teléfono con su código y el recorrido hasta iniciar sesión. |
 | `test_estructura_e2e.py` | La cabecera y el pie armados con un script: los enlaces de cada página, que lleven a donde dicen, el botón dorado, la cabecera fija, el celular y la página sin JavaScript. |
 
 Una prueba de pantalla verifica lo que se ve, no solo el HTML: por ejemplo, que una ventana cerrada deje de tapar la página (`covers_the_page`) y que un botón reciba el clic (`is_clickable`).
