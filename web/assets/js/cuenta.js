@@ -1,11 +1,11 @@
 /* Íntegro, la cuenta en la pantalla
    -------------------------------------------------------------------
    1. Al cargar, pregunta a la API quién tiene sesión (GET /auth/me) y pinta
-      la cabecera: «Iniciar sesión», o el nombre y «Salir».
+      la cabecera: «Iniciar sesión», o el nombre y «Cerrar sesión».
    2. «Iniciar sesión» abre una ventana sobre la página con los dos pasos del inicio
       de sesión (ADR 0014): correo y contraseña, y luego el código.
    3. Al terminar, la ventana se cierra y la persona sigue en la misma página.
-   4. «Salir» cierra la sesión (POST /auth/logout) con la clave
+   4. «Cerrar sesión» cierra la sesión (POST /auth/logout) con la clave
       anti-falsificación que la API entrega en /auth/me.
 
    La llave de sesión viaja en una cookie que este código no puede leer
@@ -57,7 +57,7 @@
         var salir = document.createElement("button");
         salir.type = "button";
         salir.className = "btn-enlace cuenta-salir";
-        salir.textContent = "Salir";
+        salir.textContent = "Cerrar sesión";
         salir.addEventListener("click", salirDeLaSesion);
         zona.appendChild(nombre);
         zona.appendChild(salir);
@@ -133,7 +133,7 @@
             "<button type=\"submit\" class=\"btn btn-primario\">Iniciar sesión</button>" +
           "</div>" +
         "</form>" +
-        "<p class=\"ventana-pie\">¿Aún no tiene una cuenta? <a href=\"registro.html\">Regístrese</a></p>" +
+        "<p class=\"ventana-pie\">¿Aún no tienes una cuenta? <a href=\"registro.html\">Regístrate</a></p>" +
       "</div>";
     document.body.appendChild(fondo);
 
