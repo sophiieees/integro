@@ -251,7 +251,8 @@ class Page:
     def _center(self, selector: str) -> dict:
         point = self.js(
             "(() => { const e = document.querySelector(" + json.dumps(selector) + "); if (!e) return null; "
-            "e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); "
+            # behavior instant: la hoja de estilos tiene scroll suave y las coordenadas se tomarían a mitad de camino.
+            "e.scrollIntoView({ block: 'center', behavior: 'instant' }); const r = e.getBoundingClientRect(); "
             "return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()"
         )
         assert point, f"no hay nada que coincida con {selector}\n{self.state()}"

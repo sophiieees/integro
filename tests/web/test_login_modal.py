@@ -33,30 +33,30 @@ def test_the_logic_cases_pass_with_node():
     if node is None:
         pytest.skip("Falta node: la lógica de la ventana se prueba con node --test.")
     result = subprocess.run(
-        [node, "--test", "--test-reporter=tap", str(Path(__file__).with_name("cuenta_logica.test.js"))],
+        [node, "--test", "--test-reporter=tap", str(Path(__file__).with_name("cuenta_logica.test.js")),
+         str(Path(__file__).with_name("estructura.test.js"))],
         capture_output=True, text=True, encoding="utf-8", cwd=REPO, timeout=120,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert re.search(r"^# fail 0$", result.stdout, re.M), result.stdout
-    assert int(re.search(r"^# pass (\d+)$", result.stdout, re.M).group(1)) >= 20
+    # 20 de la cuenta y 14 de la cabecera y el pie.
+    assert int(re.search(r"^# pass (\d+)$", result.stdout, re.M).group(1)) >= 34
 
 
 @pytest.mark.parametrize("page", PAGES, ids=lambda page: page.name)
-def test_every_page_has_iniciar_sesion_on_the_right_of_the_header(page):
+def test_every_page_loads_the_structure_then_the_logic_then_the_screen(page):
+    """La cuenta se pinta en un espacio que arma estructura.js: tiene que cargarse antes."""
     text = page.read_text(encoding="utf-8")
-    header = re.search(r"<header.*?</header>", text, re.S).group(0)
+    order = [text.index(f'src="assets/js/{name}.js"') for name in ("app", "estructura", "cuenta-logica", "cuenta")]
 
-    assert header.count("data-cuenta") == 1
-    assert '<a class="cuenta-entrar" href="#entrar">Iniciar sesión</a>' in header
-    # Texto sin borde, no botón.
-    assert 'class="btn btn-primario" href="#entrar"' not in header
+    assert order == sorted(order)
 
 
-@pytest.mark.parametrize("page", PAGES, ids=lambda page: page.name)
-def test_every_page_loads_the_logic_before_the_screen(page):
-    text = page.read_text(encoding="utf-8")
-
-    assert text.index('src="assets/js/app.js"') < text.index('src="assets/js/cuenta-logica.js"') < text.index('src="assets/js/cuenta.js"')
+def test_the_account_is_painted_by_the_screen_script_as_text_without_a_border():
+    """«Iniciar sesión» es un enlace de texto, no un botón; lo pinta cuenta.js en el espacio que deja la cabecera."""
+    assert 'entrar.className = "cuenta-entrar";' in SCREEN
+    assert 'entrar.textContent = "Iniciar sesión";' in SCREEN
+    assert 'btn btn-primario" href="#entrar"' not in SCREEN
 
 
 def test_the_logic_works_in_the_browser_and_in_node():

@@ -103,6 +103,8 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Cabecera ------------------------------------------------------------ */
 .cabecera { position: sticky; top: 0; z-index: 20; background: var(--color-superficie); border-bottom: 1px solid var(--color-borde); }
+/* Mientras el script arma la cabecera, el espacio ya tiene su alto: la página no se corre hacia abajo al aparecer. */
+.cabecera[data-cabecera]:empty { min-height: 69px; }
 .cabecera .contenedor { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; min-height: 68px; padding-top: 8px; padding-bottom: 8px; }
 .marca { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--fuente-titulos); font-size: 1.45rem; font-weight: 600; color: var(--color-primario); }
 .marca-punto { width: 12px; height: 12px; background: var(--color-acento); transform: rotate(45deg); }
