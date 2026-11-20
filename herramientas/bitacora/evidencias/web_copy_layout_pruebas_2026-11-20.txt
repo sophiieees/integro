@@ -1,0 +1,51 @@
+Avisos formales, «Iniciar sesión» y cabecera y pie con un script
+20 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+
+Rama web/login-copy (c14de95): los textos de la ventana en tono formal y «Iniciar sesión».
+  web (desde backend\, python -m pytest ..\tests\web -v):        ============================= 59 passed in 0.98s ==============================
+  principio a fin (python -m pytest ..\tests\e2e -v -rs):         ============================= 34 passed in 53.44s =============================
+  El backend no se corrió en esa rama: no cambió ningún archivo del backend.
+
+Rama web/shared-layout (c4b4dad): la cabecera y el pie los arma un script.
+  Primera corrida de principio a fin de test_estructura_e2e.py, antes de arreglar nada:
+    ======================== 1 failed, 31 passed in 30.56s ========================
+    test_the_footer_links_go_where_they_say FAILED: el clic en un enlace del pie no llegó.
+    Era un error de la prueba: la hoja de estilos tiene desplazamiento suave y las coordenadas del enlace se
+    tomaban a mitad del desplazamiento. Ahora la prueba se desplaza sin animación antes de dar clic.
+
+  Corrida final de principio a fin:
+    ============================= 66 passed in 56.36s =============================
+      34  ../tests/e2e/test_entrar_e2e.py
+      32  ../tests/e2e/test_estructura_e2e.py
+
+  Web (node y pytest):
+    ============================= 73 passed in 0.53s ==============================
+      44  ../tests/web/test_brand_palette.py
+      12  ../tests/web/test_login_modal.py
+      17  ../tests/web/test_structure.py
+    node --test (estructura y cuenta): # tests 34, # pass 34, # fail 0
+
+  Backend (python -m pytest ..\tests\backend -v -rs):
+    ================= 841 passed, 1 warning in 131.97s (0:02:11) ==================
+      82  tests/backend/test_account_access_tables.py
+      62  tests/backend/test_accounts_login.py
+      60  tests/backend/test_accounts_logout.py
+      76  tests/backend/test_accounts_registration.py
+     152  tests/backend/test_accounts_validation.py
+      37  tests/backend/test_accounts_wrong_passwords.py
+      38  tests/backend/test_config.py
+      16  tests/backend/test_health.py
+      34  tests/backend/test_login_attempts_admins_tables.py
+     171  tests/backend/test_password_strength.py
+      37  tests/backend/test_serve_web.py
+      31  tests/backend/test_session_cookie.py
+      45  tests/backend/test_transaction.py
+
+Filas de prueba que quedaron en la base integro después de correr todo:
+    (0, 0, 0, 0) = users, login_attempts, sessions, one_time_codes
+
+Capturas revisadas por la IA: la portada con su pie (cabecera «Conviértete en anfitrión» y «Iniciar sesión»;
+pie con «Reportar un problema» en dorado arena) y la página de anfitriones con su cabecera y la ventana.
