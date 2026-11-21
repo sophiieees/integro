@@ -1,0 +1,80 @@
+Base en Neon, verificación de la conexión y la API lista para Vercel
+21 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia. Las de Neon, contra su proyecto de Neon (Ohio, PostgreSQL 18);
+las demás, contra la base integro local. No se probó en Vercel. El script de verificación solo lee.
+Cambios respecto a la salida original: el identificador del proyecto de Neon se reemplazó por <proyecto de Neon>.
+
+1. Script tools/database/verify_connection.py (rama datos/verify-connection).
+   Primera corrida contra Neon, antes de corregir el script (la salida no se guardó; se vio esto):
+     14 de 18 coinciden
+     - «cifrada con SSL: NO» en las dos direcciones: el script preguntaba a la base con pg_stat_ssl, y en Neon el cifrado
+       termina en su entrada y la base nunca lo ve. Error del script; ahora pregunta del lado de la API (libpq).
+     - «PoolTimeout» en la prueba de identidad: 8 hilos contra 5 conexiones del grupo, con la latencia de la nube. No
+       era un fallo de identidad; ahora son 4 hilos y una espera agotada se reporta aparte.
+   Segunda corrida contra Neon, ya corregido, salida guardada:
+
+     == conexión agrupada (<proyecto de Neon>) ==
+                   PostgreSQL 18.7 (84da7d8); cifrada con SSL: sí
+     COINCIDE     la conexión va cifrada con SSL (en una base en la nube; en la local no hace falta)
+     COINCIDE     fuera de una transacción con papel, la API es integro_api y no ve ninguna persona
+     COINCIDE     system_transaction actúa como integro_service y sin persona
+     COINCIDE     user_transaction actúa como integro_app con el id de esa persona
+     COINCIDE     después de una transacción de persona, la conexión vuelve a integro_api y sin persona
+     COINCIDE     después de una transacción que falla, también
+     COINCIDE     integro_api por sí solo no puede leer las tablas
+     COINCIDE     integro_app con una persona que no existe no ve ninguna fila de users
+                   cada transacción tardó 0.54 s en promedio (la mediana 0.50 s, la más lenta 3.41 s); sin lugar en el grupo a tiempo: 0
+     COINCIDE     200 transacciones seguidas, desde 4 hilos, nunca heredan la identidad de otra
+     COINCIDE     ninguna transacción se quedó sin conexión a tiempo
+     
+     == conexión directa (<proyecto de Neon>) ==
+                   PostgreSQL 18.7 (84da7d8); cifrada con SSL: sí
+     COINCIDE     la conexión va cifrada con SSL (en una base en la nube; en la local no hace falta)
+     COINCIDE     fuera de una transacción con papel, la API es integro_api y no ve ninguna persona
+     COINCIDE     system_transaction actúa como integro_service y sin persona
+     COINCIDE     user_transaction actúa como integro_app con el id de esa persona
+     COINCIDE     después de una transacción de persona, la conexión vuelve a integro_api y sin persona
+     COINCIDE     después de una transacción que falla, también
+     COINCIDE     integro_api por sí solo no puede leer las tablas
+     COINCIDE     integro_app con una persona que no existe no ve ninguna fila de users
+                   cada transacción tardó 0.53 s en promedio (la mediana 0.49 s, la más lenta 3.32 s); sin lugar en el grupo a tiempo: 0
+     COINCIDE     200 transacciones seguidas, desde 4 hilos, nunca heredan la identidad de otra
+     COINCIDE     ninguna transacción se quedó sin conexión a tiempo
+     
+     20 de 20 coinciden
+
+   Contra la base local, el mismo script: 10 de 10 coinciden.
+
+2. Humo del punto de entrada de Vercel (api/index.py) contra Neon, con DATABASE_SSLMODE=require, tiempo de espera 10 y
+   TRUST_PROXY_HEADERS=true (solo lectura):
+     /api/v1/health: 200 ok
+     /api/v1/health/database: 200, base neondb, PostgreSQL 18.7, en 1.73 s la primera vez y 0.30 s la segunda
+     /api/v1/auth/me sin sesión: 401
+     /index.html: 404 (las páginas las entrega Vercel, no la función)
+
+3. Rama api/vercel-ready (db2cf75), backend completo, salida guardada:
+     ================= 1047 passed, 1 warning in 196.03s (0:03:16) =================
+       86  test_account_access_tables.py PASSED
+       40  test_accounts_correct_email.py PASSED
+       62  test_accounts_login.py PASSED
+       60  test_accounts_logout.py PASSED
+       67  test_accounts_password_reset.py PASSED
+       76  test_accounts_registration.py PASSED
+      152  test_accounts_validation.py PASSED
+       37  test_accounts_wrong_passwords.py PASSED
+       25  test_admin_session_limit.py PASSED
+       39  test_config.py PASSED
+       16  test_health.py PASSED
+       34  test_login_attempts_admins_tables.py PASSED
+      171  test_password_strength.py PASSED
+       37  test_serve_web.py PASSED
+       31  test_session_cookie.py PASSED
+       45  test_transaction.py PASSED
+       44  test_vercel_ready.py PASSED
+       25  test_view_roles.py PASSED
+   Las 44 pruebas nuevas (test_vercel_ready.py) pasaron en su primera corrida, salvo una: comparaba la dirección IP de
+   la última anotación en lugar de la anotada tras los seis fallos; era un error de la prueba y se corrigió.
+
+Lo que no se probó: la estructura en Vercel (la regla de /api/(.*), el requirements.txt con «-r», la región cle1, las
+variables de entorno y la protección). Eso se prueba en una previsualización, que hace Sophia.
