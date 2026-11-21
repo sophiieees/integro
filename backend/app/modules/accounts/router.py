@@ -19,6 +19,7 @@ from app.api.protection import csrf_token, require_session_for_change
 from app.database.transaction import user_transaction
 from app.modules.accounts.email_correction import CorrectionOutcome, correct_unverified_email
 from app.modules.accounts.login import LoginOutcome, SessionOutcome, finish_login, start_login
+from app.modules.accounts.password_reset import ResetOutcome, request_password_reset, reset_password
 from app.modules.accounts.sessions import (
     CurrentSession,
     list_sessions,
@@ -274,6 +275,101 @@ def correct_email(body: CorrectEmailRequest, request: Request):
         )
     return error_response(
         401, [FieldError("credentials", "invalid_credentials", "El correo o la contraseña no son correctos.")]
+    )
+
+
+# ---------------------------------------------------------------------------
+# Recuperar la contraseña (decisiones del 21 de noviembre de 2026)
+# ---------------------------------------------------------------------------
+
+
+class PasswordResetRequest(BaseModel):
+    email: Any = Field(default=None, examples=["ana@example.com"])
+
+
+class PasswordResetRequestResponse(BaseModel):
+    status: Literal["code_requested"]
+
+
+class PasswordResetConfirmRequest(BaseModel):
+    email: Any = Field(default=None, examples=["ana@example.com"])
+    code: Any = Field(default=None, examples=["123456"])
+    new_password: Any = Field(default=None, examples=["Ejemplo-2027"])
+
+
+class PasswordResetConfirmResponse(BaseModel):
+    status: Literal["password_changed"]
+
+
+@router.post(
+    "/password-reset/request",
+    response_model=PasswordResetRequestResponse,
+    responses={422: {"model": ErrorResponse}},
+    summary="Recuperar la contraseña, paso 1: pedir el código",
+)
+def password_reset_request(body: PasswordResetRequest, request: Request):
+    """Envía un código de 6 dígitos al correo, que dura 30 minutos. Contesta
+    siempre lo mismo, tenga o no cuenta ese correo, esté comprobado o no, para
+    no revelar quién tiene cuenta. Solo una cuenta con el correo comprobado
+    recibe el código."""
+    values, errors = required_text(body, ("email",))
+    if errors:
+        return error_response(422, errors)
+    state = request.app.state
+    request_password_reset(state.pool, values["email"], state.settings, state.code_sender)
+    return PasswordResetRequestResponse(status="code_requested")
+
+
+@router.post(
+    "/password-reset/confirm",
+    response_model=PasswordResetConfirmResponse,
+    responses={400: {"model": ErrorResponse}, 422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    summary="Recuperar la contraseña, paso 2: el código y la contraseña nueva",
+)
+def password_reset_confirm(body: PasswordResetConfirmRequest, request: Request):
+    """Con el código correcto cambia la contraseña y cierra todas las sesiones
+    de la cuenta; la persona inicia sesión de nuevo. La contraseña nueva cumple
+    las mismas reglas del registro y se revisa antes de gastar el código. Un
+    correo sin cuenta contesta igual que un código incorrecto."""
+    values, errors = required_text(body, ("email", "code", "new_password"))
+    if not errors:
+        errors = [
+            FieldError("new_password", error.code, error.message) for error in password_errors(values["new_password"])
+        ]
+    if errors:
+        return error_response(422, errors)
+    state = request.app.state
+    result = reset_password(
+        state.pool,
+        values["email"],
+        values["code"],
+        values["new_password"],
+        state.settings,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+
+    if result.outcome is ResetOutcome.CHANGED:
+        return PasswordResetConfirmResponse(status="password_changed")
+    if result.outcome is ResetOutcome.TRY_LATER:
+        minutes = -(-result.retry_after_seconds // 60)
+        wait = "1 minuto" if minutes == 1 else f"{minutes} minutos"
+        return error_response(
+            429,
+            [FieldError("credentials", "try_later", f"Demasiados intentos. Inténtalo nuevamente en {wait}.")],
+            retry_after=result.retry_after_seconds,
+        )
+    if result.outcome is ResetOutcome.CODE_EXPIRED:
+        return error_response(
+            400, [FieldError("code", "code_expired", "El código venció. Pide uno nuevo.")]
+        )
+    if result.outcome is ResetOutcome.TOO_MANY_ATTEMPTS:
+        return error_response(
+            400, [FieldError("code", "too_many_attempts", "Demasiados intentos. Pide un código nuevo.")]
+        )
+    extra = {} if result.attempts_left is None else {"attempts_left": result.attempts_left}
+    return error_response(
+        400, [FieldError("code", "invalid_code", "El código no es correcto.")], **extra
     )
 
 

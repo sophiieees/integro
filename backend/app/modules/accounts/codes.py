@@ -46,8 +46,14 @@ class SendLimitResult:
     retry_after_seconds: int | None = None
 
 
-def create_code(connection, user_id, purpose: str, email: str, settings: Settings) -> str:
-    """Guarda la huella de un código nuevo y devuelve el código para enviarlo."""
+def create_code(
+    connection, user_id, purpose: str, email: str, settings: Settings, *, ttl_seconds: int | None = None
+) -> str:
+    """Guarda la huella de un código nuevo y devuelve el código para enviarlo.
+
+    Dura lo que dice code_ttl_seconds, salvo que se pida otra duración (el
+    código de recuperar la contraseña dura más).
+    """
     code = generate_code(settings.code_length)
     connection.execute(
         "insert into one_time_codes (user_id, purpose, channel, destination, code_hash, expires_at) "
@@ -63,7 +69,7 @@ def create_code(connection, user_id, purpose: str, email: str, settings: Setting
                 purpose=purpose,
                 destination=email,
             ),
-            settings.code_ttl_seconds,
+            settings.code_ttl_seconds if ttl_seconds is None else ttl_seconds,
         ),
     )
     return code

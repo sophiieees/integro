@@ -55,6 +55,8 @@ class Settings(BaseSettings):
     code_max_attempts: int = Field(default=5, ge=1)
     code_resend_wait_seconds: int = Field(default=60, ge=0)
     code_max_per_hour: int = Field(default=5, ge=1)
+    # El código de recuperar la contraseña dura más que los demás (decisión del 21 de noviembre de 2026: 30 minutos).
+    password_reset_ttl_seconds: int = Field(default=1800, ge=30)
 
     # Contraseñas incorrectas (ADR 0014). La cuenta nunca se bloquea: a tantos
     # fallos seguidos se avisa al dueño, y a tantos fallos dentro de los
