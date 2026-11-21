@@ -329,7 +329,7 @@ def password_reset_request(body: PasswordResetRequest, request: Request):
 def password_reset_confirm(body: PasswordResetConfirmRequest, request: Request):
     """Con el código correcto cambia la contraseña y cierra todas las sesiones
     de la cuenta; la persona inicia sesión de nuevo. La contraseña nueva cumple
-    las mismas reglas del registro y se revisa antes de gastar el código. Un
+    las mismas reglas del registro (formato y no ser fácil de adivinar) y se revisa antes de gastar el código. Un
     correo sin cuenta contesta igual que un código incorrecto."""
     values, errors = required_text(body, ("email", "code", "new_password"))
     if not errors:
@@ -358,6 +358,11 @@ def password_reset_confirm(body: PasswordResetConfirmRequest, request: Request):
             429,
             [FieldError("credentials", "try_later", f"Demasiados intentos. Inténtalo nuevamente en {wait}.")],
             retry_after=result.retry_after_seconds,
+        )
+    if result.outcome is ResetOutcome.TOO_WEAK:
+        return error_response(
+            422,
+            [FieldError("new_password", "too_weak", " ".join(("La contraseña es muy fácil de adivinar.", *result.hints)))],
         )
     if result.outcome is ResetOutcome.CODE_EXPIRED:
         return error_response(

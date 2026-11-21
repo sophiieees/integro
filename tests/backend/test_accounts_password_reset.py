@@ -17,7 +17,8 @@ solo una cuenta con el correo comprobado puede recuperar la contraseña.
      6. Se cierran todas las sesiones de esa cuenta; las de otras cuentas no se tocan.
      7. Código incorrecto: 400 con los intentos que quedan; a los 5 intentos el código se bloquea aunque después
         se escriba el correcto. Código vencido: 400. Nada cambia.
-     8. Contraseña débil: 422 con sus faltas; no gasta el código ni cuenta intento.
+     8. Contraseña débil (le faltan reglas, o cumple las reglas pero es fácil de adivinar, como en el registro): 422;
+        no gasta el código ni cuenta intento.
      9. Correo sin cuenta, o sin comprobar: igual que un código incorrecto. Un código de otro propósito no sirve.
     10. Cada fallo cuenta para la espera por dispositivo (ADR 0014): a los 6 fallos ese dispositivo espera, para
         cualquier cuenta; otro dispositivo no.
@@ -478,6 +479,40 @@ def test_a_weak_password_is_rejected_without_spending_the_code(api, password, co
     wrong_try = confirm(api, form["email"], wrong(reset_code), headers=OTHER_DEVICE)
     assert wrong_try.json()["attempts_left"] == 4
     assert confirm(api, form["email"], reset_code, headers=OTHER_DEVICE).status_code == 200
+
+
+@pytest.mark.parametrize("password", ["Contrasena-1234", "Password-1234"])
+def test_a_password_that_is_easy_to_guess_is_rejected_like_in_the_registration(api, password):
+    from app.modules.accounts.password_strength import password_strength
+
+    form, reset_code = start(api)
+    before = password_hash(api, form["email"])
+    assert not password_strength(password, first_name="Ana", last_name="Torres", email=form["email"]).is_enough
+
+    response = confirm(api, form["email"], reset_code, password=password)
+
+    assert response.status_code == 422
+    assert errors_of(response) == [("new_password", "too_weak")]
+    assert response.json()["errors"][0]["message"].startswith("La contraseña es muy fácil de adivinar.")
+    assert password_hash(api, form["email"]) == before
+    # No gastó el código ni contó intento.
+    assert confirm(api, form["email"], wrong(reset_code), headers=OTHER_DEVICE).json()["attempts_left"] == 4
+    assert confirm(api, form["email"], reset_code, headers=OTHER_DEVICE).status_code == 200
+
+
+def test_the_registration_and_the_reset_judge_the_same_password_the_same_way(api):
+    """Lo que el registro rechaza por fácil de adivinar, el cambio también; y al revés."""
+    from test_accounts_login import REGISTER
+
+    form = register(api, first_name="Beto")
+    easy = "Contrasena-1234"
+    signup = api.client.post(REGISTER, json={**form, "email": "otro.beto@prueba.invalid", "phone": "+525511112222", "password": easy})
+    assert signup.status_code == 422 and ("password", "too_weak") in errors_of(signup)
+    assert ask(api, form["email"]).status_code == 200
+
+    reset = confirm(api, form["email"], api.sender.last_code, password=easy)
+
+    assert reset.status_code == 422 and errors_of(reset) == [("new_password", "too_weak")]
 
 
 def test_the_password_rules_are_the_ones_of_the_registration(api):

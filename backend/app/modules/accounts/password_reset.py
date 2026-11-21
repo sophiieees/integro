@@ -21,6 +21,8 @@ para adivinar códigos:
   correo sin cuenta cuenta igual, para que no se note la diferencia. No se
   avisa al dueño de la cuenta, porque no fue un intento de entrar.
 - El código nuevo deja sin efecto a los anteriores.
+- La contraseña nueva cumple lo mismo que pide el registro: las reglas de formato y no ser
+  fácil de adivinar (al menos nivel medio, sin el nombre ni el correo de la persona).
 
 Todo lo hace el sistema (integro_service): la persona no tiene sesión.
 """
@@ -43,6 +45,7 @@ from app.modules.accounts.codes import (
     void_previous_codes,
 )
 from app.modules.accounts.login import clean_ip
+from app.modules.accounts.password_strength import password_strength
 from app.modules.accounts.security import hash_password
 from app.notifications.sender import CodeSender
 
@@ -57,6 +60,8 @@ class ResetOutcome(Enum):
     TOO_MANY_ATTEMPTS = "too_many_attempts"
     # Ese dispositivo juntó demasiados fallos y tiene que esperar.
     TRY_LATER = "try_later"
+    # Cumple las reglas de formato pero es fácil de adivinar. No gasta el código.
+    TOO_WEAK = "too_weak"
 
 
 @dataclass(frozen=True)
@@ -65,6 +70,8 @@ class ResetResult:
     attempts_left: int | None = None
     # Segundos que le faltan al dispositivo para poder intentar; solo con TRY_LATER.
     retry_after_seconds: int | None = None
+    # Consejos para una contraseña más difícil de adivinar; solo con TOO_WEAK.
+    hints: tuple[str, ...] = ()
 
 
 def request_password_reset(pool: ConnectionPool, email: str, settings: Settings, sender: CodeSender) -> bool:
@@ -112,8 +119,9 @@ def reset_password(
 ) -> ResetResult:
     """Comprueba el código y cambia la contraseña.
 
-    La contraseña nueva ya se revisó antes (las mismas reglas del registro): una
-    contraseña débil no gasta el código. Si el código es correcto se guarda la
+    El formato de la contraseña nueva ya se revisó antes (las reglas del registro).
+    Aquí se revisa que no sea fácil de adivinar, que necesita el nombre de la
+    persona: una contraseña débil no gasta el código ni cuenta como intento. Si el código es correcto se guarda la
     contraseña nueva con Argon2id, el código queda gastado y se cierran todas
     las sesiones de la cuenta.
     """
@@ -127,8 +135,18 @@ def reset_password(
             return ResetResult(ResetOutcome.TRY_LATER, retry_after_seconds=wait)
 
         user = connection.execute(
-            "select id from users where email = %s and email_verified_at is not null for update", (email,)
+            "select id, first_name, last_name from users where email = %s and email_verified_at is not null for update",
+            (email,),
         ).fetchone()
+        # Un correo sin cuenta se revisa igual, solo sin nombres: no se nota la diferencia.
+        strength = password_strength(
+            new_password,
+            first_name=user[1] if user else None,
+            last_name=user[2] if user else None,
+            email=email,
+        )
+        if not strength.is_enough:
+            return ResetResult(ResetOutcome.TOO_WEAK, hints=tuple(strength.hints))
         if user is None:
             note_attempt(connection, written_email=written_email, user_id=None, succeeded=False, origin=origin)
             return ResetResult(ResetOutcome.INVALID_CODE)
