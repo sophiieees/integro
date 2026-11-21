@@ -39,6 +39,7 @@ Tardan unos dos minutos.
 | `test_entrar_e2e.py` | La ventana de «Iniciar sesión»: los 10 casos aceptados y sus límites. |
 | `test_registro_e2e.py` | La pantalla de registro: el formulario, el indicador de la contraseña, los avisos, la cuenta creada en tu base, el código del correo, el teléfono con su código y el recorrido hasta iniciar sesión. |
 | `test_estructura_e2e.py` | La cabecera del visitante y el pie armados con un script: la barra y la pestaña de cada página, que los enlaces lleven a donde dicen, el botón dorado, la cabecera fija, el celular y la página sin JavaScript. |
+| `test_recuperar_e2e.py` | La pantalla de recuperar la contraseña: el enlace de la ventana, los tres pasos, el código y sus intentos, la contraseña débil, las sesiones que se cierran y el celular. Necesita la migración `20261121000005_password_reset_code.sql` en la base. |
 | `test_vistas_e2e.py` | Las cuatro vistas: la cabecera de cada una, el menú de la cuenta, Próximamente, Mi cuenta, las páginas protegidas con quién las ve y quién no, y el administrador mirando las otras vistas con su propia cuenta. |
 
 Una prueba de pantalla verifica lo que se ve, no solo el HTML: por ejemplo, que una ventana cerrada deje de tapar la página (`covers_the_page`) y que un botón reciba el clic (`is_clickable`).
