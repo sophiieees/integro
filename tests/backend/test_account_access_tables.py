@@ -454,6 +454,7 @@ VALID_CODES = [
     ("login", "sms", "+525512345678"),
     ("login", "whatsapp", "+525512345678"),
     ("verify_email", "email", "ana@prueba.invalid"),
+    ("password_reset", "email", "ana@prueba.invalid"),  # desde la migración del 21 de noviembre
     ("verify_phone", "sms", "+14155550123"),
     ("verify_phone", "whatsapp", "+14155550123"),
 ]
@@ -470,7 +471,7 @@ def test_every_allowed_purpose_and_channel_is_accepted(rollback_pool, purpose, c
     assert code_id is not None
 
 
-@pytest.mark.parametrize("purpose", ["", "reset", "LOGIN", "password_reset"])
+@pytest.mark.parametrize("purpose", ["", "reset", "LOGIN", "password-reset", "PASSWORD_RESET"])
 def test_code_purpose_outside_the_list_is_rejected(rollback_pool, purpose):
     ana = create_person(rollback_pool, "Ana")
 
@@ -513,6 +514,8 @@ def test_code_destination_must_match_the_channel(rollback_pool, channel, destina
         ("verify_email", "sms", "+525512345678"),
         ("verify_email", "whatsapp", "+525512345678"),
         ("verify_phone", "email", "ana@prueba.invalid"),
+        ("password_reset", "sms", "+525512345678"),
+        ("password_reset", "whatsapp", "+525512345678"),
     ],
 )
 def test_code_channel_must_match_the_purpose(rollback_pool, purpose, channel, destination):

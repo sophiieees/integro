@@ -143,6 +143,8 @@ def test_code_limits_default_to_the_decided_values(clean_environment):
     assert settings.code_max_attempts == 5
     assert settings.code_resend_wait_seconds == 60
     assert settings.code_max_per_hour == 5
+    # El código de recuperar la contraseña dura 30 minutos (decisión del 21 de noviembre de 2026).
+    assert settings.password_reset_ttl_seconds == 1800
 
 
 def test_code_limits_can_be_changed_without_touching_the_code(clean_environment):
