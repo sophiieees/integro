@@ -14,6 +14,8 @@ class CodeSender(Protocol):
         """Entrega un aviso de seguridad. kind dice cuál es; details trae sus datos.
 
         Avisos que existen: failed_logins (varios intentos fallidos de entrar a
-        la cuenta), con failures, at, ip_address y user_agent.
+        la cuenta), con failures, at, ip_address y user_agent; y password_changed
+        (la contraseña de la cuenta se cambió al recuperarla), con at, ip_address
+        y user_agent. Ningún aviso lleva contraseñas ni códigos.
         """
         ...

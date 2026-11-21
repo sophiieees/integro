@@ -645,3 +645,130 @@ def test_a_good_reset_does_not_count_as_a_failure_nor_as_a_login(api):
         form["email"],
     )[0]
     assert total == 0
+
+
+# --- El aviso al dueño de la cuenta ------------------------------------------------------------------
+# Decisión de Sophia del 21 de noviembre de 2026: al cambiar la contraseña se le avisa por correo al dueño.
+
+
+def password_notices(api):
+    return [n for n in api.sender.notices if n["kind"] == "password_changed"]
+
+
+def test_changing_the_password_sends_one_notice_to_the_owner(api):
+    form, code = start(api)
+
+    response = confirm(api, form["email"], code, headers={"user-agent": "IntegroPruebas/aviso"})
+
+    assert response.status_code == 200
+    notices = password_notices(api)
+    assert len(notices) == 1 and len(api.sender.notices) == 1
+    notice = notices[0]
+    assert (notice["channel"], notice["destination"]) == ("email", form["email"])
+    assert set(notice["details"]) == {"at", "ip_address", "user_agent"}
+    assert notice["details"]["user_agent"] == "IntegroPruebas/aviso"
+    from datetime import datetime, timezone
+
+    assert abs((datetime.now(timezone.utc) - notice["details"]["at"]).total_seconds()) < 60
+
+
+def test_the_notice_goes_to_the_address_of_the_account_even_if_it_was_written_differently(api):
+    form, code = start(api)
+
+    assert confirm(api, f"  {form['email'].upper()} ", code).status_code == 200
+
+    assert password_notices(api)[0]["destination"] == form["email"]
+
+
+def test_the_notice_carries_no_password_and_no_code(api):
+    form, code = start(api)
+    assert confirm(api, form["email"], code).status_code == 200
+
+    text = str(password_notices(api)[0])
+
+    assert NEW_PASSWORD not in text and PASSWORD not in text and code not in text
+
+
+def test_asking_for_the_code_sends_no_notice(api):
+    form, code = start(api)
+
+    assert api.sender.notices == []
+
+
+@pytest.mark.parametrize("case", ["wrong_code", "expired", "weak", "easy_to_guess", "attempts_exhausted", "unknown_email"])
+def test_no_notice_is_sent_when_the_password_did_not_change(api, case):
+    form, code = start(api)
+    email, attempt, password = form["email"], code, NEW_PASSWORD
+    if case == "wrong_code":
+        attempt = wrong(code)
+    elif case == "expired":
+        age_codes(api, email, DAY_MINUTES + 1)
+    elif case == "weak":
+        password = "corta"
+    elif case == "easy_to_guess":
+        password = "Contrasena-1234"
+    elif case == "attempts_exhausted":
+        for number in range(5):
+            confirm(api, email, wrong(code), headers={"user-agent": f"IntegroPruebas/{number}"})
+    elif case == "unknown_email":
+        email = "no.existe.ninguna@prueba.invalid"
+
+    response = confirm(api, email, attempt, password=password, headers={"user-agent": "IntegroPruebas/final"})
+
+    assert response.status_code in (400, 422)
+    assert api.sender.notices == []
+
+
+def test_no_notice_is_sent_to_a_device_that_has_to_wait(api):
+    form, code = start(api)
+    for _ in range(6):
+        confirm(api, "no.existe.ninguna@prueba.invalid", "123456")
+
+    assert confirm(api, form["email"], code).status_code == 429
+
+    assert api.sender.notices == []
+
+
+def test_the_notice_is_not_repeated_if_the_same_code_is_used_again(api):
+    form, code = start(api)
+    assert confirm(api, form["email"], code).status_code == 200
+
+    assert confirm(api, form["email"], code, password="Otra-2026!x").status_code == 400
+
+    assert len(password_notices(api)) == 1
+
+
+def test_the_console_prints_the_notice_without_secrets(api, capsys):
+    from datetime import datetime, timezone
+
+    from app.notifications.console import ConsoleCodeSender
+
+    ConsoleCodeSender().send_notice(
+        channel="email",
+        destination="ana@prueba.invalid",
+        kind="password_changed",
+        details={"at": datetime(2026, 11, 21, 12, 30, tzinfo=timezone.utc), "ip_address": "203.0.113.7", "user_agent": "Edge"},
+    )
+
+    printed = capsys.readouterr().out
+    assert printed.startswith("[MODO DESARROLLO] Aviso para ana@prueba.invalid (email, password_changed): ")
+    assert "La contraseña de tu cuenta de Íntegro se cambió el 2026-11-21 12:30:00 UTC." in printed
+    assert "Navegador: Edge. Dirección: 203.0.113.7." in printed
+    assert "Por seguridad cerramos todas tus sesiones." in printed
+    assert "¿Olvidaste tu contraseña?" in printed
+    assert "usted" not in printed.lower()
+
+
+def test_the_console_says_unknown_when_there_is_no_browser_or_address(api, capsys):
+    from datetime import datetime, timezone
+
+    from app.notifications.console import ConsoleCodeSender
+
+    ConsoleCodeSender().send_notice(
+        channel="email",
+        destination="ana@prueba.invalid",
+        kind="password_changed",
+        details={"at": datetime(2026, 11, 21, tzinfo=timezone.utc), "ip_address": None, "user_agent": None},
+    )
+
+    assert "Navegador: desconocido. Dirección: desconocida." in capsys.readouterr().out
