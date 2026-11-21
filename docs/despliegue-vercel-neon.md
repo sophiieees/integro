@@ -142,6 +142,8 @@ Lo hace Sophia en vercel.com, con el proyecto que ya publica la web. La IA no pu
 - Cualquiera con acceso a los registros de la función de Vercel ve los códigos mientras el modo sea `console`.
 - El registro de cuentas todavía no tiene CAPTCHA (ADR de seguridad pendiente): con la API abierta al público, alguien podría crear cuentas en masa. Por eso la demostración va detrás de Vercel Authentication.
 - El plan gratuito de Neon se queda sin horas si algo mantiene la base despierta; las conexiones fallan hasta el mes siguiente.
+- Vercel Authentication exige ser miembro del equipo en Vercel para ver el sitio. **(sin verificar si el plan Hobby permite agregar a Shakti y a Valeria como miembros)**: si no, ellas necesitarían Pro, o un enlace compartible de Vercel, o ver la demostración en pantalla compartida. Hay que comprobarlo antes de avisarles.
+- Vercel Authentication solo cubre producción si se elige «All Deployments»; con la opción estándar el dominio de producción queda abierto (se comprobó el 21 de noviembre de 2026).
 - El dominio con el nombre «Íntegro» sigue sujeto al registro de marca (IMPI).
 
 ## Fuentes
