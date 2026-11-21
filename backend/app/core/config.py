@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     database_user: str = Field(min_length=1)
     # SecretStr evita que la contraseña aparezca al imprimir la configuración.
     database_password: SecretStr = Field(min_length=1)
+    # Cifrado de la conexión con la base. «prefer» cifra si el servidor lo ofrece y sigue sin cifrar si no: sirve en
+    # la computadora de Sophia, donde PostgreSQL no tiene SSL. En la nube (Neon) va «require»: sin cifrado no conecta.
+    database_sslmode: Literal["disable", "allow", "prefer", "require", "verify-ca", "verify-full"] = "prefer"
+    # Segundos que se espera una conexión antes de dar la base por no disponible. En la nube, la primera conexión
+    # después de que la base se suspendió tarda más (Neon despierta en unos cientos de milisegundos o más).
+    database_connect_timeout_seconds: int = Field(default=3, ge=1, le=60)
 
     # Llave secreta con la que se calcula la huella de los códigos de un solo
     # uso. Sin ella, quien robe la base adivina un código de seis dígitos.
@@ -89,6 +95,12 @@ class Settings(BaseSettings):
     # (decisión de Sophia del 19 de noviembre de 2026). Solo ocurre si la
     # carpeta web/ existe junto a backend/. Se apaga con SERVE_WEB=false.
     serve_web: bool = True
+
+    # Detrás de un proxy (en Vercel, quien contesta primero es Vercel), la dirección de quien pide y si la
+    # página llegó por HTTPS vienen en los encabezados X-Forwarded-For y X-Forwarded-Proto. Cualquiera puede escribir
+    # esos encabezados, por eso solo se creen si esto está encendido, y solo se enciende donde el proxy los
+    # reescribe siempre (Vercel). En la computadora de Sophia va apagado.
+    trust_proxy_headers: bool = False
 
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:

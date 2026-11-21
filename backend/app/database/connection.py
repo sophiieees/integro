@@ -16,7 +16,7 @@ from app.core.config import Settings
 
 logger = logging.getLogger(__name__)
 
-# Segundos que se espera una conexión antes de dar la base por no disponible.
+# Segundos que se espera una conexión por defecto; se cambia con DATABASE_CONNECT_TIMEOUT_SECONDS.
 CONNECTION_TIMEOUT_SECONDS = 3
 POOL_MIN_SIZE = 1
 POOL_MAX_SIZE = 5
@@ -44,12 +44,13 @@ def create_pool(settings: Settings) -> ConnectionPool:
             "dbname": settings.database_name,
             "user": settings.database_user,
             "password": settings.database_password.get_secret_value(),
-            "connect_timeout": CONNECTION_TIMEOUT_SECONDS,
+            "connect_timeout": settings.database_connect_timeout_seconds,
+            "sslmode": settings.database_sslmode,
             "application_name": "integro-api",
         },
         min_size=POOL_MIN_SIZE,
         max_size=POOL_MAX_SIZE,
-        timeout=CONNECTION_TIMEOUT_SECONDS,
+        timeout=settings.database_connect_timeout_seconds,
         # Antes de entregar una conexión comprueba que siga viva.
         check=ConnectionPool.check_connection,
         name="integro",
