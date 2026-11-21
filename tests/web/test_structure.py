@@ -33,6 +33,8 @@ VARIANT_OF = {
     "anfitrion.html": "interior",
     "administracion.html": "interior",
     "proximamente.html": "interior",
+    # Recuperar la contraseña (21 de noviembre de 2026).
+    "recuperar-contrasena.html": "interior",
 }
 
 

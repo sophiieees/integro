@@ -286,6 +286,7 @@
         "<form data-paso=\"correo\" novalidate>" +
           "<label class=\"campo\"><span>Correo electrónico</span><input type=\"email\" name=\"email\" autocomplete=\"email\" inputmode=\"email\" spellcheck=\"false\"></label>" +
           "<label class=\"campo\"><span>Contraseña</span><input type=\"password\" name=\"password\" autocomplete=\"current-password\"></label>" +
+          "<p class=\"ventana-olvido\"><a href=\"recuperar-contrasena.html\">¿Olvidaste tu contraseña?</a></p>" +
           "<div class=\"ventana-acciones\">" +
             "<button type=\"button\" class=\"btn-enlace\" data-cancelar>Cancelar</button>" +
             "<button type=\"submit\" class=\"btn btn-primario\">Continuar</button>" +
