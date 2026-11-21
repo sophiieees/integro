@@ -1,0 +1,58 @@
+Tope de sesión del administrador y aviso por correo al cambiar la contraseña
+21 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+Las dos ramas salen de main (que ya trae recuperar la contraseña) y son independientes entre sí.
+
+Rama api/admin-session-limit (b0d6111): 30 minutos sin uso y 12 horas desde que inicia sesión, para quien es administrador.
+  Las 25 pruebas nuevas, en su primera corrida: 2 failed, 23 passed (la salida no se guardó)
+    test_an_expired_admin_session_does_not_show_in_the_list_of_open_sessions y
+    test_two_sessions_of_the_same_admin_expire_on_their_own.
+    Causa: eran errores de las pruebas. Todas las sesiones de una prueba se abren dentro de una sola transacción y
+    quedan con la misma hora de creación; «la más reciente» no existe y la prueba envejecía otra. Se cambió para
+    indicar la sesión con su llave. El código no cambió.
+  Corrida completa del backend, salida guardada:
+    ================= 989 passed, 1 warning in 210.90s (0:03:30) ==================
+       86  test_account_access_tables.py PASSED
+       40  test_accounts_correct_email.py PASSED
+       62  test_accounts_login.py PASSED
+       60  test_accounts_logout.py PASSED
+       53  test_accounts_password_reset.py PASSED
+       76  test_accounts_registration.py PASSED
+      152  test_accounts_validation.py PASSED
+       37  test_accounts_wrong_passwords.py PASSED
+       25  test_admin_session_limit.py PASSED
+       39  test_config.py PASSED
+       16  test_health.py PASSED
+       34  test_login_attempts_admins_tables.py PASSED
+      171  test_password_strength.py PASSED
+       37  test_serve_web.py PASSED
+       31  test_session_cookie.py PASSED
+       45  test_transaction.py PASSED
+       25  test_view_roles.py PASSED
+  Con navegador, las vistas (test_vistas_e2e.py), que incluyen al administrador con sesión corta:
+    45 passed in 98.93s (0:01:38)   (la línea se vio al correrlas; no se guardó)
+
+Rama api/password-changed-notice (1a11d1a): aviso por correo al cambiar la contraseña.
+  Corrida completa del backend, salida guardada:
+    ================= 977 passed, 1 warning in 204.42s (0:03:24) ==================
+       86  test_account_access_tables.py PASSED
+       40  test_accounts_correct_email.py PASSED
+       62  test_accounts_login.py PASSED
+       60  test_accounts_logout.py PASSED
+       67  test_accounts_password_reset.py PASSED
+       76  test_accounts_registration.py PASSED
+      152  test_accounts_validation.py PASSED
+       37  test_accounts_wrong_passwords.py PASSED
+       38  test_config.py PASSED
+       16  test_health.py PASSED
+       34  test_login_attempts_admins_tables.py PASSED
+      171  test_password_strength.py PASSED
+       37  test_serve_web.py PASSED
+       31  test_session_cookie.py PASSED
+       45  test_transaction.py PASSED
+       25  test_view_roles.py PASSED
+
+No se probó en Vercel ni con un correo real: todavía no hay quien envíe correos; el aviso se imprime en la ventana
+del servidor.
