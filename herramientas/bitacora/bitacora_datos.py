@@ -2108,4 +2108,73 @@ PROMPTS = [
             ("34.7", "Los textos del aviso los redactó la IA: «Para reservar necesitas una cuenta. Inicia sesión o crea tu cuenta. Volverás a esta propiedad con tus fechas y tus huéspedes.» y los otros dos.", "El prompt no daba los textos. Campo: qué hace.", "Pendiente", "", ""),
         ],
     },
+    # ------------------------------------------------------------------ 35
+    {
+        "n": 35,
+        "titulo": "Decisiones de Vercel y Neon, base creada en Neon y la API lista para Vercel",
+        "fecha": "21 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Sophia ya fusionó los dos PR de la pieza anterior. Creó su cuenta de Neon y el proyecto quedó en Ohio; "
+                     "preguntó cómo cambiar la región. Sobre las decisiones del plan de publicación: «Hay que hacer el "
+                     "CAPTCHA, porque eso es que no hay.» Uso personal y no comercial «porque aún no hemos comprado "
+                     "absolutamente nada»; sí hace falta protección; el plan de Vercel, «lo probamos en Hobby con la "
+                     "protección», y se pasa a Pro; antes, ella avisa a Shakti y a Valeria; demostración solo para el equipo; "
+                     "la base se crea directo en Neon; y un solo proyecto en Vercel. Después: «Me quedo en Ohio», y las dos "
+                     "recomendaciones del CAPTCHA (Cloudflare Turnstile y confirmar los planes en las páginas oficiales) le "
+                     "parecen bien. Siguió los pasos en pgAdmin con dudas sobre el campo del servidor, qué parte de la línea "
+                     "de conexión de Neon pegar, el menú «Parameters only», la contraseña de integro_api (que no es la de "
+                     "su base local), y si la llave de los códigos sale de Neon (no sale). Corrió las cinco migraciones, "
+                     "confirmó las diez tablas, creó el usuario integro_api con su contraseña y su archivo "
+                     "backend/.env.neon. Pidió: «Empieza con la segunda parte de tu lado.»"),
+        "tarea": ("1) Responder las decisiones del plan de Vercel y Neon. 2) Cómo cambiar la región. 3) Guiar la conexión de "
+                  "pgAdmin a Neon y correr las migraciones. 4) Comprobar la conexión a Neon con el script. 5) La segunda parte "
+                  "del lado de la IA: la API lista para correr en Vercel."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "21 de noviembre de 2026",
+            "commits": ("f18d537 y 0332b1e (rama datos/verify-connection, desde main, subida y sin fusionar). db2cf75 (rama "
+                        "api/vercel-ready, desde main, subida y sin fusionar). Sophia fusionó antes los PR #73 (el plan de "
+                        "publicación, en 9608b9a) y los de la pieza anterior. Las ramas son independientes."),
+            "archivos": [
+                ("tools/database/verify_connection.py", "nuevo: comprueba contra la base que diga un archivo de variables que la conexión va cifrada, que cada transacción actúa con su papel, que vuelve a integro_api al terminar y que ninguna petición hereda la identidad de otra. Solo lee."),
+                ("api/index.py y vercel.json", "nuevos: la función de Vercel con la misma aplicación; las páginas salen de Vercel, /api/(.*) va a la función, región cle1."),
+                (".vercelignore, requirements.txt, .python-version", "nuevos: qué no se sube, la lista de dependencias de la raíz que apunta a la del backend, y Python 3.13."),
+                ("backend/app/core/config.py y database/connection.py", "DATABASE_SSLMODE, DATABASE_CONNECT_TIMEOUT_SECONDS y TRUST_PROXY_HEADERS."),
+                ("backend/app/api/client.py, protection.py y modules/accounts/router.py", "nuevo client.py con client_ip y own_origin (origin_of se mudó ahí); las cuatro rutas usan client_ip."),
+                ("tests/backend/test_vercel_ready.py", "nuevo: 44 pruebas."),
+                ("docs/despliegue-vercel-neon.md", "las decisiones, la región, el CAPTCHA, los pasos de pgAdmin con los nombres de los campos, lo que ya está en el código y los pasos para probar en Vercel."),
+                ("herramientas/bitacora/evidencias/neon_verificacion_vercel_pruebas_2026-11-21.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Mantener la región de Neon en Ohio y poner la función de Vercel en Cleveland (cle1).", "Neon no permite cambiar la región de un proyecto; Cleveland es la región de AWS us-east-2, la misma de la base."),
+                ("Cloudflare Turnstile para el CAPTCHA, y revisar los planes en las páginas oficiales antes de decidir.", "Gratuito y casi siempre invisible; las cifras salen de comparativas de terceros."),
+                ("Hacer el CAPTCHA como pieza aparte, antes de abrir el sitio a personas de fuera.", "No estorba la demostración del equipo, que irá detrás de la protección de Vercel."),
+                ("Crear aparte la contraseña de integro_api en Neon y la llave de los códigos, distintas de las de su base local.", "Son servidores distintos; si una se filtra no debe abrir la otra."),
+            ],
+            "lineas": ("Nuevos completos: verify_connection.py, api/index.py, client.py, vercel.json (reescrito), .vercelignore, "
+                       "requirements.txt, .python-version y test_vercel_ready.py. config.py: tres valores. connection.py: "
+                       "sslmode y los tiempos. protection.py: origin_of y la dirección propia salen de client.py. "
+                       "router.py: cuatro llamadas a client_ip."),
+            "pruebas": ("Script contra Neon: la primera corrida dio «14 de 18 coinciden» por dos errores del script (el SSL se "
+                        "preguntaba a la base, y 8 hilos contra 5 conexiones dieron PoolTimeout); ya corregido, «20 de 20 "
+                        "coinciden» en la conexión agrupada y en la directa, con una latencia promedio de 0.54 s por "
+                        "transacción desde la computadora de Sophia. El script contra la base local: «10 de 10». Humo de "
+                        "api/index.py contra Neon: health 200, health/database 200 (1.73 s la primera vez, 0.30 s la "
+                        "segunda). Backend completo en api/vercel-ready: «1047 passed, 1 warning in 196.03s». No se probó "
+                        "en Vercel. Salida copiada en "
+                        "herramientas/bitacora/evidencias/neon_verificacion_vercel_pruebas_2026-11-21.txt."),
+        },
+        "decisiones": [
+            ("35.1", "Probar en el plan Hobby de Vercel con la protección de Vercel Authentication, y pasar a Pro antes de que entre alguien que no sea del equipo.", "Hobby es solo para uso personal y no comercial; la protección evita que entre cualquiera. Campo: qué hace.", "Aceptar", "El plan de Vercel sí, lo probamos en Hobby con la protección, y lo pasamos a Pro; antes, yo les mando mensaje a Shakti y a Valeria.", "Quedó en docs/despliegue-vercel-neon.md."),
+            ("35.2", "La primera publicación es una demostración solo para el equipo, con los códigos escritos en el registro de la función (EMAIL_DELIVERY=console).", "Todavía no hay correo real. Campo: qué hace.", "Aceptar", "Demostración solo para el equipo. Ok, está bien. Quiero una demostración para mi equipo de trabajo.", "Quedó en el documento."),
+            ("35.3", "La base se crea directo en Neon, y un solo proyecto de Vercel con la web y la API.", "La cookie de sesión exige un solo dominio; la integración de Vercel trae variables con un rol muy poderoso. Campo: qué datos necesita.", "Aceptar", "La base se va a crear directo en Neon. Y solo va a haber un proyecto en Vercel.", "Quedó en el documento."),
+            ("35.4", "Hace falta un CAPTCHA en el registro y el inicio de sesión, como pieza aparte antes de abrir el sitio.", "No existe y con la API pública se podrían crear cuentas en masa. Campo: qué hace.", "Aceptar", "Creo que hay que hacer el CAPTCHA, porque eso es que no hay.", "Pendiente de construirse; el servicio sugerido es Cloudflare Turnstile."),
+            ("35.5", "Quedarse con el proyecto de Neon en Ohio y poner la función de Vercel en Cleveland (cle1), en vez de crear otro proyecto en Virginia.", "Neon no permite cambiar la región; Cleveland es la región de AWS us-east-2, la misma. Campo: qué datos necesita.", "Aceptar", "Me quedo en Ohio.", "vercel.json con regions: cle1."),
+            ("35.6", "Cloudflare Turnstile como servicio del CAPTCHA, y confirmar sus planes en las páginas oficiales antes de decidir.", "Gratuito y casi siempre invisible; las cifras vienen de comparativas de terceros. Campo: qué datos necesita.", "Aceptar", "Me parece bien las ambas recomendaciones.", "Pendiente de construirse."),
+            ("35.7", "Un script de verificación (tools/database/verify_connection.py) que solo lee y no imprime contraseñas, y que se corre contra Neon antes de publicar.", "Comprobar que los papeles por transacción funcionan en la conexión agrupada de Neon, algo que su documentación no confirma. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("35.8", "TRUST_PROXY_HEADERS: detrás de Vercel, el origen propio sale de X-Forwarded-Proto y la IP de X-Forwarded-For; apagado por defecto, y apagado esos encabezados se ignoran.", "Sin esto toda petición que cambia algo daría 403 y todas las personas compartirían la espera por dispositivo. Cualquiera puede escribir esos encabezados. Campo: qué hace.", "Pendiente", "", ""),
+            ("35.9", "La estructura de Vercel: las páginas de web/ salen de la red de Vercel, /api/(.*) va a una función api/index.py, el requirements.txt de la raíz apunta a -r backend/requirements.txt y .vercelignore deja fuera tests, docs, database, herramientas y tools.", "La documentación de Vercel no confirma cómo conviven una web estática y una función de Python en un solo proyecto. Campo: qué hace.", "Pendiente", "", ""),
+            ("35.10", "DATABASE_SSLMODE con «prefer» por defecto («require» en Neon) y DATABASE_CONNECT_TIMEOUT_SECONDS con 3 por defecto (10 en Neon).", "La primera conexión después de que Neon se suspende tarda más; en su computadora no hay SSL. Campo: qué datos necesita.", "Pendiente", "", ""),
+        ],
+    },
 ]
