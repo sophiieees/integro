@@ -1,18 +1,20 @@
 # Lo que Vercel no necesita para publicar la web y la API. Nada de aquí se sube.
 # Los secretos nunca se suben: tampoco están en el repositorio (.gitignore).
-.git
-.claude
+#
+# Cuidado: una regla sin «/» al principio vale para una carpeta con ese nombre en CUALQUIER lugar. «database» ignoraba
+# también backend/app/database, que es código de la API, y la función no arrancaba (21 de noviembre de 2026). Las
+# carpetas de la raíz se escriben con «/» al principio, y una prueba comprueba que no se ignore nada que la API necesite.
+/.git
+/.claude
 .env
 .env.*
-backend/.env
-backend/.env.*
-backend/.venv
-.venv
+/backend/.venv
+/.venv
 node_modules
-**/__pycache__
+__pycache__
 .pytest_cache
-tests
-docs
-database
-herramientas
-tools
+/tests
+/docs
+/database
+/herramientas
+/tools

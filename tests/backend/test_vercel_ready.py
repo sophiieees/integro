@@ -307,13 +307,74 @@ def test_the_entry_file_is_where_the_rewrite_and_the_function_say():
     assert (REPO / "web" / "index.html").is_file()  # lo que sirve outputDirectory
 
 
-def test_secrets_and_what_is_not_needed_do_not_go_up_to_vercel():
-    lines = {line.strip() for line in (REPO / ".vercelignore").read_text(encoding="utf-8").splitlines() if line.strip() and not line.startswith("#")}
+def vercelignore_rules() -> list[str]:
+    return [line.strip() for line in (REPO / ".vercelignore").read_text(encoding="utf-8").splitlines() if line.strip() and not line.startswith("#")]
 
-    for ignored in (".env", ".env.*", "backend/.env", "backend/.env.*", "backend/.venv", ".venv", "tests", "docs", "database", "herramientas", "tools", ".git"):
-        assert ignored in lines, ignored
-    for needed in ("web", "api", "backend", "backend/app", "requirements.txt", "vercel.json", ".python-version"):
-        assert needed not in lines, needed
+
+def is_ignored(path: str, rules: list[str]) -> bool:
+    """Si .vercelignore deja fuera ese archivo, con las reglas simples que usamos (como en .gitignore).
+
+    Una regla que empieza con «/» vale desde la raíz; una sin «/» vale para cualquier archivo o carpeta con ese nombre,
+    en cualquier lugar. Se aceptan comodines de nombre (.env.*).
+    """
+    import fnmatch
+
+    parts = path.split("/")
+    for rule in rules:
+        if rule.startswith("/"):
+            wanted = rule.strip("/").split("/")
+            if parts[: len(wanted)] and all(fnmatch.fnmatch(a, b) for a, b in zip(parts, wanted)) and len(parts) >= len(wanted):
+                return True
+        elif any(fnmatch.fnmatch(part, rule) for part in parts):
+            return True
+    return False
+
+
+def test_secrets_and_what_is_not_needed_do_not_go_up_to_vercel():
+    rules = vercelignore_rules()
+
+    for path in (".git/config", ".claude/skills/pieza/SKILL.md", ".env", ".env.neon", "backend/.env", "backend/.env.neon", "backend/.venv/pyvenv.cfg",
+                 "tests/backend/conftest.py", "docs/arquitectura.md", "database/migrations/20261117000001_users_host_profiles_verifications.sql",
+                 "herramientas/bitacora/bitacora_datos.py", "tools/countries/generate_countries.py", "backend/app/__pycache__/main.cpython-313.pyc"):
+        assert is_ignored(path, rules), f"debería ignorarse: {path}"
+
+
+def test_nothing_the_function_or_the_pages_need_is_ignored():
+    """Fallo real del 21 de noviembre de 2026: «database» sin «/» ignoraba backend/app/database y la función no arrancaba."""
+    rules = vercelignore_rules()
+    needed = [
+        str(path.relative_to(REPO)).replace("\\", "/")
+        for folder in ("api", "backend/app", "web")
+        for path in (REPO / folder).rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts
+    ]
+    needed += ["requirements.txt", "vercel.json", ".python-version", "backend/requirements.txt"]
+
+    wrongly_ignored = [path for path in needed if is_ignored(path, rules)]
+
+    assert wrongly_ignored == []
+    assert any(path.startswith("backend/app/database/") for path in needed)  # la carpeta que se perdió existe y se revisó
+    assert len(needed) > 50  # se revisaron todos los archivos de la API y de las páginas, no unos pocos
+
+
+def test_every_folder_that_is_ignored_at_the_root_is_written_from_the_root():
+    """Una carpeta de la raíz sin «/» al principio podría ignorar otra con el mismo nombre dentro del código."""
+    rules = vercelignore_rules()
+    inside_the_code = {p.name for folder in ("api", "backend/app", "web") for p in (REPO / folder).rglob("*") if p.is_dir()}
+
+    # Solo estas valen en cualquier lugar a propósito: no son código (cachés, dependencias de Node y archivos .env).
+    anywhere_on_purpose = {"__pycache__", "node_modules", ".pytest_cache", ".env", ".env.*"}
+    for rule in rules:
+        if not rule.startswith("/") and rule not in anywhere_on_purpose:
+            assert rule.strip("*.") not in inside_the_code, f"«{rule}» ignoraría también una carpeta del código"
+    assert "/database" in rules and "database" not in rules
+
+
+def test_the_matcher_of_this_test_catches_the_mistake_that_happened():
+    assert is_ignored("backend/app/database/connection.py", ["database"]) is True   # el error de antes
+    assert is_ignored("backend/app/database/connection.py", ["/database"]) is False  # la corrección
+    assert is_ignored("database/migrations/x.sql", ["/database"]) is True
+    assert is_ignored("backend/.env", [".env"]) is True and is_ignored("web/index.html", [".env", ".env.*"]) is False
 
 
 def active_lines(path: Path) -> list[str]:
