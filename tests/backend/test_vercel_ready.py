@@ -316,13 +316,27 @@ def test_secrets_and_what_is_not_needed_do_not_go_up_to_vercel():
         assert needed not in lines, needed
 
 
-def test_the_dependencies_are_the_same_list_as_the_backend():
-    root = [line for line in (REPO / "requirements.txt").read_text(encoding="utf-8").splitlines() if line.strip() and not line.startswith("#")]
+def active_lines(path: Path) -> list[str]:
+    return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip() and not line.startswith("#")]
 
-    assert root == ["-r backend/requirements.txt"]
-    backend = (REPO / "backend" / "requirements.txt").read_text(encoding="utf-8")
-    for package in ("fastapi==", "psycopg[binary]==", "psycopg-pool==", "pydantic-settings==", "argon2-cffi==", "tzdata=="):
-        assert package in backend, package
+
+def test_the_dependencies_live_in_the_root_file_with_exact_versions_and_nothing_else():
+    """Vercel lee el requirements.txt de la raíz con su propio lector y falló con «-r» (21 de noviembre de 2026):
+    la raíz trae solo paquetes con versión exacta, sin includes ni opciones."""
+    root = active_lines(REPO / "requirements.txt")
+
+    assert root, "la lista no puede estar vacía"
+    for line in root:
+        assert not line.startswith("-"), f"Vercel no entiende esta línea: {line}"
+        assert re.fullmatch(r"[A-Za-z0-9_.\-]+(\[[a-z,]+\])?==[0-9][0-9A-Za-z.\-]*", line), line
+    packages = {re.split(r"[\[=]", line)[0] for line in root}
+    assert {"fastapi", "psycopg", "psycopg-pool", "pydantic-settings", "argon2-cffi", "tzdata", "uvicorn", "pydantic"} <= packages
+
+
+def test_the_backend_file_includes_the_root_list_so_pip_install_from_backend_still_works():
+    assert active_lines(REPO / "backend" / "requirements.txt") == ["-r ../requirements.txt"]
+    # El de desarrollo incluye al del backend, que incluye al de la raíz: una sola lista.
+    assert active_lines(REPO / "backend" / "requirements-dev.txt")[0] == "-r requirements.txt"
 
 
 def test_the_python_version_is_the_one_the_code_is_tested_with():

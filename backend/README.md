@@ -20,7 +20,7 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/web.py` | Muestra las páginas de `web/` desde la misma dirección de la API. |
 | `app/api/auth.py` | Quién hace la petición: lee la llave de la cookie de sesión, entrega la sesión a la ruta que la pida y renueva la cookie. |
 | `app/notifications/` | Envío de códigos. Hoy solo el modo desarrollo (`console.py`); WhatsApp queda pendiente (`whatsapp.py`). |
-| `requirements.txt` | Dependencias del backend, con versión exacta. |
+| `requirements.txt` | Incluye la lista de dependencias, que vive en `requirements.txt` de la raíz del repositorio (Vercel solo lee ese). |
 | `requirements-dev.txt` | Lo anterior más lo necesario para correr las pruebas. |
 | `.env.example` | Plantilla de las variables de entorno, sin contraseña. |
 

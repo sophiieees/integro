@@ -1,7 +1,7 @@
 """Genera web/assets/js/paises.js: los países de la lista de registro y su código de marcación.
 
 Los países son los que la API conoce: los de la tabla pública de zonas horarias (zone.tab, del paquete tzdata
-de backend/requirements.txt), la misma con la que cuenta la edad según el país (backend/app/modules/accounts/validation.py).
+de requirements.txt de la raíz), la misma con la que cuenta la edad según el país (backend/app/modules/accounts/validation.py).
 Los códigos de marcación (+52, +1...) salen de la librería phonenumbers, la versión de libphonenumber de Google.
 Los nombres no se guardan: el navegador los da en español con Intl.DisplayNames.
 
