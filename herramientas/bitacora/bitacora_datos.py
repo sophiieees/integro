@@ -2051,4 +2051,61 @@ PROMPTS = [
             ("33.8", "Dos ramas independientes desde main (api/admin-session-limit y api/password-changed-notice), no apiladas.", "No dependen una de la otra. Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
         ],
     },
+    # ------------------------------------------------------------------ 34
+    {
+        "n": 34,
+        "titulo": "Reservar sin sesión, y dudas sobre la advertencia de sesión y el segundo factor",
+        "fecha": "21 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Dudas de Sophia: la sesión del administrador se cierra sin avisar; cree que sí es bueno poner una "
+                     "advertencia en pantalla poco antes de que venza, pero que solo debería aparecer si no hay "
+                     "actividad, y quizás no sea tan necesario; y preguntó a qué se refería con que el segundo factor "
+                     "seguía pendiente. Después de la explicación: «Lo de la advertencia, pues lo vamos a hacer después. "
+                     "Ahora continúa con reservar sin sesión, porque nos hace falta el API para esta pieza; entonces "
+                     "mejor hacerlo después.» La especificación de reservar sin sesión ya la había aprobado antes: el "
+                     "visitante reserva y ve el aviso de iniciar sesión y crear cuenta, ingresa y vuelve a la misma "
+                     "propiedad con sus fechas y sus huéspedes guardados en la dirección; para quien ya inició sesión, "
+                     "el botón le abriría la reserva, pero «vamos poco a poco»."),
+        "tarea": ("1) Dejar la advertencia de sesión para después. 2) Construir reservar sin sesión."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "21 de noviembre de 2026",
+            "commits": ("98554d3 (rama web/reserve-without-session, desde main, subida y sin fusionar). Sophia fusionó antes "
+                        "el PR #67 (bitácora 33, en c66ccb3). Siguen sin fusionar api/admin-session-limit y "
+                        "api/password-changed-notice, de la pieza anterior."),
+            "archivos": [
+                ("web/assets/js/reservar-logica.js y reservar.js", "nuevos: qué se guarda en la dirección de la ficha, qué se lee de ella, qué se le dice a la persona, y la pantalla del botón «Reservar»."),
+                ("web/propiedad.html", "el lugar del aviso bajo el botón y los dos scripts."),
+                ("web/assets/js/cuenta-logica.js y cuenta.js", "siguienteSeguro (a qué página se puede volver), el regreso después de iniciar sesión y un evento cuando se lee la sesión."),
+                ("web/registro.html y assets/js/registro.js", "el aviso de que volverá a la página donde estaba, solo cuando la dirección de regreso es una permitida."),
+                ("web/assets/css/estilos.css", "el aviso de «Reservar»."),
+                ("tests/web y tests/e2e", "nuevos reservar_logica.test.js, test_reserve_page.py y test_reservar_e2e.py (29 pruebas con navegador)."),
+                ("docs/diseno/vistas.md, sistema-de-diseno.md y tests/e2e/README.md", "la pieza 3 hecha, el componente nuevo y el archivo de pruebas."),
+                ("herramientas/bitacora/evidencias/reservar_sin_sesion_pruebas_2026-11-21.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Una advertencia en pantalla poco antes de que venza la sesión de un administrador, que renueve con la actividad.", "Sophia decidió hacerla después, junto con la primera pantalla del panel."),
+                ("Que «Reservar» sin sesión también pida las fechas.", "hoy se guardan las que haya; sin fechas no hay reserva que continuar. Se decide cuando exista la reserva."),
+            ],
+            "lineas": ("Nuevos completos: reservar-logica.js, reservar.js y las tres pruebas. cuenta-logica.js: siguienteSeguro y la "
+                       "lista de páginas. cuenta.js: el regreso, el evento y una variable con el estado de la sesión. "
+                       "registro.js y registro.html: un aviso. propiedad.html: un contenedor y dos scripts. estilos.css: un bloque."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión publicada; "
+                        "todo lo que escriben las pruebas se deshace. Node: «# pass 149». Web (node y pytest) y principio a "
+                        "fin juntos: «415 passed in 371.96s». Las 29 pruebas de principio a fin nuevas fallaron cinco en su "
+                        "primera corrida («5 failed, 24 passed»): esperaban 2 huéspedes por defecto y la lista empieza en 1; "
+                        "eran errores de las pruebas, no del código. Se miraron capturas del aviso en escritorio y celular. "
+                        "No se probó en Vercel. Salida copiada en "
+                        "herramientas/bitacora/evidencias/reservar_sin_sesion_pruebas_2026-11-21.txt."),
+        },
+        "decisiones": [
+            ("34.1", "La advertencia en pantalla antes de que venza la sesión del administrador se hace después, junto con la primera pantalla del panel.", "Hoy todas las pantallas del panel dicen «Próximamente» y no hay con qué probarla en uso real. Campo: qué hace.", "Aceptar", "Lo de la advertencia, pues lo vamos a hacer después.", "No se construyó."),
+            ("34.2", "Para quien ya tiene sesión, «Reservar» dice «Las reservas se abren pronto» y guarda sus fechas en la dirección.", "Todavía no hay reservas que abrir. Campo: qué hace.", "Aceptar", "Para alguien que ya inicia con la sesión, el botón de reservas le abre la reserva, pero en este caso vamos poco a poco, entonces sí me parece.", "Rama web/reserve-without-session (commit 98554d3)."),
+            ("34.3", "Las fechas no son obligatorias al dar clic en «Reservar»: se guardan las que haya, y solo se avisa si una salida es igual o anterior a la llegada o una fecha no existe.", "El prompt no decía qué pasa sin fechas. Campo: qué hace.", "Pendiente", "", ""),
+            ("34.4", "Lo elegido se escribe en la dirección de la página al dar clic en «Reservar», sin recargar ni agregar pasos al historial.", "Sophia pidió guardarlo en la dirección; no dijo en qué momento. Campo: qué hace.", "Pendiente", "", ""),
+            ("34.5", "Después de iniciar sesión, solo se vuelve a una página de Íntegro de una lista; registro y recuperar contraseña no están, y cualquier otra dirección se ignora.", "?siguiente= viene de la dirección de la página y no debe servir para mandar a alguien a otro sitio. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("34.6", "Si la persona inicia sesión en la misma página, no se va a ningún lado: el aviso cambia a «Ya iniciaste sesión» y sus fechas siguen ahí.", "La ventana de iniciar sesión ya la deja en la misma página. Campo: qué hace.", "Pendiente", "", ""),
+            ("34.7", "Los textos del aviso los redactó la IA: «Para reservar necesitas una cuenta. Inicia sesión o crea tu cuenta. Volverás a esta propiedad con tus fechas y tus huéspedes.» y los otros dos.", "El prompt no daba los textos. Campo: qué hace.", "Pendiente", "", ""),
+        ],
+    },
 ]

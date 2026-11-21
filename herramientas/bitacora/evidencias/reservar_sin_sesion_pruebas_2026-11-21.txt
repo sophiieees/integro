@@ -1,0 +1,29 @@
+Reservar sin sesión
+21 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+
+Rama web/reserve-without-session (98554d3), desde main.
+  node (node --test tests/web), antes de la corrida de abajo:  # tests 149, # pass 149, # fail 0
+  Las 29 pruebas de principio a fin nuevas, en su primera corrida: 5 failed, 24 passed (la salida no se guardó).
+    Las cinco esperaban que, sin elegir huéspedes, la lista quedara en 2; la lista empieza en 1. Eran errores de
+    las pruebas; el código no cambió. Después: 29 passed in 55.40s.
+  web y principio a fin juntos (desde backend\, python -m pytest ..\tests\web ..\tests\e2e -v -rs), salida guardada:
+    ======================= 415 passed in 371.96s (0:06:11) =======================
+       50  test_brand_palette.py PASSED
+       34  test_entrar_e2e.py PASSED
+       40  test_estructura_e2e.py PASSED
+       20  test_login_modal.py PASSED
+       14  test_recover_page.py PASSED
+       22  test_recuperar_e2e.py PASSED
+       40  test_register_page.py PASSED
+       54  test_registro_e2e.py PASSED
+       29  test_reservar_e2e.py PASSED
+       11  test_reserve_page.py PASSED
+       36  test_structure.py PASSED
+       20  test_views_pages.py PASSED
+       45  test_vistas_e2e.py PASSED
+
+Capturas que la IA miró: el aviso en escritorio y en celular.
+No se probó en Vercel: allí no hay API, así que no se puede iniciar sesión ni crear una cuenta.
