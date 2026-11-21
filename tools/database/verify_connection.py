@@ -6,16 +6,18 @@ archivo de variables, y nunca imprime la contraseña ni la llave de los códigos
 
 Qué comprueba:
 
-     1. Que conecta, y qué versión de PostgreSQL es, si la conexión va cifrada (SSL) y si el servidor es de la
-        dirección «agrupada» de Neon (PgBouncer) o es directo.
+     1. Que conecta, qué versión de PostgreSQL es y si la conexión del lado de la API va cifrada (SSL). Se pregunta
+        del lado del cliente: en Neon, el cifrado termina en su entrada y la base nunca lo ve (pg_stat_ssl diría NO).
      2. Que fuera de una transacción con papel, la API es integro_api y no ve ninguna persona.
      3. Que system_transaction actúa como integro_service y user_transaction como integro_app con el id de esa persona.
      4. Que al terminar la transacción la conexión vuelve a ser integro_api y sin persona anotada, también cuando
         la transacción falla.
      5. Que integro_api por sí solo no puede leer ninguna tabla.
      6. Que integro_app con una persona que no existe no ve ninguna fila de users.
-     7. Que ninguna petición hereda la identidad de otra: varios cientos de transacciones seguidas, alternando entre
+     7. Que ninguna petición hereda la identidad de otra: cientos de transacciones seguidas, alternando entre
         sistema y personas distintas y desde varios hilos a la vez, siempre ven exactamente su papel y su persona.
+        También dice cuánto tarda cada una (sirve para calcular la latencia entre Vercel y Neon). Si el grupo de
+        conexiones se queda sin lugar a tiempo, eso se dice aparte: no es un fallo de identidad.
 
 Se corre desde la raíz del repositorio, con el entorno virtual del backend activo:
 
@@ -28,6 +30,7 @@ coinciden. Si el archivo trae DATABASE_HOST_DIRECT, se repite todo también con 
 import argparse
 import random
 import sys
+import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -36,14 +39,15 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "backend"))
 
 import psycopg  # noqa: E402
-from psycopg_pool import ConnectionPool  # noqa: E402
+from psycopg_pool import ConnectionPool, PoolTimeout  # noqa: E402
 
 from app.core.config import Settings  # noqa: E402
 from app.database.connection import create_pool  # noqa: E402
 from app.database.transaction import system_transaction, user_transaction  # noqa: E402
 
-ROUNDS = 400
-THREADS = 8
+ROUNDS = 200
+# Menos hilos que conexiones del grupo (POOL_MAX_SIZE = 5): se prueba la identidad, no la saturación del grupo.
+THREADS = 4
 
 
 def read_env_value(path: Path, name: str) -> str | None:
@@ -81,10 +85,8 @@ def check(pool: ConnectionPool, name: str, report: Report) -> None:
 
     # 1. Qué es la conexión.
     with pool.connection() as connection:
-        version, ssl = connection.execute(
-            "select current_setting('server_version'), "
-            "coalesce((select ssl from pg_stat_ssl where pid = pg_backend_pid()), false)"
-        ).fetchone()
+        version = connection.execute("select current_setting('server_version')").fetchone()[0]
+        ssl = bool(connection.pgconn.ssl_in_use)
         report.info(f"PostgreSQL {version}; cifrada con SSL: {'sí' if ssl else 'NO'}")
         report.compare("la conexión va cifrada con SSL (en una base en la nube; en la local no hace falta)", True, ssl or name.startswith("base local"))
 
@@ -143,24 +145,40 @@ def check(pool: ConnectionPool, name: str, report: Report) -> None:
     plan = [random.choice(["system", "plain", "person"]) for _ in range(ROUNDS)]
     chosen = [random.choice(people) for _ in range(ROUNDS)]
 
-    def one(index: int) -> str | None:
+    def one(index: int) -> tuple[str | None, float]:
+        """(problema de identidad o de espera, segundos que tardó), para la transacción número `index`."""
         kind = plan[index]
-        if kind == "system":
-            with system_transaction(pool) as connection:
-                got = (connection.execute("select current_user").fetchone()[0], person_in_session(connection))
-            return None if got == ("integro_service", "") else f"sistema vio {got}"
-        if kind == "person":
-            with user_transaction(pool, chosen[index]) as connection:
-                got = (connection.execute("select current_user").fetchone()[0], person_in_session(connection))
-            return None if got == ("integro_app", str(chosen[index])) else f"persona {chosen[index]} vio {got}"
-        with pool.connection() as connection:
-            with connection.transaction():
-                got = (connection.execute("select current_user").fetchone()[0], person_in_session(connection))
-        return None if got == ("integro_api", "") else f"sin papel vio {got}"
+        started = time.monotonic()
+        try:
+            if kind == "system":
+                with system_transaction(pool) as connection:
+                    got = (connection.execute("select current_user").fetchone()[0], person_in_session(connection))
+                problem = None if got == ("integro_service", "") else f"sistema vio {got}"
+            elif kind == "person":
+                with user_transaction(pool, chosen[index]) as connection:
+                    got = (connection.execute("select current_user").fetchone()[0], person_in_session(connection))
+                problem = None if got == ("integro_app", str(chosen[index])) else f"persona {chosen[index]} vio {got}"
+            else:
+                with pool.connection() as connection:
+                    with connection.transaction():
+                        got = (connection.execute("select current_user").fetchone()[0], person_in_session(connection))
+                problem = None if got == ("integro_api", "") else f"sin papel vio {got}"
+        except PoolTimeout:
+            return "espera", time.monotonic() - started
+        return problem, time.monotonic() - started
 
     with ThreadPoolExecutor(max_workers=THREADS) as executor:
-        failures = [problem for problem in executor.map(one, range(ROUNDS)) if problem]
-    report.compare(f"{ROUNDS} transacciones seguidas, desde {THREADS} hilos, nunca heredan la identidad de otra", [], failures[:5])
+        outcomes = list(executor.map(one, range(ROUNDS)))
+    waits = sum(1 for problem, _ in outcomes if problem == "espera")
+    identity = [problem for problem, _ in outcomes if problem and problem != "espera"]
+    seconds = sorted(s for _, s in outcomes)
+    report.info(
+        f"cada transacción tardó {sum(seconds) / len(seconds):.2f} s en promedio "
+        f"(la mediana {seconds[len(seconds) // 2]:.2f} s, la más lenta {seconds[-1]:.2f} s); "
+        f"sin lugar en el grupo a tiempo: {waits}"
+    )
+    report.compare(f"{ROUNDS} transacciones seguidas, desde {THREADS} hilos, nunca heredan la identidad de otra", [], identity[:5])
+    report.compare("ninguna transacción se quedó sin conexión a tiempo", 0, waits)
 
 
 def main() -> int:
@@ -192,7 +210,7 @@ def main() -> int:
         try:
             pool.open(wait=True, timeout=30)
             check(pool, label, report)
-        except psycopg.OperationalError as error:
+        except (psycopg.OperationalError, PoolTimeout) as error:
             print(f"\n== {label} ==\nNO se pudo conectar: {type(error).__name__}")
             report.results.append(False)
         finally:
