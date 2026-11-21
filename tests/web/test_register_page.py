@@ -111,6 +111,20 @@ def test_every_field_has_its_place_for_the_notice_and_the_input_points_at_it(api
     assert f"registro-error-{api_field}" in tag(input_name)
 
 
+def test_the_terms_checkbox_is_there_with_no_links_and_nothing_to_unfold():
+    """Decisión de Sophia del 20 de noviembre de 2026: la casilla, sin desplegar nada porque no hay texto legal."""
+    label = re.search(r'<label class="casilla" for="registro-terminos">.*?</label>', PAGE, re.S).group(0)
+
+    assert 'type="checkbox"' in label and 'name="terminos"' in label
+    assert "Acepto los términos y condiciones y el aviso de privacidad." in label
+    assert "<a " not in label and "href" not in label
+    assert 'id="registro-error-terms" data-error-de="terms" hidden' in PAGE
+    # Sin enlaces a textos legales: ni en el formulario ni en una ventana.
+    form = re.search(r'<form id="formulario-registro".*?</form>', PAGE, re.S).group(0)
+    assert re.findall(r'<a [^>]*href="([^"]+)"', form) == ["#entrar"]
+    assert "required" not in tag("terminos")
+
+
 def test_the_three_steps_are_there_and_only_the_data_is_shown():
     assert '<form id="formulario-registro" data-paso="datos" novalidate>' in PAGE
     assert '<form id="formulario-codigo" data-paso="codigo" novalidate hidden>' in PAGE

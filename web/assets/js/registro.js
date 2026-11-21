@@ -71,7 +71,8 @@
   }
 
   function enfocar(nombre) {
-    var destino = nombre === "phone" ? campo("numero") : campo(nombre);
+    /* Los avisos del teléfono y de los términos van en campos que en el formulario se llaman distinto. */
+    var destino = nombre === "phone" ? campo("numero") : nombre === "terms" ? campo("terminos") : campo(nombre);
     if (destino) destino.focus();
   }
 
@@ -102,7 +103,8 @@
       marcacion: marcacionElegida(),
       numero: campo("numero").value,
       country: campo("country").value,
-      birth_date: campo("birth_date").value
+      birth_date: campo("birth_date").value,
+      terminos: campo("terminos").checked
     };
   }
 

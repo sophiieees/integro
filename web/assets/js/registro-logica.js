@@ -24,7 +24,9 @@
 
   var SIN_SERVIDOR = CUENTA.SIN_SERVIDOR;
   var RESPUESTA_RARA = "El servidor respondió de forma inesperada. Inténtalo nuevamente.";
-  var CAMPOS = ["first_name", "last_name", "email", "password", "phone", "country", "birth_date"];
+  var CAMPOS = ["first_name", "last_name", "email", "password", "phone", "country", "birth_date", "terms"];
+  /* Los que existen en la API; «terms» es solo de la pantalla. */
+  var CAMPOS_DE_LA_API = ["first_name", "last_name", "email", "password", "phone", "country", "birth_date"];
 
   /* Los mismos límites que la API (backend/app/modules/accounts/validation.py). */
   var NOMBRE_MAX = 80;
@@ -87,7 +89,7 @@
   /* ---------- Antes de mandar ---------- */
 
   /* Revisa lo escrito. Solo lo evidente: lo demás lo decide la API, que es la que manda.
-     valores: first_name, last_name, email, password, marcacion, numero, country, birth_date.
+     valores: first_name, last_name, email, password, marcacion, numero, country, birth_date, terminos.
      Devuelve { errores: { campo: [avisos] }, datos } con los datos listos para la API. */
   function revisarDatos(valores) {
     var errores = {};
@@ -112,6 +114,8 @@
     if (!pais) falla("country", "Elige tu país de residencia.");
     if (!nacimiento) falla("birth_date", "Escribe tu fecha de nacimiento.");
     else if (!FECHA.test(nacimiento)) falla("birth_date", "La fecha de nacimiento no es válida.");
+    /* La casilla solo se pide en la pantalla: todavía no hay texto legal que registrar (revisión pendiente). */
+    if (!valores.terminos) falla("terms", "Para crear tu cuenta, acepta los términos y condiciones y el aviso de privacidad.");
 
     return {
       errores: errores,
@@ -184,7 +188,7 @@
     var errores = {};
     var sueltos = [];
     ((cuerpo && cuerpo.errors) || []).forEach(function (e) {
-      if (CAMPOS.indexOf(e.field) !== -1) (errores[e.field] = errores[e.field] || []).push(e.message);
+      if (CAMPOS_DE_LA_API.indexOf(e.field) !== -1) (errores[e.field] = errores[e.field] || []).push(e.message);
       else sueltos.push(e.message);
     });
     return { errores: errores, aviso: sueltos.length ? sueltos.join(" ") : null };

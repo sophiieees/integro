@@ -49,7 +49,7 @@ def person(**changes):
     tag = uuid.uuid4().hex[:12]
     data = {
         "first_name": "Ana", "last_name": "Torres López", "email": f"ana.{tag}@prueba.invalid", "password": PASSWORD,
-        "number": "55" + str(int(tag, 16) % 10**8).zfill(8), "country": "MX", "birth_date": "1995-03-14",
+        "number": "55" + str(int(tag, 16) % 10**8).zfill(8), "country": "MX", "birth_date": "1995-03-14", "terms": True,
     }
     data.update(changes)
     return data
@@ -63,6 +63,8 @@ def fill(page, data):
     page.type(f"{FORM} [name=numero]", data["number"])
     page.set_value(f"{FORM} [name=country]", data["country"])
     page.set_value(f"{FORM} [name=birth_date]", data["birth_date"])
+    if data.get("terms", True):
+        page.click(f"{FORM} .casilla")
 
 
 def submit(page):
@@ -260,11 +262,12 @@ def test_an_empty_form_warns_in_every_field_and_asks_nothing_from_the_api(page, 
         "password": ["Escribe tu contraseña."],
         "phone": ["Escribe tu número de teléfono."],
         "birth_date": ["Escribe tu fecha de nacimiento."],
+        "terms": ["Para crear tu cuenta, acepta los términos y condiciones y el aviso de privacidad."],
     }
     assert page.requests() == before
     assert step(page) == "datos"
     assert page.js("document.activeElement.name") == "first_name"
-    assert page.js(f"document.querySelectorAll('{FORM} .campo.con-error').length") == 6
+    assert page.js(f"document.querySelectorAll('{FORM} .campo.con-error').length") == 7
 
 
 def test_a_badly_written_email_and_phone_are_warned_before_asking_the_api(page, site):
@@ -301,6 +304,47 @@ def test_the_notices_go_away_when_the_form_is_sent_again(page, site):
     submit(page)
 
     assert "first_name" not in field_errors(page) and "email" not in field_errors(page)
+
+
+def test_the_terms_checkbox_is_shown_with_nothing_to_unfold(page, site):
+    go(page, site)
+
+    assert page.text(f"{FORM} .casilla") .strip() == "Acepto los términos y condiciones y el aviso de privacidad."
+    assert page.js(f"document.querySelector('{FORM} [name=terminos]').checked") is False
+    assert page.count(f"{FORM} .casilla a") == 0
+    # Dar clic en el texto marca la casilla; otro clic la desmarca.
+    page.click(f"{FORM} .casilla")
+    assert page.js(f"document.querySelector('{FORM} [name=terminos]').checked") is True
+    page.click(f"{FORM} .casilla")
+    assert page.js(f"document.querySelector('{FORM} [name=terminos]').checked") is False
+
+
+def test_without_accepting_the_terms_the_form_is_not_sent_and_nothing_is_created(page, site):
+    go(page, site)
+    data = person(terms=False)
+    fill(page, data)
+    before = page.requests()
+
+    page.click(f"{FORM} button[type=submit]")
+
+    assert field_errors(page) == {"terms": ["Para crear tu cuenta, acepta los términos y condiciones y el aviso de privacidad."]}
+    assert page.requests() == before
+    assert page.js("document.activeElement.name") == "terminos"
+    assert user_row(site, data["email"]) is None
+
+
+def test_accepting_the_terms_lets_the_form_go_and_the_notice_goes_away(page, site):
+    go(page, site)
+    data = person(terms=False)
+    fill(page, data)
+    page.click(f"{FORM} button[type=submit]")
+    assert "terms" in field_errors(page)
+
+    page.click(f"{FORM} .casilla")
+    submit(page)
+
+    assert step(page) == "codigo"
+    assert user_row(site, data["email"]) is not None
 
 
 # --- Caso 4 ------------------------------------------------------------------------
