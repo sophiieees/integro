@@ -345,6 +345,7 @@ def password_reset_confirm(body: PasswordResetConfirmRequest, request: Request):
         values["code"],
         values["new_password"],
         state.settings,
+        state.code_sender,
         ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
     )

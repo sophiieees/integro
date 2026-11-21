@@ -21,6 +21,9 @@ para adivinar códigos:
   correo sin cuenta cuenta igual, para que no se note la diferencia. No se
   avisa al dueño de la cuenta, porque no fue un intento de entrar.
 - El código nuevo deja sin efecto a los anteriores.
+- Al cambiar la contraseña se le avisa por correo al dueño de la cuenta (decisión de Sophia del 21 de noviembre de
+  2026): cuándo, desde qué navegador y qué dirección, y que se cerraron las sesiones. Así, si alguien más la cambió, se
+  entera. El aviso sale hasta que el cambio quedó guardado y no lleva contraseñas ni códigos.
 - La contraseña nueva cumple lo mismo que pide el registro: las reglas de formato y no ser
   fácil de adivinar (al menos nivel medio, sin el nombre ni el correo de la persona).
 
@@ -50,6 +53,8 @@ from app.modules.accounts.security import hash_password
 from app.notifications.sender import CodeSender
 
 PURPOSE = "password_reset"
+# Aviso al dueño de la cuenta: su contraseña se cambió.
+NOTICE_PASSWORD_CHANGED = "password_changed"
 
 
 class ResetOutcome(Enum):
@@ -113,6 +118,7 @@ def reset_password(
     code: str,
     new_password: str,
     settings: Settings,
+    sender: CodeSender,
     *,
     ip_address: str | None = None,
     user_agent: str | None = None,
@@ -122,8 +128,8 @@ def reset_password(
     El formato de la contraseña nueva ya se revisó antes (las reglas del registro).
     Aquí se revisa que no sea fácil de adivinar, que necesita el nombre de la
     persona: una contraseña débil no gasta el código ni cuenta como intento. Si el código es correcto se guarda la
-    contraseña nueva con Argon2id, el código queda gastado y se cierran todas
-    las sesiones de la cuenta.
+    contraseña nueva con Argon2id, el código queda gastado, se cierran todas
+    las sesiones de la cuenta y se avisa por correo al dueño.
     """
     written_email = email
     email = email.strip().lower()
@@ -169,4 +175,13 @@ def reset_password(
         connection.execute(
             "update sessions set revoked_at = now() where user_id = %s and revoked_at is null", (user_id,)
         )
+        changed_at = connection.execute("select clock_timestamp()").fetchone()[0]
+
+    # El aviso sale hasta que el cambio quedó guardado.
+    sender.send_notice(
+        channel=CHANNEL_EMAIL,
+        destination=email,
+        kind=NOTICE_PASSWORD_CHANGED,
+        details={"at": changed_at, "ip_address": origin.ip_address, "user_agent": origin.user_agent},
+    )
     return ResetResult(ResetOutcome.CHANGED)
