@@ -239,6 +239,8 @@
       if (!estado.esAdmin && leerVerComo()) guardarVerComo(null);
       pintarCabecera();
       aplicarAcceso();
+      /* Las demás pantallas (por ejemplo, la de reservar) se enteran de si hay sesión. */
+      document.dispatchEvent(new CustomEvent("integro:sesion", { detail: { sesion: estado.sesion } }));
     });
   }
 
@@ -270,6 +272,14 @@
         window.alert(resultado.aviso);
       }
     });
+  }
+
+  /* Si la dirección trae ?siguiente=... (la deja la pantalla de reservar al mandar a crear una cuenta), al terminar de
+     iniciar sesión se vuelve a esa página. Solo si es una página de Íntegro permitida (siguienteSeguro). */
+  function regresarSiHaceFalta() {
+    if (!estado.sesion) return;
+    var destino = LOGICA.siguienteSeguro(new URLSearchParams(window.location.search).get("siguiente"));
+    if (destino) window.location.href = destino;
   }
 
   /* ---------- La ventana ---------- */
@@ -391,7 +401,7 @@
       var siguiente = LOGICA.despuesDelCodigo(r.status, r.cuerpo);
       if (siguiente.paso === "dentro") {
         cerrarVentana();
-        cargarSesion();
+        cargarSesion().then(regresarSiHaceFalta);
         return;
       }
       if (siguiente.paso === "correo") form.code.value = "";
@@ -406,6 +416,9 @@
     if (!e.target.closest || !e.target.closest(".cuenta-menu")) cerrarMenus(false);
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") cerrarMenus(true); });
+
+  /* Para las pantallas que necesitan saber si hay sesión sin volver a preguntarle a la API. */
+  window.INTEGRO_SESION = { activa: function () { return estado.sesion; } };
 
   pintarCabecera();
   cargarSesion().then(function () {

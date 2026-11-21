@@ -49,7 +49,7 @@ Lo que Sophia pidió, tal cual, para la vista principal: una cabecera con «Todo
 
 ### Visitante
 - Ve la portada y las fichas de propiedad: buscar, comparar y ver precios no pide cuenta.
-- Para reservar o para escribirle a un anfitrión necesita una cuenta: al dar clic en «Reservar» sin sesión, la web le ofrece iniciar sesión o crear su cuenta y, al terminar, lo regresa a la misma propiedad con sus fechas. **Todavía no está construido** (pieza 3).
+- Para reservar o para escribirle a un anfitrión necesita una cuenta: al dar clic en «Reservar» sin sesión, la web le ofrece iniciar sesión o crear su cuenta y, al terminar, lo regresa a la misma propiedad con sus fechas y sus huéspedes, guardados en la dirección de la página (`propiedad.html?id=2&llegada=…&salida=…&huespedes=…`). Si inicia sesión en la misma página, no se va a ningún lado y el aviso cambia; si crea una cuenta, `registro.html?siguiente=…` lo regresa al iniciar sesión. Solo se acepta como regreso una página de Íntegro de una lista (`siguienteSeguro` en `cuenta-logica.js`); cualquier otra cosa se ignora. Para quien ya tiene sesión, «Reservar» dice que las reservas se abren pronto: todavía no existen.
 - Puede ver cómo convertirse en anfitrión (`anfitriones.html`) antes de crear su cuenta.
 
 ### Cliente
@@ -97,7 +97,7 @@ Las diez decisiones propuestas el 20 de noviembre de 2026 y lo que decidió Soph
 
 1. **La vista en la API.** `is_admin` en `GET /auth/me` y las dependencias `require_host` y `require_admin`, con sus pruebas contra la base. Hecha (rama `api/view-roles`).
 2. **La cabecera por vista.** Las cuatro variantes de la cabecera, la barra, «Crear cuenta», el menú de la cuenta, las páginas de cada vista, «Próximamente» y el aviso de la página protegida. Hecha (rama `web/views`).
-3. **Reservar sin sesión.** El camino de la ficha al inicio de sesión o al registro y de vuelta, con sus fechas. Pendiente.
+3. **Reservar sin sesión.** El camino de la ficha al inicio de sesión o al registro y de vuelta, con sus fechas y huéspedes. Hecha (rama `web/reserve-without-session`).
 4. **La vista del anfitrión.** Sus pantallas de verdad, cuando exista Verificación: sin perfil de anfitrión no hay vista de anfitrión. Pendiente.
 5. **La vista del administrador.** La cola de verificaciones, con el segundo factor y el tope de sesión. Pendiente.
 
