@@ -1,6 +1,6 @@
 # Las vistas de Íntegro
 
-**Estado:** decididas por Sophia el 20 de noviembre de 2026 y construidas en dos piezas: la vista en la API (rama `api/view-roles`) y la cabecera por vista con sus páginas (rama `web/views`). Siguen pendientes tres piezas (sección «Orden de construcción»).
+**Estado:** decididas por Sophia el 20 de noviembre de 2026 (las diez decisiones quedaron cerradas el 21) y construidas en dos piezas: la vista en la API (rama `api/view-roles`) y la cabecera por vista con sus páginas (rama `web/views`). Siguen pendientes tres piezas (sección «Orden de construcción»).
 
 ## Para qué sirve
 
@@ -88,7 +88,7 @@ Las diez decisiones propuestas el 20 de noviembre de 2026 y lo que decidió Soph
 4. **«Crear cuenta» en la cabecera del visitante.** Como enlace de texto junto a «Iniciar sesión». Aceptada.
 5. **Reseñas y comentarios.** Definidos por Sophia: ver las respuestas de la sección «Cliente» y «Anfitrión».
 6. **«Reservas» del anfitrión.** Agregado a su cabecera. Aceptada.
-7. **El revisor.** La arquitectura nombra el rol «revisor» junto al de administrador (sección Cuentas) sin definirlo. Propuesta: por ahora no hay revisor aparte y las tres personas del equipo atienden la cola de verificaciones desde su vista de administrador. Sophia preguntó qué es el revisor; queda pendiente su decisión.
+7. **El revisor.** La arquitectura nombra el rol «revisor» junto al de administrador (sección Cuentas) sin definirlo. **Sophia decidió el 21 de noviembre de 2026 que, con solo tres vistas de administrador, el rol de revisor lo hace el administrador:** no hay revisor aparte, y las tres personas del equipo atienden la cola de verificaciones desde su vista. Si más adelante entra alguien que solo deba revisar, se agrega el rol.
 8. **«Ver como» del administrador.** **Con su propia cuenta**, sin actuar como otra persona. Si más adelante hiciera falta ver lo que ve otra persona, exige permisos y bitácora.
 9. **Un anfitrión que aún no termina Verificación.** Sigue en la vista de cliente hasta tener el perfil de anfitrión. Aceptada.
 10. **Regreso después de iniciar sesión.** Guardar las fechas y los huéspedes en la dirección de la página, no en el navegador. Aceptada; se construye en la pieza 3.

@@ -1,0 +1,72 @@
+Recuperar la contraseña: desviaciones aceptadas, API en Vercel con Neon y la pieza de recuperar contraseña
+21 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+Las ramas están apiladas: web/password-reset contiene a api/password-reset.
+
+Migración 20261121000005_password_reset_code.sql, antes de correrla en la base de Sophia:
+  Se aplicaron las cinco migraciones en una base en memoria (PGlite, no la de Sophia) y se probaron diez casos
+  del uso nuevo y de los anteriores: 10 de 10 coinciden (password_reset solo por correo; los usos anteriores
+  siguen igual). Sophia corrió la migración en pgAdmin y dijo que «todo corrió perfectamente».
+  Antes de correrla, las 48 pruebas nuevas del backend salieron omitidas («48 skipped»), con el motivo.
+
+Rama api/password-reset (c50d3b2 y 58bd949): las dos rutas de recuperar la contraseña.
+  Primera corrida completa del backend, con una falla (la salida no se guardó; esta línea es la que se vio):
+    ============ 1 failed, 955 passed, 1 warning in 178.58s (0:02:58) =============
+    test_code_purpose_outside_the_list_is_rejected[password_reset] FAILED: una prueba anterior usaba
+    password_reset como ejemplo de uso inválido, y con la migración ya es válido. Se cambió la prueba, y se
+    agregó password_reset a los usos válidos (solo por correo) y a las parejas rechazadas.
+  Segunda corrida completa, la del commit c50d3b2, salida guardada:
+    ================= 960 passed, 1 warning in 164.19s (0:02:44) ==================
+  Al comparar con el registro se encontró que recuperar la contraseña solo revisaba el formato y no que no fuera
+  fácil de adivinar. Se corrigió (58bd949). Una prueba nueva de la IA usaba como ejemplo de contraseña débil una que el
+  propio programa califica de medio: era un error del ejemplo, no del código; se cambió el ejemplo.
+  Corrida completa de 58bd949, salida guardada:
+    ================= 963 passed, 1 warning in 184.53s (0:03:04) ==================
+       86  test_account_access_tables.py PASSED
+       40  test_accounts_correct_email.py PASSED
+       62  test_accounts_login.py PASSED
+       60  test_accounts_logout.py PASSED
+       53  test_accounts_password_reset.py PASSED
+       76  test_accounts_registration.py PASSED
+      152  test_accounts_validation.py PASSED
+       37  test_accounts_wrong_passwords.py PASSED
+       38  test_config.py PASSED
+       16  test_health.py PASSED
+       34  test_login_attempts_admins_tables.py PASSED
+      171  test_password_strength.py PASSED
+       37  test_serve_web.py PASSED
+       31  test_session_cookie.py PASSED
+       45  test_transaction.py PASSED
+       25  test_view_roles.py PASSED
+
+Rama web/password-reset (74f84ab): la pantalla.
+  node (node --test tests/web), solo recuperar_logica.test.js:  # tests 21, # pass 21, # fail 0
+  web y principio a fin juntos (desde backend\, python -m pytest ..\tests\web ..\tests\e2e -v -rs), salida guardada:
+    ======================= 375 passed in 361.17s (0:06:01) =======================
+       50  test_brand_palette.py PASSED
+       34  test_entrar_e2e.py PASSED
+       40  test_estructura_e2e.py PASSED
+       20  test_login_modal.py PASSED
+       14  test_recover_page.py PASSED
+       22  test_recuperar_e2e.py PASSED
+       40  test_register_page.py PASSED
+       54  test_registro_e2e.py PASSED
+       36  test_structure.py PASSED
+       20  test_views_pages.py PASSED
+       45  test_vistas_e2e.py PASSED
+  Dos pruebas estáticas de la IA fallaron al escribirlas (comparaban sangrías distintas y leían un comentario que
+  nombraba window); eran errores de las pruebas y se corrigieron. Una prueba de principio a fin esperaba la
+  marca de otra página; se corrigió. Al ver las capturas se vio que, con una contraseña fácil de adivinar, los
+  mismos consejos salían dos veces (en el campo y en el indicador); se dejó una sola línea que remite al indicador.
+
+Lo que no se encontró: la causa de que el registro local no mostrara las listas de país y de lada. Con un
+navegador de prueba contra el servidor local la lista aparecía y los scripts se servían bien. Sophia dijo después
+que ya se veía y que todo estaba bien, sin que se hiciera ningún cambio para eso.
+
+Sobre los archivos de migraciones: la IA encontró dos migraciones con cambios sin guardar (se había pegado ahí el
+SQL de pgAdmin) y un archivo nuevo con ese SQL. Con autorización de Sophia se restauraron los dos y se borró el
+nuevo; el árbol quedó limpio.
+
+No se probó en Vercel: la API todavía no está publicada allí.
