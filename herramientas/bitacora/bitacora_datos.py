@@ -1993,4 +1993,62 @@ PROMPTS = [
             ("32.10", "Dos ramas apiladas (api/password-reset y web/password-reset) que se fusionan en ese orden.", "La pantalla necesita las rutas. Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
         ],
     },
+    # ------------------------------------------------------------------ 33
+    {
+        "n": 33,
+        "titulo": "Aviso por correo al cambiar la contraseña y tope de sesión del administrador",
+        "fecha": "21 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("«Acepto la sugerencia de avisar por correo cuando se cambie la contraseña. Empieza con el tope de "
+                     "sesión del panel.» Al preguntarle en un cuadro de opciones, eligió que el tope se aplique a toda "
+                     "sesión de administrador (no solo a las rutas de administración) y que haya un tope de 12 horas "
+                     "desde que inicia sesión. Las decisiones 32.5 a 32.10 del prompt 32 siguen sin veredicto."),
+        "tarea": ("1) Aceptar la sugerencia del aviso por correo cuando se cambia la contraseña. 2) Construir el tope de "
+                  "sesión del panel."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "21 de noviembre de 2026",
+            "commits": ("b0d6111 (rama api/admin-session-limit, desde main, subida y sin fusionar). 1a11d1a (rama "
+                        "api/password-changed-notice, desde main, subida y sin fusionar). Las dos son independientes. "
+                        "Sophia fusionó antes los PR #62 a #64 (hasta f3506c7 en main)."),
+            "archivos": [
+                ("backend/app/modules/accounts/sessions.py", "un administrador pierde la sesión si pasaron 30 minutos sin uso o 12 horas desde que la abrió; si no, cada uso la renueva sin pasar del tope. La sesión vencida se cierra en la base."),
+                ("backend/app/modules/accounts/login.py, api/auth.py y router.py", "la sesión de un administrador nace de 30 minutos y su cookie dura lo que le queda."),
+                ("backend/app/core/config.py y .env.example", "SESSION_IDLE_MINUTES_ADMIN (30) y SESSION_MAX_HOURS_ADMIN (12)."),
+                ("backend/app/modules/accounts/password_reset.py y router.py", "al cambiar la contraseña se envía el aviso password_changed al correo de la cuenta."),
+                ("backend/app/notifications/console.py y sender.py", "el texto del aviso en el modo desarrollo, y el contrato del aviso nuevo."),
+                ("tests/backend/test_admin_session_limit.py", "nuevo: 25 pruebas del tope de sesión."),
+                ("tests/backend/test_accounts_password_reset.py y test_config.py", "14 pruebas del aviso, y la configuración del tope."),
+                ("docs/decisiones/0014-..., backend/README.md y docs/diseno/vistas.md", "el tope de 12 horas y que vale en todo el sitio, que antes solo estaba en vistas.md y no en el ADR."),
+                ("herramientas/bitacora/evidencias/sesion_admin_aviso_contrasena_pruebas_2026-11-21.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Segundo factor para las rutas del panel.", "una ruta de administrador con datos no debe publicarse sin él; el tope de sesión ya existe."),
+                ("Una advertencia en la pantalla poco antes de que la sesión de un administrador venza.", "hoy se cierra sin avisar y la persona lo nota al pedir algo. No se construyó."),
+            ],
+            "lineas": ("sessions.py: la consulta de authenticate y su renovación. login.py: la consulta y el insert de la "
+                       "sesión. auth.py: set_session_cookie con segundos. password_reset.py: reset_password recibe el "
+                       "envío y lo usa al final. console.py: un texto y una tabla de textos por aviso. config.py: dos "
+                       "valores. ADR 0014: un párrafo bajo la tabla de duraciones."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión "
+                        "publicada; todo lo que escriben las pruebas se deshace. Backend en api/admin-session-limit: "
+                        "«989 passed, 1 warning in 210.90s». Las 25 pruebas nuevas fallaron dos en su primera corrida "
+                        "(«2 failed, 23 passed»): eran errores de las pruebas, porque todas las sesiones de una prueba "
+                        "quedan con la misma hora de creación; se corrigieron las pruebas, no el código. Las vistas con "
+                        "navegador, que incluyen al administrador: «45 passed in 98.93s». Backend en "
+                        "api/password-changed-notice: «977 passed, 1 warning in 204.42s». No se probó en Vercel ni con "
+                        "un correo real. Salida copiada en "
+                        "herramientas/bitacora/evidencias/sesion_admin_aviso_contrasena_pruebas_2026-11-21.txt."),
+        },
+        "decisiones": [
+            ("33.1", "Avisar por correo al dueño de la cuenta cuando se cambie la contraseña al recuperarla.", "Si alguien más la cambia, el dueño se entera. Campo: qué hace.", "Aceptar", "Acepto la sugerencia de avisar por correo cuando se cambie la contraseña.", "Rama api/password-changed-notice (commit 1a11d1a)."),
+            ("33.2", "El tope de sesión del panel se aplica a toda sesión de administrador, en todo el sitio, y no solo a las rutas de administración.", "Es lo más simple y lo más seguro: una sesión de administrador olvidada se cierra sola. Campo: qué hace.", "Aceptar", "Eligió «Toda sesión de administrador (Recomendado)».", "Rama api/admin-session-limit (commit b0d6111)."),
+            ("33.3", "Además de los 30 minutos sin uso, un tope de 12 horas desde que el administrador inicia sesión.", "Está en vistas.md pero no en el ADR 0014, que solo dice 30 minutos. Campo: qué datos necesita.", "Aceptar", "Eligió «Sí, 12 horas desde que inicia sesión (Recomendado)».", "Quedó en el ADR 0014 y en la configuración."),
+            ("33.4", "Una sesión de administrador vencida por estos límites se cierra en la base (revoked_at), no solo se rechaza.", "Así no vuelve a servir aunque cambien las fechas, y no aparece entre las sesiones abiertas. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("33.5", "La cookie de un administrador dura lo que le queda a la sesión, y se vuelve a entregar así en cada uso.", "Sin eso la cookie duraría 30 días aunque la sesión dure 30 minutos. Campo: qué hace.", "Pendiente", "", ""),
+            ("33.6", "El papel se lee en cada petición: una sesión abierta antes de que la persona fuera administradora se cierra si ya pasaron los límites; si es anfitrión y administrador, gana el límite del administrador.", "El papel de administrador se lee de la base en cada petición, y es el más delicado. Campo: qué hace.", "Pendiente", "", ""),
+            ("33.7", "El texto del aviso de cambio de contraseña lo redactó la IA: «La contraseña de tu cuenta de Íntegro se cambió el (fecha). Navegador: (…). Dirección: (…). Por seguridad cerramos todas tus sesiones. Si no fuiste tú, vuelve a recuperar tu contraseña desde «¿Olvidaste tu contraseña?».»", "El prompt no daba el texto, y no hay otro camino de ayuda construido al cual remitir. Campo: qué hace.", "Pendiente", "", ""),
+            ("33.8", "Dos ramas independientes desde main (api/admin-session-limit y api/password-changed-notice), no apiladas.", "No dependen una de la otra. Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
+        ],
+    },
 ]
