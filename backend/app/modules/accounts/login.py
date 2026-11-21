@@ -78,6 +78,8 @@ class SessionResult:
     expires_at: datetime | None = None
     # Días sin uso que aguanta la sesión que se abrió: lo que dura la cookie.
     idle_days: int | None = None
+    # Segundos que dura la cookie de la sesión de un administrador, que es corta. None para los demás.
+    cookie_seconds: int | None = None
     attempts_left: int | None = None
 
 
@@ -191,13 +193,14 @@ def finish_login(
     email = email.strip().lower()
     with system_transaction(pool) as connection:
         user = connection.execute(
-            "select u.id, exists (select 1 from host_profiles h where h.user_id = u.id) "
+            "select u.id, exists (select 1 from host_profiles h where h.user_id = u.id), "
+            "exists (select 1 from admins a where a.user_id = u.id) "
             "from users u where u.email = %s and u.email_verified_at is not null",
             (email,),
         ).fetchone()
         if user is None:
             return SessionResult(SessionOutcome.INVALID_CODE)
-        user_id, is_host = user
+        user_id, is_host, is_admin = user
 
         checked = check_code(connection, user_id, PURPOSE, email, code, settings)
         if checked.outcome is CodeCheck.EXPIRED:
@@ -209,15 +212,29 @@ def finish_login(
 
         token = generate_session_token()
         days = idle_days(is_host, settings)
-        expires_at = connection.execute(
+        # Un administrador abre una sesión corta: el tiempo sin uso, sin pasar del tope desde que abre.
+        interval = (
+            "least(make_interval(mins => %s), make_interval(hours => %s))"
+            if is_admin
+            else "make_interval(days => %s)"
+        )
+        limits = (settings.session_idle_minutes_admin, settings.session_max_hours_admin) if is_admin else (days,)
+        expires_at, cookie_seconds = connection.execute(
             "insert into sessions (user_id, token_hash, expires_at, ip_address, user_agent) "
-            "values (%s, %s, now() + make_interval(days => %s), %s, %s) returning expires_at",
+            f"values (%s, %s, now() + {interval}, %s, %s) "
+            "returning expires_at, greatest(1, ceil(extract(epoch from expires_at - now()))::int)",
             (
                 user_id,
                 hash_session_token(token),
-                days,
+                *limits,
                 clean_ip(ip_address),
                 clean_user_agent(user_agent),
             ),
-        ).fetchone()[0]
-    return SessionResult(SessionOutcome.OPENED, token=token, expires_at=expires_at, idle_days=days)
+        ).fetchone()
+    return SessionResult(
+        SessionOutcome.OPENED,
+        token=token,
+        expires_at=expires_at,
+        idle_days=days,
+        cookie_seconds=cookie_seconds if is_admin else None,
+    )

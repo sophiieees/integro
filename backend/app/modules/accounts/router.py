@@ -504,7 +504,7 @@ def login_verify(body: LoginVerifyRequest, request: Request, response: Response)
     )
 
     if result.outcome is SessionOutcome.OPENED:
-        set_session_cookie(response, result.token, result.idle_days, state.settings)
+        set_session_cookie(response, result.token, result.idle_days, state.settings, seconds=result.cookie_seconds)
         return SessionResponse(
             status="session_opened",
             expires_at=result.expires_at,

@@ -4,6 +4,14 @@ La sesión vive en la tabla sessions. La persona manda su llave en cada
 petición; aquí se busca la huella de esa llave. La sesión sirve mientras
 exista, no se haya cerrado y no haya pasado su tiempo sin uso: 30 días para
 un huésped y 7 para un anfitrión. Cada uso renueva ese plazo.
+
+Quien es administrador (tabla admins) tiene una sesión corta en todo el sitio,
+no solo en las pantallas de administración (decisión de Sophia del 21 de
+noviembre de 2026): se cierra a los 30 minutos sin uso y, aunque la use todo
+el tiempo, a las 12 horas de haber iniciado sesión. Eso vale también para una
+sesión que se abrió antes de que la persona fuera administradora: el papel se
+lee en cada petición. Si es anfitrión y administrador a la vez, gana el límite
+del administrador. Una sesión vencida por estos límites se cierra en la base.
 """
 
 from dataclasses import dataclass
@@ -30,6 +38,9 @@ class CurrentSession:
     # Está en la tabla admins (solo se llena a mano). Se revisa en cada petición.
     is_admin: bool
     expires_at: datetime
+    # Segundos que debe durar la cookie de un administrador (lo que le queda a la sesión). None para los demás,
+    # cuya cookie dura los días de su tipo de sesión.
+    cookie_seconds: int | None = None
 
 
 def idle_days(is_host: bool, settings: Settings) -> int:
@@ -50,22 +61,44 @@ def authenticate(pool: ConnectionPool, token: str | None, settings: Settings) ->
         return None
     with system_transaction(pool) as connection:
         row = connection.execute(
-            "select s.id, s.user_id, exists (select 1 from host_profiles h where h.user_id = s.user_id), "
-            "exists (select 1 from admins a where a.user_id = s.user_id) "
-            "from sessions s where s.token_hash = %s and s.revoked_at is null and s.expires_at > now() "
+            "select s.id, s.user_id, h.is_host, a.is_admin, "
+            # Un administrador pierde la sesión si pasó el tiempo sin uso o el tope desde que la abrió.
+            "(a.is_admin and (s.last_used_at < now() - make_interval(mins => %s) "
+            "  or s.created_at < now() - make_interval(hours => %s))) "
+            "from sessions s "
+            "cross join lateral (select exists (select 1 from host_profiles h where h.user_id = s.user_id) as is_host) h "
+            "cross join lateral (select exists (select 1 from admins a where a.user_id = s.user_id) as is_admin) a "
+            "where s.token_hash = %s and s.revoked_at is null and s.expires_at > now() "
             "for update of s",
-            (hash_session_token(token),),
+            (settings.session_idle_minutes_admin, settings.session_max_hours_admin, hash_session_token(token)),
         ).fetchone()
         if row is None:
             return None
-        session_id, user_id, is_host, is_admin = row
-        expires_at = connection.execute(
-            "update sessions set last_used_at = now(), expires_at = now() + make_interval(days => %s) "
-            "where id = %s returning expires_at",
-            (idle_days(is_host, settings), session_id),
-        ).fetchone()[0]
+        session_id, user_id, is_host, is_admin, admin_timed_out = row
+        if admin_timed_out:
+            connection.execute("update sessions set revoked_at = now() where id = %s", (session_id,))
+            return None
+        if is_admin:
+            expires_at, cookie_seconds = connection.execute(
+                "update sessions set last_used_at = now(), "
+                "expires_at = least(now() + make_interval(mins => %s), created_at + make_interval(hours => %s)) "
+                "where id = %s returning expires_at, greatest(1, ceil(extract(epoch from expires_at - now()))::int)",
+                (settings.session_idle_minutes_admin, settings.session_max_hours_admin, session_id),
+            ).fetchone()
+        else:
+            cookie_seconds = None
+            expires_at = connection.execute(
+                "update sessions set last_used_at = now(), expires_at = now() + make_interval(days => %s) "
+                "where id = %s returning expires_at",
+                (idle_days(is_host, settings), session_id),
+            ).fetchone()[0]
     return CurrentSession(
-        session_id=session_id, user_id=user_id, is_host=is_host, is_admin=is_admin, expires_at=expires_at
+        session_id=session_id,
+        user_id=user_id,
+        is_host=is_host,
+        is_admin=is_admin,
+        expires_at=expires_at,
+        cookie_seconds=cookie_seconds,
     )
 
 

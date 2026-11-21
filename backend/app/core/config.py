@@ -69,6 +69,11 @@ class Settings(BaseSettings):
     # El anfitrión maneja dinero y propiedades, por eso la suya dura menos.
     session_idle_days_guest: int = Field(default=30, ge=1)
     session_idle_days_host: int = Field(default=7, ge=1)
+    # Quien es administrador (tabla admins) tiene una sesión corta en todo el sitio: se cierra sola a los
+    # 30 minutos sin uso y, aunque se use todo el tiempo, a las 12 horas de haber iniciado sesión.
+    # Decisión de Sophia del 21 de noviembre de 2026 (ADR 0014).
+    session_idle_minutes_admin: int = Field(default=30, ge=1)
+    session_max_hours_admin: int = Field(default=12, ge=1)
     # La llave de sesión viaja en una cookie (ADR 0015). Con esto encendido el
     # navegador solo la manda por HTTPS. Va encendido salvo que se apague a
     # propósito, y solo se apaga en desarrollo, donde el servidor local no

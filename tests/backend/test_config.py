@@ -147,6 +147,17 @@ def test_code_limits_default_to_the_decided_values(clean_environment):
     assert settings.password_reset_ttl_seconds == 1800
 
 
+def test_the_admin_session_limits_default_to_the_decided_values_and_can_be_changed(clean_environment):
+    set_variables(clean_environment)
+    defaults = load_settings(env_file=None)
+
+    set_variables(clean_environment, SESSION_IDLE_MINUTES_ADMIN="10", SESSION_MAX_HOURS_ADMIN="4")
+    changed = load_settings(env_file=None)
+
+    assert (defaults.session_idle_minutes_admin, defaults.session_max_hours_admin) == (30, 12)
+    assert (changed.session_idle_minutes_admin, changed.session_max_hours_admin) == (10, 4)
+
+
 def test_code_limits_can_be_changed_without_touching_the_code(clean_environment):
     set_variables(clean_environment, CODE_TTL_SECONDS="600", CODE_MAX_PER_HOUR="3")
 
