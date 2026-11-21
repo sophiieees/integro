@@ -1,6 +1,6 @@
 # Publicar la API y la base en Vercel con Neon
 
-**Estado:** investigación y plan del 21 de noviembre de 2026. Todavía no se construyó nada ni se creó ninguna cuenta. Decisión de Sophia: la opción A, la API en Vercel y la base en Neon. «Nube de la base de datos y de la API» no tiene ADR todavía (`docs/decisiones/README.md`); se escribe cuando se confirmen las decisiones de la sección 4.
+**Estado:** plan del 21 de noviembre de 2026, con las decisiones de Sophia de ese día (sección 4). La cuenta de Neon ya está creada, con el proyecto en Ohio. Falta crear las tablas ahí, comprobar la conexión y armar la estructura de Vercel. «Nube de la base de datos y de la API» no tiene ADR todavía (`docs/decisiones/README.md`); se escribe cuando se confirmen las decisiones de la sección 4.
 
 **Para quién es:** Sophia, y quien del equipo (Valeria, Shakti) vaya a crear cuentas o revisar costos. No lleva ninguna contraseña ni llave, y no debe llevarlas nunca.
 
@@ -35,31 +35,53 @@ Lo que sigue sale de la documentación oficial. Lo marcado **(sin verificar)** n
 
 Son cuatro, y se corren en cuanto exista la base en Neon. No se afirma nada de esto hasta verlo.
 
-1. **El papel por transacción en la conexión agrupada.** Un script (`herramientas/neon/verificar.py`, por escribir) se conecta como `integro_api` y comprueba: que `set local role integro_service` y `set_config('app.user_id', …, true)` funcionan dentro de una transacción; que al terminar la conexión vuelve a ser `integro_api` y sin persona anotada; y que 200 transacciones seguidas, alternando entre sistema y personas distintas, **nunca heredan** la identidad de otra. Esto es lo más importante de seguridad de todo el plan.
+1. **El papel por transacción en la conexión agrupada.** Un script (`tools/database/verify_connection.py`, ya escrito y probado contra la base local) se conecta como `integro_api` y comprueba: que `set local role integro_service` y `set_config('app.user_id', …, true)` funcionan dentro de una transacción; que al terminar la conexión vuelve a ser `integro_api` y sin persona anotada; y que 200 transacciones seguidas, alternando entre sistema y personas distintas, **nunca heredan** la identidad de otra. Esto es lo más importante de seguridad de todo el plan.
 2. **El SSL.** La conexión tiene que ir cifrada (`sslmode=require`).
 3. **Las migraciones.** Que las cinco corran en orden en Neon y que las pruebas de tablas pasen contra esa base.
 4. **Vercel en una previsualización.** Que la función arranque con nuestra estructura, que `/api/v1/health` y `/api/v1/health/database` contesten, que las páginas salgan y que el registro, el inicio de sesión y la cookie funcionen en la dirección de la previsualización.
 
-## 4. Decisiones que toma Sophia
+## 4. Decisiones de Sophia
 
-1. **Plan de Vercel.** ¿Hobby para probar solo con el equipo, o Pro desde el principio? Recomendación: probar en Hobby con Vercel Authentication encendida, y pasar a Pro antes de que entre una persona que no sea del equipo.
-2. **Correos en modo desarrollo.** Hoy los códigos se escriben en la ventana del servidor (`EMAIL_DELIVERY=console`). En la nube se escribirían en el registro de la función de Vercel: quien lo vea, ve los códigos. Con ese modo, alguien de fuera no puede registrarse (no le llega nada). Recomendación: publicar como demostración solo para el equipo, con Vercel Authentication, hasta tener el correo real. El correo real viene después en el orden ya acordado.
-3. **Región.** Recomendación: Neon en Virginia (`aws-us-east-1`) y las funciones de Vercel en su región de Washington D.C. (`iad1`), para que la API y la base queden juntas. No hay región en México.
-4. **Dónde se crea la base.** Recomendación: crear el proyecto directo en neon.com y no desde la integración de Vercel, que trae variables con el rol poderoso. Se copian a Vercel solo los datos de `integro_api`.
-5. **Un solo proyecto de Vercel con la web y la API juntas**, porque la cookie exige un solo dominio. Las ramas generan previsualizaciones; la producción cambia solo cuando Sophia fusiona a `main`. Recomendación: la primera vez, que la propia API muestre también la web, como en local (`SERVE_WEB`): se comporta igual que hoy y no hay dudas de rutas. Mover las páginas al CDN es una mejora posterior.
+Decididas el 21 de noviembre de 2026:
+
+1. **Opción A:** la API en Vercel y la base en Neon, en **un solo proyecto de Vercel**, porque la cookie exige un solo dominio.
+2. **Plan de Vercel:** se prueba en Hobby con la protección de Vercel Authentication encendida. Se pasa a Pro antes de que entre alguien que no sea del equipo; antes de eso, Sophia avisa a Shakti y a Valeria. Todavía no se ha comprado nada.
+3. **Demostración solo para el equipo**, hasta tener el correo real.
+4. **La base se crea directo en Neon**, no desde la integración de Vercel.
+5. **CAPTCHA:** hace falta. Todavía no existe (la arquitectura lo pide en el registro y en el inicio de sesión). Es una pieza aparte, antes de abrir el sitio a personas de fuera; no bloquea la demostración del equipo porque va detrás de Vercel Authentication. Falta elegir el servicio (sección 5 bis).
+
+Por decidir:
+
+6. **Región.** El proyecto de Neon quedó en Ohio (`aws-us-east-2`). Neon **no permite cambiar la región de un proyecto**; para cambiarla hay que crear otro y borrar el primero (hoy está vacío, así que no se pierde nada). Hay dos caminos:
+   - **Quedarse en Ohio (recomendado).** Vercel tiene una región en Cleveland (`cle1`) que, según su tabla de regiones, es la de AWS `us-east-2`: la misma que Neon. La función se configura en esa región y quedan juntas. Hobby permite una sola región, y alcanza. Falta comprobar en una previsualización que la función respete la región.
+   - **Virginia.** Crear otro proyecto de Neon en `aws-us-east-1` y borrar el de Ohio. Quedaría junto a la región por defecto de Vercel (Washington D.C., `iad1`). Funciona igual y cuesta unos minutos.
 
 ## 5. Pasos, en orden
 
-**Sophia**
-1. Contestar las decisiones de la sección 4.
-2. Crear la cuenta de Neon (neon.com) y un proyecto llamado `integro`, con PostgreSQL 18 y la región elegida. No crear roles desde la consola.
-3. Desde pgAdmin, conectarse a la dirección **directa** de Neon con el rol del proyecto, y correr una por una, en orden, las migraciones de `database/migrations/` (en el Query Tool, abriendo cada archivo, sin guardarlos). Es lo que ya se hizo en la base local.
-4. En el mismo Query Tool, crear a `integro_api` con las tres líneas de `backend/README.md` y ponerle su contraseña ahí mismo (pgAdmin: Login/Group Roles → `integro_api` → Properties → Definition). La contraseña no se escribe en SQL, ni en el chat, ni en el repositorio.
-5. Crear en un archivo local `backend/.env.neon` (git lo ignora) los datos de conexión de `integro_api`: servidor agrupado, puerto 5432, base, usuario y contraseña. Sirve para que el script de verificación corra en su computadora.
-6. Generar la llave de los códigos con `python -c "import secrets; print(secrets.token_urlsafe(48))"` y guardarla; es el valor de `CODE_HASH_SECRET` en Vercel. No se comparte.
+**Sophia, ahora**
+1. Decidir la región (sección 4, punto 6).
+2. En Neon, abrir el proyecto y presionar **Connect**. Elegir la rama `main`, la base (por defecto `neondb`) y el rol que Neon creó con el proyecto. Con **Connection pooling apagado** se ve la dirección **directa** (`ep-…`, sin `-pooler`); con **encendido**, la **agrupada** (`ep-…-pooler…`). Se usan las dos. Neon muestra ahí la contraseña de ese rol: se escribe solo en pgAdmin, nunca en el chat.
+3. En pgAdmin: clic derecho en Servers, Register, Server. Pestaña General: nombre «Neon Íntegro». Pestaña Connection: servidor = la dirección **directa**, puerto 5432, base `neondb`, usuario = el rol del proyecto, contraseña. Pestaña SSL: SSL mode `require`. Guardar.
+4. Abrir Query Tool en la base `neondb` y correr, **una por una y en este orden**, abriendo cada archivo con el icono de carpeta y presionando F5 (sin guardarlos): `20261117000001_users_host_profiles_verifications.sql`, `20261117000002_user_phones.sql`, `20261117000003_sessions_codes_password_resets.sql`, `20261118000004_login_attempts_admins.sql` y `20261121000005_password_reset_code.sql`, todos de `database/migrations/`. Si alguno da error, se manda el texto del error (sin contraseñas).
+5. En el mismo Query Tool, crear a `integro_api` con las tres líneas de `backend/README.md` y ponerle su contraseña en pgAdmin (Login/Group Roles, `integro_api`, Properties, pestaña Definition). **No** crear roles desde la consola de Neon.
+6. Generar la llave de los códigos con `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+7. Crear con el Bloc de notas el archivo `backend\.env.neon` (git lo ignora; el nombre no debe terminar en `.txt`) con estas líneas, llenando cada valor:
+
+```
+DATABASE_HOST=<dirección agrupada, la que lleva -pooler>
+DATABASE_HOST_DIRECT=<dirección directa>
+DATABASE_PORT=5432
+DATABASE_NAME=neondb
+DATABASE_USER=integro_api
+DATABASE_PASSWORD=<la contraseña de integro_api>
+CODE_HASH_SECRET=<la llave del paso 6>
+EMAIL_DELIVERY=console
+```
+
+8. Avisarle a la IA que el archivo está listo. La IA corre `python tools/database/verify_connection.py --env backend/.env.neon` (solo lee; no imprime contraseñas) y reporta la salida tal cual.
 
 **La IA, cada paso en su rama, con pruebas y sin fusionar**
-1. `herramientas/neon/verificar.py`: las pruebas reales de la sección 3, puntos 1 y 2, contra `backend/.env.neon`.
+1. Correr `tools/database/verify_connection.py` contra Neon (sección 3, puntos 1 y 2) y reportar la salida real. Ya se probó contra la base local: 9 de 9 casos coinciden.
 2. Ajustes a la conexión, solo si la verificación los pide: `sslmode`, tiempo de espera de conexión más largo (la primera conexión tras suspenderse tarda más que los 3 segundos de hoy), y `prepare_threshold` apagado para la dirección agrupada. Cada uno es un valor de configuración, no un cambio de comportamiento.
 3. La estructura de Vercel: punto de entrada, `vercel.json`, `.vercelignore`, versión de Python y dependencias.
 
@@ -68,9 +90,14 @@ Son cuatro, y se corren en cuanto exista la base en Neon. No se afirma nada de e
 2. Abrir la previsualización de la rama y recorrer una lista de pruebas a mano que la IA preparará: registro, código, inicio de sesión, cerrar sesión, recuperar contraseña y reservar sin sesión.
 3. Solo cuando todo funcione, fusionar a `main` y repetir con las variables de producción. Comprar el dominio en Vercel y asignarlo es lo último.
 
+## 5 bis. CAPTCHA: qué falta decidir
+
+Es una pieza aparte, después de que la demostración funcione. Opciones: **Cloudflare Turnstile** (gratuito, sin límite de solicitudes publicado, casi siempre invisible; hay que mencionar su adenda de privacidad en el aviso de privacidad), **hCaptcha** (reto visible en el plan gratuito) o **Google reCAPTCHA** (con un tope gratuito). Recomendación: Turnstile. Las cifras de los planes salen de comparativas de terceros y hay que revisarlas en las páginas oficiales antes de decidir. Se necesitan dos llaves del servicio: la pública va en la página; la secreta, solo en el servidor y fuera del repositorio.
+
 ## 6. Riesgos
 
 - Sin el correo real, nadie de fuera puede crear una cuenta. Es lo esperado para esta etapa.
+- La conexión de la API hoy no exige SSL: usa `prefer`, que cifra cuando el servidor lo ofrece. Neon sí lo ofrece, y el script lo comprueba; después se agrega `sslmode=require` como valor de configuración.
 - Cualquiera con acceso a los registros de la función de Vercel ve los códigos mientras el modo sea `console`.
 - El registro de cuentas todavía no tiene CAPTCHA (ADR de seguridad pendiente): con la API abierta al público, alguien podría crear cuentas en masa. Por eso la demostración va detrás de Vercel Authentication.
 - El plan gratuito de Neon se queda sin horas si algo mantiene la base despierta; las conexiones fallan hasta el mes siguiente.
@@ -83,4 +110,5 @@ Son cuatro, y se corren en cuanto exista la base en Neon. No se afirma nada de e
 - [Archivos de la raíz expuestos como estáticos](https://community.vercel.com/t/internal-files-being-exposed-as-static-assets/3266) (comunidad, no oficial)
 - [Plan Hobby de Vercel](https://vercel.com/docs/plans/hobby) y [precios de Deployment Protection](https://vercel.com/docs/deployment-protection/usage-and-pricing)
 - [Agrupación de conexiones en Neon](https://neon.com/docs/connect/connection-pooling), [compatibilidad](https://neon.com/docs/reference/compatibility) y [roles](https://neon.com/docs/manage/roles)
+- [Regiones de Vercel](https://vercel.com/docs/regions) y [cómo cambiar la región de un proyecto de Neon](https://neon.com/faqs/change-project-region)
 - [Integración de Vercel con Neon](https://neon.com/docs/guides/vercel-managed-integration), [regiones](https://neon.com/docs/introduction/regions) y [límites del plan gratuito](https://neon.com/faqs/free-plan-limits-and-quotas)
