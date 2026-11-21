@@ -502,7 +502,7 @@ def test_me_with_a_valid_key_returns_the_person(api):
     assert response.status_code == 200
     body = response.json()
     assert set(body) == {
-        "id", "first_name", "last_name", "email", "country", "preferred_language", "is_host", "session_expires_at",
+        "id", "first_name", "last_name", "email", "country", "preferred_language", "is_host", "is_admin", "session_expires_at",
         "csrf_token",
     }
     assert (body["first_name"], body["last_name"], body["email"], body["country"]) == (

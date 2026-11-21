@@ -27,6 +27,8 @@ class CurrentSession:
     session_id: UUID
     user_id: UUID
     is_host: bool
+    # Está en la tabla admins (solo se llena a mano). Se revisa en cada petición.
+    is_admin: bool
     expires_at: datetime
 
 
@@ -41,26 +43,30 @@ def authenticate(pool: ConnectionPool, token: str | None, settings: Settings) ->
 
     No sirve si no existe, si se cerró o si ya venció. Cuando sirve, anota el
     uso y renueva el plazo. Es anfitrión quien tiene perfil de anfitrión en
-    ese momento, aunque haya abierto la sesión siendo huésped.
+    ese momento, aunque haya abierto la sesión siendo huésped, y es
+    administrador quien está en la tabla admins en ese momento.
     """
     if not isinstance(token, str) or not token or len(token) > TOKEN_MAX_LENGTH:
         return None
     with system_transaction(pool) as connection:
         row = connection.execute(
-            "select s.id, s.user_id, exists (select 1 from host_profiles h where h.user_id = s.user_id) "
+            "select s.id, s.user_id, exists (select 1 from host_profiles h where h.user_id = s.user_id), "
+            "exists (select 1 from admins a where a.user_id = s.user_id) "
             "from sessions s where s.token_hash = %s and s.revoked_at is null and s.expires_at > now() "
             "for update of s",
             (hash_session_token(token),),
         ).fetchone()
         if row is None:
             return None
-        session_id, user_id, is_host = row
+        session_id, user_id, is_host, is_admin = row
         expires_at = connection.execute(
             "update sessions set last_used_at = now(), expires_at = now() + make_interval(days => %s) "
             "where id = %s returning expires_at",
             (idle_days(is_host, settings), session_id),
         ).fetchone()[0]
-    return CurrentSession(session_id=session_id, user_id=user_id, is_host=is_host, expires_at=expires_at)
+    return CurrentSession(
+        session_id=session_id, user_id=user_id, is_host=is_host, is_admin=is_admin, expires_at=expires_at
+    )
 
 
 @dataclass(frozen=True)

@@ -312,7 +312,9 @@ class MeResponse(BaseModel):
     email: str
     country: str
     preferred_language: str
+    # Qué vistas tiene la persona (docs/diseno/vistas.md): todas tienen la de cliente.
     is_host: bool
+    is_admin: bool
     session_expires_at: datetime
     csrf_token: str
 
@@ -444,6 +446,7 @@ def me(request: Request, session: CurrentSession = Depends(require_session)):
         country=row[4],
         preferred_language=row[5],
         is_host=session.is_host,
+        is_admin=session.is_admin,
         session_expires_at=session.expires_at,
         csrf_token=csrf_token(request.cookies[SESSION_COOKIE], request.app.state.settings),
     )
