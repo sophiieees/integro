@@ -331,7 +331,36 @@ class Page:
         return json.dumps(self.js(STATE_JS), ensure_ascii=False)
 
     def header(self) -> list[str]:
-        return self.js("Array.from(document.querySelector('[data-cuenta]').children).map(e => e.textContent.trim())")
+        """Lo que se ve en la zona de la cuenta: enlaces y botones con lugar en la pantalla, en orden.
+
+        Con el menú cerrado, una persona con sesión ve solo su nombre; con el menú abierto, también sus opciones.
+        """
+        return self.js(
+            "Array.from(document.querySelector('[data-cuenta]').querySelectorAll('a, button'))"
+            ".filter(e => e.getClientRects().length > 0).map(e => e.textContent.trim())"
+        )
+
+    def menu_is_open(self) -> bool:
+        return self.js("(() => { const l = document.querySelector('.cuenta-lista'); return !!l && !l.hidden; })()")
+
+    def open_menu(self) -> None:
+        """Abre el menú de la cuenta dando clic en el nombre, como una persona."""
+        if not self.menu_is_open():
+            self.click(".cuenta-nombre")
+        self.expect("!document.querySelector('.cuenta-lista').hidden")
+
+    def log_out(self) -> None:
+        self.open_menu()
+        self.click(".cuenta-salir")
+
+    def nav(self) -> list[str]:
+        """Los enlaces de la barra junto a la marca, en el orden en que se ven."""
+        return self.js("Array.from(document.querySelectorAll('header.cabecera .enlaces-cabecera a')).map(a => a.textContent.trim())")
+
+    def current_tab(self) -> list[str]:
+        return self.js(
+            "Array.from(document.querySelectorAll('header.cabecera [data-pestana][aria-current=page]')).map(a => a.textContent.trim())"
+        )
 
     def window_open(self) -> bool:
         """La ventana se ve de verdad: no basta con que no tenga el atributo hidden, tiene que ocupar lugar en la pantalla."""
@@ -507,6 +536,25 @@ def make_account(site: Site, *, first_name: str = "Ana", verified: bool = True, 
         status, body = site.request("POST", "/api/v1/auth/verify-email", {"email": account["email"], "code": code})
         assert status == 200, body
     return account
+
+
+def make_host(site: Site, email: str) -> None:
+    """Le da a esa persona su perfil de anfitrión, como lo hará Verificación más adelante."""
+    with system_transaction(site.pool) as connection:
+        connection.execute("insert into host_profiles (user_id) select id from users where email = %s", (email,))
+
+
+def make_admin(site: Site, email: str) -> None:
+    """Pone a esa persona como administradora en una tabla temporal que tapa a la verdadera, solo en esta prueba.
+
+    Las pruebas no tienen permiso de escribir en admins (solo se llena a mano en pgAdmin), y la tabla verdadera no se
+    toca: la temporal vive en la transacción única de las pruebas y se deshace al terminar.
+    """
+    with site.pool.connection() as connection:
+        connection.execute("create temp table if not exists admins (user_id uuid primary key)")
+        connection.execute("grant select, insert, delete on admins to integro_service, integro_app")
+    with system_transaction(site.pool) as connection:
+        connection.execute("insert into admins (user_id) select id from users where email = %s", (email,))
 
 
 def sessions_of(site: Site, email: str) -> tuple[int, int]:

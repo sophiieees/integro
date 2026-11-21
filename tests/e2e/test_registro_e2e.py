@@ -127,10 +127,9 @@ def test_the_page_shows_the_form_with_every_required_field_and_mexico_chosen(pag
     go(page, site)
 
     assert page.text("h1") == "Crea tu cuenta"
-    assert page.header() == ["Iniciar sesión"]
-    assert page.js("Array.from(document.querySelectorAll('header.cabecera .enlaces-cabecera a')).map(a => a.textContent)") == [
-        "Buscar hospedaje", "Conviértete en anfitrión",
-    ]
+    assert page.header() == ["Iniciar sesión", "Crear cuenta"]
+    assert page.nav() == ["Todo", "Alojamientos", "Experiencias", "Servicios"]
+    assert page.js("document.querySelector('header.cabecera .cabecera-acciones a').textContent") == "Conviértete en anfitrión"
     assert step(page) == "datos"
     labels = page.js("Array.from(document.querySelectorAll('#formulario-registro .campo-etiqueta')).map(e => e.textContent.trim())")
     assert labels == ["Nombre", "Apellidos", "Correo electrónico", "Contraseña", "Teléfono", "País de residencia", "Fecha de nacimiento"]
@@ -720,7 +719,7 @@ def test_an_email_that_already_has_an_account_is_warned_and_offers_to_sign_in(pa
     assert step(page) == "datos"
     assert page.count(f"{FORM} [data-enlace-sesion]") == 1
     page.click(f"{FORM} [data-enlace-sesion]")
-    page.expect("!document.getElementById('ventana-entrar').hidden")
+    page.expect("document.getElementById('ventana-entrar') && !document.getElementById('ventana-entrar').hidden")
     assert page.text("#ventana-entrar h2") == "Iniciar sesión"
 
 
@@ -811,7 +810,7 @@ def test_with_the_account_ready_iniciar_sesion_opens_the_window_and_the_person_g
     assert step(page) == "listo"
 
     page.click("#registro-listo [data-iniciar-sesion]")
-    page.expect("!document.getElementById('ventana-entrar').hidden")
+    page.expect("document.getElementById('ventana-entrar') && !document.getElementById('ventana-entrar').hidden")
     page.type("#ventana-entrar form[data-paso=correo] [name=email]", data["email"])
     page.type("#ventana-entrar form[data-paso=correo] [name=password]", PASSWORD)
     before = page.requests()
@@ -822,7 +821,7 @@ def test_with_the_account_ready_iniciar_sesion_opens_the_window_and_the_person_g
     page.press("Enter")
     page.expect("document.querySelector('[data-cuenta]').textContent.indexOf('Cerrar sesión') !== -1")
 
-    assert page.header() == ["Ana", "Cerrar sesión"]
+    assert page.header() == ["Ana"]
     assert page.location() == "/registro.html"
     assert sessions_of(site, data["email"]) == (1, 1)
 
@@ -831,7 +830,7 @@ def test_the_link_of_the_window_goes_to_the_register_page(page, site):
     page.goto(f"{site.url}/index.html")
     page.expect("document.documentElement.hasAttribute('data-cuenta-lista')")
     page.click(".cuenta-entrar")
-    page.expect("!document.getElementById('ventana-entrar').hidden")
+    page.expect("document.getElementById('ventana-entrar') && !document.getElementById('ventana-entrar').hidden")
 
     page.click("#ventana-entrar .ventana-pie a")
     page.expect("location.pathname === '/registro.html'")
@@ -844,7 +843,7 @@ def test_the_link_below_the_form_opens_the_window(page, site):
     go(page, site)
 
     page.click(f"{FORM} [data-abrir-sesion]")
-    page.expect("!document.getElementById('ventana-entrar').hidden")
+    page.expect("document.getElementById('ventana-entrar') && !document.getElementById('ventana-entrar').hidden")
 
     assert page.location() == "/registro.html"
 
@@ -857,7 +856,7 @@ def test_with_a_session_the_form_is_replaced_by_a_notice(page, site):
     page.goto(f"{site.url}/index.html")
     page.expect("document.documentElement.hasAttribute('data-cuenta-lista')")
     page.click(".cuenta-entrar")
-    page.expect("!document.getElementById('ventana-entrar').hidden")
+    page.expect("document.getElementById('ventana-entrar') && !document.getElementById('ventana-entrar').hidden")
     page.type("#ventana-entrar form[data-paso=correo] [name=email]", account["email"])
     page.type("#ventana-entrar form[data-paso=correo] [name=password]", PASSWORD)
     before = page.requests()

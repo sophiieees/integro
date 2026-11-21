@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administración | Íntegro</title>
+  <meta name="description" content="La administración de Íntegro, solo para el equipo.">
+  <meta name="theme-color" content="#1F4D3A">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body data-requiere="administrador">
+  <!-- La vista del administrador. Solo la ve el equipo, quien está en la tabla admins (data-requiere). -->
+  <header class="cabecera" data-cabecera="interior"></header>
+
+  <main class="contenedor pagina-vista">
+    <section class="aviso-acceso" data-acceso>
+      <h1 data-acceso-titulo>Comprobando tu sesión</h1>
+      <p class="pagina-vista-intro" data-acceso-texto></p>
+      <p><a class="btn btn-primario" data-acceso-enlace href="#entrar" hidden></a></p>
+    </section>
+
+    <div data-contenido hidden>
+      <h1>Administración</h1>
+      <p class="pagina-vista-intro">Solo para el equipo de Íntegro. Desde el menú de tu nombre puedes mirar las vistas de cliente y de anfitrión con tu propia cuenta.</p>
+      <section class="vista-seccion" id="verificaciones">
+        <h2>Verificaciones</h2>
+        <p class="texto-suave">Próximamente.</p>
+      </section>
+      <section class="vista-seccion" id="casos">
+        <h2>Casos</h2>
+        <p class="texto-suave">Próximamente.</p>
+      </section>
+      <section class="vista-seccion" id="cargos">
+        <h2>Cargos</h2>
+        <p class="texto-suave">Próximamente.</p>
+      </section>
+      <section class="vista-seccion" id="bitacora">
+        <h2>Bitácora</h2>
+        <p class="texto-suave">Próximamente.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="pie" data-pie></footer>
+
+  <script src="assets/js/estructura.js"></script>
+  <script src="assets/js/cuenta-logica.js"></script>
+  <script src="assets/js/cuenta.js"></script>
+</body>
+</html>

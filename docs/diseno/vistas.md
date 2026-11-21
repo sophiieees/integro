@@ -1,6 +1,6 @@
 # Las vistas de Íntegro
 
-**Estado:** propuesta del 20 de noviembre de 2026, a partir de lo que Sophia describió ese día. Nada de lo que está aquí se construyó todavía; cada punto espera su decisión (sección «Decisiones por tomar»).
+**Estado:** decididas por Sophia el 20 de noviembre de 2026 y construidas en dos piezas: la vista en la API (rama `api/view-roles`) y la cabecera por vista con sus páginas (rama `web/views`). Siguen pendientes tres piezas (sección «Orden de construcción»).
 
 ## Para qué sirve
 
@@ -15,82 +15,94 @@ El diseño de las pantallas es de Sophia (ADR 0008). Aquí se define qué hay en
 | Visitante | Quien no ha iniciado sesión, tenga cuenta o no | `GET /auth/me` responde 401 |
 | Cliente | Una persona con sesión que todavía no es anfitriona | `/auth/me` con `is_host: false` |
 | Anfitrión | Una persona con sesión y perfil de anfitrión | `/auth/me` con `is_host: true` |
-| Administrador | Solo tres personas: Shakti, Valeria y Sophia | Dato nuevo en `/auth/me` (`is_admin`), que sale de la tabla `admins` |
+| Administrador | Solo tres personas: Shakti, Valeria y Sophia | `/auth/me` con `is_admin: true`, que sale de la tabla `admins` |
 
 Reglas que ya están decididas y se mantienen:
 - Un solo registro sirve para huésped y para anfitrión; el perfil de anfitrión se crea después, en Verificación.
 - Los administradores se dan de alta solo a mano, en pgAdmin; la API nunca escribe en `admins`.
-- La sesión del anfitrión dura 7 días sin uso; la del panel, 30 minutos sin uso y 12 horas como tope (ADR 0014). El segundo factor es obligatorio para anfitriones y panel (arquitectura, sección 7).
+- Un administrador no es anfitrión por serlo, ni al revés: son dos permisos distintos y la API los revisa por separado.
+- La sesión del anfitrión dura 7 días sin uso; la del panel, 30 minutos sin uso y 12 horas como tope (ADR 0014). El segundo factor es obligatorio para anfitriones y panel (arquitectura, sección 7). **Ninguno de los dos existe todavía**: una ruta de administrador con datos no se publica hasta tenerlos.
 
 ## La cabecera de cada vista
 
-La cabecera la arma `web/assets/js/estructura.js` con una tabla de variantes. Cada vista de abajo es una variante nueva de esa tabla; las páginas no cambian. La marca va siempre a la izquierda y la cuenta, siempre a la derecha.
+La cabecera la arma `web/assets/js/estructura.js` con una tabla de vistas (`VISTAS`). Al cargar arma la del visitante; `cuenta.js` pregunta a `GET /auth/me` y, si hace falta, la vuelve a armar con la vista que toca. La marca va siempre a la izquierda y la cuenta, siempre a la derecha. Una vista nueva es una entrada nueva de la tabla.
 
-| Vista | Enlaces y navegación | Cuenta, a la derecha |
+| Vista | Enlaces junto a la marca | A la derecha |
 |---|---|---|
-| Visitante | «Alojamientos» y lo que se decida de la barra (ver Decisión 1). «Conviértete en anfitrión» | «Iniciar sesión» y «Crear cuenta» |
-| Cliente | Lo mismo que el visitante, con «Conviértete en anfitrión» mientras no lo sea | Nombre de la persona con su menú: «Mis reservas», «Mensajes», «Mi cuenta» y «Cerrar sesión» |
-| Anfitrión | «Mis propiedades», «Reservas», «Reseñas», «Comentarios», «Chats con clientes» y «Subir publicación». Ya no aparece «Conviértete en anfitrión» | Nombre con su menú y «Cerrar sesión» |
-| Administrador | «Verificaciones», «Casos», «Cargos», «Bitácora» y «Ver como»: cliente o anfitrión | Nombre con su menú y «Cerrar sesión» |
+| Visitante | La barra «Todo», «Alojamientos», «Experiencias» y «Servicios» | «Conviértete en anfitrión», «Iniciar sesión» y «Crear cuenta» |
+| Cliente | La misma barra | «Conviértete en anfitrión» y su nombre, con un menú de texto: «Mi cuenta», «Mis reservas», «Mensajes», «Reseñas», «Comentarios» y «Cerrar sesión» |
+| Anfitrión | «Mis propiedades», «Reservas», «Reseñas», «Comentarios», «Chats con clientes» y «Subir publicación». Ya no hay barra ni «Conviértete en anfitrión» | Su nombre, con el menú: «Mi cuenta», «Mis reservas», «Buscar hospedaje» y «Cerrar sesión» |
+| Administrador | «Verificaciones», «Casos», «Cargos» y «Bitácora» | Su nombre, con el menú: «Vista de administrador», «Ver como cliente», «Ver como anfitrión», «Mi cuenta» y «Cerrar sesión» |
+
+Cómo funciona la barra:
+- «Todo» lleva a la portada; «Alojamientos», a los resultados de la portada. «Experiencias» y «Servicios» llevan a una página «Próximamente» con su nombre, porque todavía no existen.
+- Cada página marca su pestaña con un subrayado dorado arena: la portada, «Todo»; la ficha de propiedad, «Alojamientos»; Próximamente, la que corresponda.
+- En la página de anfitriones, «Conviértete en anfitrión» se cambia por «Publica tu propiedad», porque ya se está ahí.
+- En celular, la marca y la cuenta quedan en la primera fila y la barra baja a la segunda. «Conviértete en anfitrión» y «Publica tu propiedad» se ocultan; el pie de página sigue llevando a «Anfitriones».
+- El nombre abre su menú con un clic; se cierra con otro clic en el nombre, con un clic en otra parte o con Escape.
+
+Un enlace solo aparece cuando la página a la que lleva existe. No se publican enlaces que dan 404; una prueba lo comprueba con todas las cabeceras, menús y el pie.
 
 Lo que Sophia pidió, tal cual, para la vista principal: una cabecera con «Todo», «Alojamientos», «Experiencias» y «Servicios», por ejemplo, como la de Airbnb; la barra de navegación y las publicaciones de los alojamientos que suban los anfitriones. Su captura de Wander muestra otra forma: el buscador dentro de la cabecera y «For operators» a la derecha.
-
-Un enlace solo aparece cuando la pantalla a la que lleva existe. No se publican enlaces que dan 404.
 
 ## Qué hace cada vista
 
 ### Visitante
 - Ve la portada y las fichas de propiedad: buscar, comparar y ver precios no pide cuenta.
-- Para reservar o para escribirle a un anfitrión necesita una cuenta: al dar clic en «Reservar» sin sesión, la web le ofrece iniciar sesión o crear su cuenta y, al terminar, lo regresa a la misma propiedad con sus fechas.
+- Para reservar o para escribirle a un anfitrión necesita una cuenta: al dar clic en «Reservar» sin sesión, la web le ofrece iniciar sesión o crear su cuenta y, al terminar, lo regresa a la misma propiedad con sus fechas. **Todavía no está construido** (pieza 3).
 - Puede ver cómo convertirse en anfitrión (`anfitriones.html`) antes de crear su cuenta.
 
 ### Cliente
 - Todo lo del visitante, ya con su sesión.
-- Reserva, paga, ve sus reservas, sus mensajes con los anfitriones y su cuenta.
+- Su página es `mi-cuenta.html`: sus datos (nombre y correo, tal como los contesta la API) y las secciones de reservas, mensajes, reseñas y comentarios, que dicen «Próximamente».
+- Reseñas y comentarios, en sus palabras: la vista del cliente solo tiene el apartado para ver lo que escriben los demás (**Reseñas**) y el de redactar un comentario (**Comentarios**); si acaso, reaccionar con un corazón o un «me gusta». Todavía no existen.
 - Mientras no sea anfitrión, «Conviértete en anfitrión» lo lleva a la página que explica cómo y le deja empezar.
 
 ### Anfitrión
-- Deja de ver la página que explica cómo ser anfitrión y ve sus funciones: sus propiedades, las reservas que le llegan, las reseñas y comentarios que recibe, los chats con sus clientes y publicar una propiedad nueva.
-- Sigue pudiendo reservar como cliente: una sola cuenta puede ser huésped y anfitrión (decisión del modelo de datos).
+- Deja de ver la página que explica cómo ser anfitrión y ve sus funciones. Su página es `anfitrion.html`, con una sección por cada función; todas dicen «Próximamente».
+- **Reseñas:** el anfitrión ve las reseñas que le dejan los clientes y puede responder con un agradecimiento o una disculpa. Más adelante, una inteligencia artificial le resumirá las reseñas y le dará sugerencias. Las reseñas también aparecen en la ventana del cliente.
+- Sigue pudiendo reservar como cliente: una sola cuenta puede ser huésped y anfitrión (decisión del modelo de datos). Por eso su menú trae «Mis reservas» y «Buscar hospedaje».
 - Sus cobros y su membresía viven en su vista, no en la del cliente.
+- Nadie tiene todavía la vista de anfitrión de verdad: el perfil de anfitrión lo crea Verificación, que todavía no existe.
 
 ### Administrador
-- Es la vista de mantenimiento de las páginas y de la plataforma: cola de verificaciones, casos, suspender y reactivar, cargos con cuatro ojos, bitácora (módulo Admin de la arquitectura).
-- Puede ver las vistas del anfitrión y del cliente, para probar la plataforma con su propio usuario. Verlas no es actuar en nombre de otra persona.
-- Solo la ven las tres personas del equipo. Entra con segundo factor y su sesión se cierra a los 30 minutos sin uso.
+- Es la vista de mantenimiento de las páginas y de la plataforma: cola de verificaciones, casos, suspender y reactivar, cargos con cuatro ojos, bitácora (módulo Admin de la arquitectura). Su página es `administracion.html`, con una sección por cada una; todas dicen «Próximamente».
+- Ve las vistas del anfitrión y del cliente **con su propia cuenta** (decisión de Sophia): desde el menú de su nombre elige «Ver como cliente» o «Ver como anfitrión», y la cabecera cambia. Un aviso junto a su nombre dice «Viendo como cliente» o «Viendo como anfitrión». Verlas no es actuar en nombre de otra persona ni le da el permiso de anfitrión: la API sigue tratándola como administradora.
+- Lo que elige se recuerda solo en esa pestaña del navegador (`sessionStorage`) y se olvida al cerrar la pestaña o la sesión. Una persona que no es administradora no puede activarlo: la web lo ignora y lo borra.
+- Solo la ven las tres personas del equipo. Entra con segundo factor y su sesión se cierra a los 30 minutos sin uso (pendiente, ver arriba).
 
 ## Cómo se decide la vista, y dónde está el permiso
 
-1. La web pregunta a `GET /auth/me`. Hoy contesta nombre, correo, país, idioma, `is_host` y la clave anti-falsificación. Falta `is_admin`.
-2. Con esa respuesta, la web elige la variante de la cabecera.
-3. **La cabecera es comodidad, no seguridad.** El permiso de cada cosa lo da la API en cada ruta, por dueño del recurso (`CLAUDE.md`): que un anfitrión no vea el enlace de «Cargos» no significa que no pueda pedirlo. Cada ruta de anfitrión o de administrador comprueba quién es la persona antes de contestar.
-4. Las pantallas del anfitrión y del administrador, si alguien entra a su dirección sin serlo, responden con una página que lo explica y lo lleva a su vista, no con un error de la API.
+1. La web pregunta a `GET /auth/me`, que contesta nombre, correo, país, idioma, `is_host`, `is_admin` y la clave anti-falsificación.
+2. Con esa respuesta, `cuenta.js` elige la vista (`vistaDe` en `cuenta-logica.js`) y `estructura.js` arma la cabecera.
+3. **La cabecera es comodidad, no seguridad.** El permiso de cada cosa lo da la API en cada ruta, por dueño del recurso (`CLAUDE.md`): que un anfitrión no vea el enlace de «Cargos» no significa que no pueda pedirlo. La API ofrece `require_host` y `require_admin` (y sus variantes `_for_change`, que además piden las tres defensas) en `backend/app/api/roles.py`. Sin sesión responden 401; con sesión y sin el papel, 403 con el código `host_only` o `admin_only`. El papel se lee en la base en cada petición: quien deja de ser administrador deja de serlo en su siguiente petición, aunque su sesión siga abierta.
+4. Las páginas del cliente, del anfitrión y del administrador llevan `data-requiere` en el `body`. Si alguien entra a su dirección sin poder verlas, la página lo explica y le dice a dónde ir (no es un error de la API): sin sesión, «Inicia sesión para continuar»; un cliente en el espacio del anfitrión, «Esta sección es para anfitriones» con el camino para serlo; cualquiera que no sea del equipo en la administración, «Esta sección es solo para el equipo de Íntegro». El contenido está oculto hasta saber quién mira, y los datos de la persona se borran de la página al cerrar la sesión. Un administrador puede ver las páginas del anfitrión.
 
-## Decisiones por tomar
+## Decisiones
 
-Cada una con mi recomendación; ninguna se construye hasta que Sophia decida.
+Las diez decisiones propuestas el 20 de noviembre de 2026 y lo que decidió Sophia el mismo día.
 
-1. **La barra de navegación del cliente.** Íntegro solo tiene alojamientos hoy. ¿Se pone la barra «Todo, Alojamientos, Experiencias, Servicios» desde ya, o solo «Alojamientos»? Recomendación: solo «Alojamientos» hasta que existan experiencias y servicios; agregarlos después es una entrada más de la tabla de variantes.
-2. **El buscador.** Hoy vive en el centro de la portada. Airbnb lo pone debajo de la cabecera y Wander dentro de ella. Recomendación: dejarlo donde está hasta definir la portada del cliente; se decide aparte.
-3. **La cuenta en la cabecera.** Hoy es texto («Iniciar sesión» o el nombre y «Cerrar sesión»). Airbnb usa un ícono con menú. Las reglas de estilo del proyecto piden no usar íconos. Recomendación: el nombre como texto con un menú desplegable de texto.
-4. **«Crear cuenta» en la cabecera del visitante.** Hoy solo está en la ventana de iniciar sesión. Recomendación: agregarlo como enlace de texto junto a «Iniciar sesión».
-5. **Reseñas y comentarios del anfitrión.** Sophia los nombró por separado. ¿Qué es cada uno? Recomendación: «Reseñas» son las que los huéspedes dejan de una estancia; «Comentarios» necesitaría una definición propia (¿comentarios de Íntegro sobre su propiedad, preguntas de huéspedes antes de reservar?).
-6. **«Reservas» del anfitrión.** No estaba en su lista. Recomendación: agregarlo, porque sin él el anfitrión no ve quién le llega; en la arquitectura es la pantalla 14.
-7. **El revisor.** La arquitectura lista un rol de revisor (quien atiende la cola de verificaciones) además del administrador, y Sophia dijo que solo tres personas tienen la vista de administrador. Recomendación: por ahora no hay revisor aparte; las tres personas del equipo hacen ese trabajo desde su vista.
-8. **«Ver como» del administrador.** Dos maneras de que vea las vistas de cliente y de anfitrión: abrir esas páginas con su propia cuenta, o ver exactamente lo que ve otra persona. Recomendación: la primera, sin actuar como otra persona; ver los datos de otra persona exige permisos y bitácora, y se agrega solo si hace falta.
-9. **Un anfitrión que aún no termina Verificación.** ¿Ve ya la vista de anfitrión o sigue en la de cliente con un aviso de lo que le falta? Recomendación: sigue en la de cliente hasta tener el perfil de anfitrión; en la vista de anfitrión nadie ve funciones que todavía no puede usar.
-10. **Regreso después de iniciar sesión.** Hoy, al iniciar sesión la persona se queda en la página donde estaba. Para «Reservar» sin sesión hace falta además conservar las fechas y el número de huéspedes. Recomendación: guardarlos en la dirección de la página, no en el navegador.
+1. **La barra de navegación.** ¿Solo «Alojamientos» o «Todo, Alojamientos, Experiencias, Servicios»? **La barra completa, desde ya.** «Experiencias» y «Servicios» llevan a una página «Próximamente»; «Todo» lleva a la portada y «Alojamientos», a sus resultados.
+2. **El buscador.** Se queda en el centro de la portada; se decide aparte cuando se defina la portada del cliente. Aceptada.
+3. **La cuenta en la cabecera.** El nombre como texto con un menú desplegable de texto, sin íconos (la flecha del menú se dibuja con bordes). Aceptada.
+4. **«Crear cuenta» en la cabecera del visitante.** Como enlace de texto junto a «Iniciar sesión». Aceptada.
+5. **Reseñas y comentarios.** Definidos por Sophia: ver las respuestas de la sección «Cliente» y «Anfitrión».
+6. **«Reservas» del anfitrión.** Agregado a su cabecera. Aceptada.
+7. **El revisor.** La arquitectura nombra el rol «revisor» junto al de administrador (sección Cuentas) sin definirlo. Propuesta: por ahora no hay revisor aparte y las tres personas del equipo atienden la cola de verificaciones desde su vista de administrador. Sophia preguntó qué es el revisor; queda pendiente su decisión.
+8. **«Ver como» del administrador.** **Con su propia cuenta**, sin actuar como otra persona. Si más adelante hiciera falta ver lo que ve otra persona, exige permisos y bitácora.
+9. **Un anfitrión que aún no termina Verificación.** Sigue en la vista de cliente hasta tener el perfil de anfitrión. Aceptada.
+10. **Regreso después de iniciar sesión.** Guardar las fechas y los huéspedes en la dirección de la página, no en el navegador. Aceptada; se construye en la pieza 3.
 
-## Orden propuesto para construirlas
+## Orden de construcción
 
-1. **La vista en la API.** Agregar `is_admin` a `GET /auth/me`, con sus pruebas contra la base.
-2. **La cabecera por vista.** Las variantes del visitante y del cliente en `estructura.js`, con «Crear cuenta» y el menú de la cuenta, y el aviso de la página protegida.
-3. **Reservar sin sesión.** El camino de la ficha al inicio de sesión o al registro y de vuelta, con sus fechas.
-4. **La vista del anfitrión.** Su cabecera y sus pantallas, cuando exista Verificación (punto 3): sin perfil de anfitrión no hay vista de anfitrión.
-5. **La vista del administrador.** Su cabecera y la cola de verificaciones, con el segundo factor.
+1. **La vista en la API.** `is_admin` en `GET /auth/me` y las dependencias `require_host` y `require_admin`, con sus pruebas contra la base. Hecha (rama `api/view-roles`).
+2. **La cabecera por vista.** Las cuatro variantes de la cabecera, la barra, «Crear cuenta», el menú de la cuenta, las páginas de cada vista, «Próximamente» y el aviso de la página protegida. Hecha (rama `web/views`).
+3. **Reservar sin sesión.** El camino de la ficha al inicio de sesión o al registro y de vuelta, con sus fechas. Pendiente.
+4. **La vista del anfitrión.** Sus pantallas de verdad, cuando exista Verificación: sin perfil de anfitrión no hay vista de anfitrión. Pendiente.
+5. **La vista del administrador.** La cola de verificaciones, con el segundo factor y el tope de sesión. Pendiente.
 
 Cada paso es una pieza con su especificación, sus pruebas contra la base y su veredicto.
 
 ## Fuente
 
-Descripción de Sophia del 20 de noviembre de 2026 y sus dos capturas de referencia, Airbnb y Wander. `docs/arquitectura.md`, módulos Cuentas y Admin. ADR 0008, 0014 y 0015. `docs/diseno/pantallas.md` y `benchmark-competencia.md`.
+Descripción de Sophia del 20 de noviembre de 2026, sus dos capturas de referencia (Airbnb y Wander) y sus respuestas del mismo día. `docs/arquitectura.md`, módulos Cuentas y Admin. ADR 0008, 0014 y 0015. `docs/diseno/pantallas.md` y `benchmark-competencia.md`.

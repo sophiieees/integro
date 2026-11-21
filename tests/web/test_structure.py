@@ -28,6 +28,11 @@ VARIANT_OF = {
     "como-funciona.html": "interior",
     "anfitriones.html": "anfitriones",
     "registro.html": "interior",
+    # Las páginas de cada vista y la de «Próximamente» (20 de noviembre de 2026).
+    "mi-cuenta.html": "interior",
+    "anfitrion.html": "interior",
+    "administracion.html": "interior",
+    "proximamente.html": "interior",
 }
 
 
@@ -64,23 +69,31 @@ def test_every_page_loads_the_script_that_builds_them(page):
 
 
 def test_each_text_of_the_header_and_the_footer_lives_once_in_the_script():
-    # «Buscar hospedaje» y «Conviértete en anfitrión» se usan en varias cabeceras, pero se escriben una sola vez.
-    for text in ("Buscar hospedaje", "Conviértete en anfitrión", "Publica tu propiedad", "Cómo funciona", "Anfitriones",
+    # Varias cabeceras y menús usan los mismos textos, pero cada uno se escribe una sola vez.
+    for text in ("Todo", "Alojamientos", "Experiencias", "Servicios", "Conviértete en anfitrión", "Publica tu propiedad",
+                 "Mi cuenta", "Mis reservas", "Buscar hospedaje", "Cómo funciona", "Anfitriones",
                  "Términos y condiciones", "Aviso de privacidad"):
         assert SCRIPT.count(f'texto: "{text}"') == 1, text
     assert SCRIPT.count("Reportar un problema</a>") == 1
 
 
 def test_the_views_are_a_table_that_grows_without_touching_the_pages():
-    assert "var VARIANTES = {" in SCRIPT
-    for name in ("portada", "interior", "anfitriones"):
+    assert "var VISTAS = {" in SCRIPT
+    for name in ("visitante", "cliente", "anfitrion", "administrador"):
         assert re.search(rf"\b{name}:", SCRIPT), name
+    # Lo que cambia por página, aparte de la vista: solo «anfitriones».
+    assert 'var PAGINAS = ["portada", "interior", "anfitriones"];' in SCRIPT
+
+
+def test_the_header_is_a_comfort_not_a_permission():
+    """El permiso lo da la API en cada ruta; la cabecera solo decide qué enlaces se ven."""
+    assert "comodidad, no seguridad" in SCRIPT
 
 
 def test_the_script_works_in_the_browser_and_in_node():
     assert "module.exports = fabrica()" in SCRIPT
     assert "raiz.INTEGRO_ESTRUCTURA = fabrica()" in SCRIPT
-    assert 'if (typeof document !== "undefined") montar(document);' in SCRIPT
+    assert "montar(document, VISTA_POR_DEFECTO, window.location);" in SCRIPT
     # No hace peticiones: solo arma la cabecera y el pie.
     assert "fetch(" not in SCRIPT and "XMLHttpRequest" not in SCRIPT
 
