@@ -1783,25 +1783,121 @@ PROMPTS = [
                         "herramientas/bitacora/evidencias/web_tu_registro_vistas_pruebas_2026-11-20.txt."),
         },
         "decisiones": [
-            ("30.1", "Hacer primero los cambios pedidos (tú formal y «Cerrar sesión») y la pantalla de registro; las vistas, como una propuesta escrita y no construidas.", "La regla es una responsabilidad por rama y las vistas dependen de decisiones de Sophia que todavía no existen. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.1", "Hacer primero los cambios pedidos (tú formal y «Cerrar sesión») y la pantalla de registro; las vistas, como una propuesta escrita y no construidas.", "La regla es una responsabilidad por rama y las vistas dependen de decisiones de Sophia que todavía no existen. Campo: qué hace.", "Rechazar", "Ya crea las vistas en el frontend y backend.", "Las vistas se construyeron: la API en la rama api/view-roles (commit f22c5b0) y la web en web/views (commit b12de8c), prompt 31."),
             ("30.2", "El teléfono se captura con un selector del código de marcación y un campo para el número.", "La API guarda el teléfono en formato internacional. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Selector de código y número».", "Commit 782dcea."),
             ("30.3", "La lista de países trae todos los que conoce la API, con México primero y ya elegido.", "Hay huéspedes extranjeros. Campo: qué datos necesita.", "Aceptar", "Sophia eligió la opción «Todos los países, México primero».", "Commit 782dcea."),
             ("30.4", "El indicador de la contraseña son cuatro cuadros que se llenan según el nivel, con el nombre del nivel y los consejos.", "El diseño es de Sophia; la IA ofreció dos formas. Campo: qué hace.", "Aceptar", "Sophia eligió la opción «Cuatro segmentos con el nombre del nivel».", "Commit 782dcea."),
             ("30.5", "El registro es una página aparte, no una ventana como la de iniciar sesión.", "Sophia lo planteó como cuestionamiento: la ventana es moderna, pero el registro pide más datos. Campo: qué hace.", "Aceptar", "Como va a pedir más cosas, como nombre completo, apellidos, teléfono, etc., creo que es mejor que sea aparte.", "web/registro.html."),
             ("30.6", "Los textos de la ventana en el tono formal pero de tú: «Aún no has comprobado tu correo electrónico. Revisa el código que te enviamos al registrarte.»", "Sophia dijo que el tú formal genera más confianza que el usted. Campo: qué hace.", "Revisar", "Los demás puntos los acepto, solo que para los textos es mejor hablar de tú pero formalmente y no de usted, creo que genera más confianza.", "Los textos vuelven al trato de tú (commit 780df7f); el registro nace en ese tono."),
             ("30.7", "«Salir» pasa a «Cerrar sesión».", "Hace pareja con «Iniciar sesión». Campo: qué hace.", "Aceptar", "Veredictos 4. Cambiar Salir por «Cerrar sesión».", "Commit 780df7f."),
-            ("30.8", "«Apellidos» es un solo campo.", "La API tiene un solo dato para los apellidos (last_name, hasta 80 caracteres); Sophia habló de «nombre completo, apellidos». Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("30.9", "Las verificaciones de la pantalla son solo lo evidente (vacío, formato del correo, teléfono y fecha); lo demás lo decide la API y sus avisos salen en el campo, con el texto de la API.", "La API es la que manda y así no se repiten las reglas en dos lugares. Algunos textos de la API están en un tono distinto. Campo: qué hace.", "Pendiente", "", ""),
-            ("30.10", "Cuando la API rechaza la contraseña, en el campo va una sola línea («Tu contraseña aún no cumple lo que se indica abajo.») y el indicador se actualiza con lo que falta.", "Al ver la captura se notó que la misma lista salía dos veces. Campo: qué hace.", "Pendiente", "", "registro-logica.js (resumirAvisos) y registro.js."),
-            ("30.11", "El código de marcación del teléfono sigue al país de residencia mientras la persona no lo cambie a mano.", "Quien vive en un país suele tener su teléfono de ahí. Campo: qué hace.", "Pendiente", "", ""),
-            ("30.12", "Los nombres de los países los da el navegador, en español; la lista y sus códigos de marcación se generan con una librería que no es dependencia del proyecto (phonenumbers 9.0.42, publicada hace más de 14 días).", "Para no mantener 247 nombres ni códigos a mano. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("30.13", "Con una sesión iniciada, la página de registro dice «Ya iniciaste sesión como (nombre). Para crear otra cuenta, primero cierra sesión.» y oculta el formulario.", "No hay a quién registrar con una sesión abierta. Campo: qué hace.", "Pendiente", "", ""),
-            ("30.14", "En el paso del código y en el de «Tu cuenta está lista» se oculta la introducción de la página.", "Habla de los datos y estorba después. Campo: qué hace.", "Pendiente", "", ""),
-            ("30.15", "Al terminar el registro, «Iniciar sesión» abre la ventana de la cabecera: hay que escribir otra vez el correo y la contraseña y un código nuevo.", "El inicio de sesión siempre pide correo, contraseña y código (ADR 0014). Campo: qué hace.", "Pendiente", "", ""),
-            ("30.16", "Si el correo ya tiene cuenta, el aviso del campo ofrece «Inicia sesión», que abre la ventana.", "Es lo que la persona necesita después de ese aviso. Campo: qué hace.", "Pendiente", "", ""),
-            ("30.17", "Los textos de la página (por ejemplo, «Con una sola cuenta puedes reservar y, más adelante, publicar tu propiedad. Todos los datos son obligatorios.») los redactó la IA.", "El prompt no daba los textos. Campo: qué hace.", "Pendiente", "", ""),
-            ("30.18", "La pantalla no trae casilla de términos y aviso de privacidad.", "La revisión legal sigue pendiente (0.10) y los dos enlaces del pie todavía no llevan a ningún lado. Campo: qué hace.", "Pendiente", "", ""),
+            ("30.8", "«Apellidos» es un solo campo.", "La API tiene un solo dato para los apellidos (last_name, hasta 80 caracteres); Sophia habló de «nombre completo, apellidos». Campo: qué datos necesita.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.9", "Las verificaciones de la pantalla son solo lo evidente (vacío, formato del correo, teléfono y fecha); lo demás lo decide la API y sus avisos salen en el campo, con el texto de la API.", "La API es la que manda y así no se repiten las reglas en dos lugares. Algunos textos de la API están en un tono distinto. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.10", "Cuando la API rechaza la contraseña, en el campo va una sola línea («Tu contraseña aún no cumple lo que se indica abajo.») y el indicador se actualiza con lo que falta.", "Al ver la captura se notó que la misma lista salía dos veces. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios: registro-logica.js (resumirAvisos) y registro.js."),
+            ("30.11", "El código de marcación del teléfono sigue al país de residencia mientras la persona no lo cambie a mano.", "Quien vive en un país suele tener su teléfono de ahí. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.12", "Los nombres de los países los da el navegador, en español; la lista y sus códigos de marcación se generan con una librería que no es dependencia del proyecto (phonenumbers 9.0.42, publicada hace más de 14 días).", "Para no mantener 247 nombres ni códigos a mano. Campo: qué datos necesita.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.13", "Con una sesión iniciada, la página de registro dice «Ya iniciaste sesión como (nombre). Para crear otra cuenta, primero cierra sesión.» y oculta el formulario.", "No hay a quién registrar con una sesión abierta. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.14", "En el paso del código y en el de «Tu cuenta está lista» se oculta la introducción de la página.", "Habla de los datos y estorba después. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.15", "Al terminar el registro, «Iniciar sesión» abre la ventana de la cabecera: hay que escribir otra vez el correo y la contraseña y un código nuevo.", "El inicio de sesión siempre pide correo, contraseña y código (ADR 0014). Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.16", "Si el correo ya tiene cuenta, el aviso del campo ofrece «Inicia sesión», que abre la ventana.", "Es lo que la persona necesita después de ese aviso. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.17", "Los textos de la página (por ejemplo, «Con una sola cuenta puedes reservar y, más adelante, publicar tu propiedad. Todos los datos son obligatorios.») los redactó la IA.", "El prompt no daba los textos. Campo: qué hace.", "Aceptar", "Los demás puntos los acepto.", "Sin cambios."),
+            ("30.18", "La pantalla no trae casilla de términos y aviso de privacidad.", "La revisión legal sigue pendiente (0.10) y los dos enlaces del pie todavía no llevan a ningún lado. Campo: qué hace.", "Revisar", "Solo coloca la casilla de términos y aviso de privacidad pero que no despliegue nada porque no hay algo legal.", "Se agregó la casilla, sin enlaces ni nada que desplegar (commit 837d164, rama web/terms-checkbox)."),
             ("30.19", "Una propuesta escrita de las vistas (visitante, cliente, anfitrión y administrador), con diez decisiones por tomar y el orden para construirlas.", "Sophia pidió definir las vistas de una vez y dijo que se van platicando y definiendo. Campo: qué hace.", "Aceptar", "Sí hay que definir las vistas de una vez.", "docs/diseno/vistas.md (commit fc6ccb5)."),
+        ],
+    },
+    # ------------------------------------------------------------------ 31
+    {
+        "n": 31,
+        "titulo": "Vistas construidas, casilla de términos y corrección del correo",
+        "fecha": "20 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Respuesta a las desviaciones del prompt 30: «Desviaciones. 1. Ya crea las vistas en el frontend y "
+                     "backend. 11. Solo coloca la casilla de términos y aviso de privacidad pero que no despliegue nada "
+                     "porque no hay algo legal. Los demás puntos los acepto.» Sobre las propuestas de las vistas: «Me "
+                     "gusta, aplica los cambios para que se visualice y Vercel actualice.» También aceptó las sugerencias "
+                     "de que una cuenta sin comprobar pueda corregir su correo y de una casilla de términos y aviso de "
+                     "privacidad. Respuestas a las decisiones que la IA le preguntó: 1) la barra «Todo, Alojamientos, "
+                     "Experiencias, Servicios» desde ya. 2) «Reseñas» es que el anfitrión puede ver las reseñas que dejan "
+                     "los usuarios o clientes de su estancia en la propiedad; también deben aparecer en la ventana del "
+                     "usuario, para que comenten y vean si la propiedad tiene buenas reseñas o no. La diferencia entre la "
+                     "vista del anfitrión y la del cliente es que el anfitrión ve las reseñas (más adelante, que una IA se "
+                     "las resuma y le dé sugerencias para mejorar la estancia) y puede responder los comentarios, si gusta, "
+                     "con un gracias o una disculpa, etcétera. La vista del cliente debe tener el apartado para escribir y "
+                     "ver las reseñas, nada más, si acaso reaccionar con corazón o like. Solo sería «Reseñas» para ver lo "
+                     "que escriben los demás y «Comentarios» para redactar un comentario. 3) Sobre el rol de revisor "
+                     "preguntó: ¿a qué te refieres con el rol de revisor? 4) El administrador ve las otras vistas con su "
+                     "propia cuenta. Al preguntarle en un cuadro de opciones, eligió que «Experiencias» y «Servicios» "
+                     "lleven a una página «Próximamente», y que «Todo» lleve a la portada y «Alojamientos» a sus "
+                     "resultados."),
+        "tarea": ("1) Veredictos del prompt 30: el 1, que las vistas se creen ya en el frontend y en el backend; el 11, que "
+                  "solo se coloque la casilla de términos y aviso de privacidad, sin que despliegue nada porque no hay "
+                  "nada legal; los demás puntos se aceptan. 2) Propuestas de las vistas: aplicar los cambios para que se "
+                  "visualicen y Vercel se actualice. 3) Aceptar las sugerencias de la corrección del correo de una cuenta "
+                  "sin comprobar y de la casilla de términos y aviso de privacidad. 4) Responder las cuatro decisiones de "
+                  "las vistas y explicar qué es el rol de revisor."),
+        "salida": ("Que las vistas se visualicen y Vercel se actualice. No se indicó otro formato: se aplicó el desglose "
+                   "de cierre de CLAUDE.md."),
+        "respuesta": {
+            "fecha": "20 de noviembre de 2026",
+            "commits": ("837d164 (rama web/terms-checkbox, subida y sin fusionar). d9c15ff (rama "
+                        "api/correct-unverified-email, apilada sobre la anterior, subida y sin fusionar). f22c5b0 (rama "
+                        "api/view-roles, apilada sobre la anterior, subida y sin fusionar). b12de8c (rama web/views, "
+                        "apilada sobre la anterior, subida y sin fusionar). Orden para fusionar: web/terms-checkbox, "
+                        "api/correct-unverified-email, api/view-roles y web/views. Sophia fusionó antes de este prompt "
+                        "los PR #55 (las vistas propuestas, en fe35ae4) y #56 (bitácora 30, en ef55d0d). Vercel publica "
+                        "main solo cuando Sophia fusione."),
+            "archivos": [
+                ("web/registro.html, registro-logica.js, registro.js y estilos.css", "la casilla de términos y aviso de privacidad, sin enlaces ni nada que desplegar; y la corrección del correo desde el paso del código (commits 837d164 y d9c15ff)."),
+                ("backend/app/modules/accounts/email_correction.py, codes.py y router.py", "nuevo: POST /auth/correct-unverified-email. Con su contraseña, una cuenta sin comprobar cambia su correo y recibe un código nuevo; usa la espera por dispositivo y el límite por hora del inicio de sesión."),
+                ("backend/app/api/roles.py, modules/accounts/sessions.py y router.py", "nuevo roles.py: require_host y require_admin (y sus variantes de cambio, con las tres defensas). is_admin en la sesión y en GET /auth/me, leído de la base en cada petición (commit f22c5b0)."),
+                ("web/assets/js/estructura.js", "la cabecera sale de una tabla de vistas (visitante, cliente, anfitrión y administrador) y de la página; la barra con su pestaña marcada; el menú de cada vista."),
+                ("web/assets/js/cuenta-logica.js y cuenta.js", "la vista de la persona según is_host e is_admin; «Iniciar sesión» y «Crear cuenta», o el nombre con su menú; las páginas con data-requiere; lo que un administrador elige mirar."),
+                ("web/mi-cuenta.html, anfitrion.html, administracion.html, proximamente.html y assets/js/proximamente.js", "nuevos: la página de cada vista y la de Experiencias y Servicios."),
+                ("web/assets/css/estilos.css", "la barra con la pestaña marcada, el menú de la cuenta, el celular y las páginas de las vistas."),
+                ("tests/backend/test_view_roles.py y test_accounts_correct_email.py", "nuevos: 25 y 38 pruebas contra la base; la prueba de login al día con is_admin."),
+                ("tests/web y tests/e2e", "nuevos test_views_pages.py y test_vistas_e2e.py; las pruebas de la cabecera, del registro y de entrar al día; el apoyo aprende a ver lo que hay en la cuenta, a abrir el menú y a dar de alta anfitriones y administradores en una prueba."),
+                ("docs/diseno/vistas.md, sistema-de-diseno.md y tests/e2e/README.md", "las respuestas de Sophia, la cabecera de cada vista y los archivos de prueba nuevos."),
+                ("herramientas/bitacora/evidencias/vistas_terminos_correo_pruebas_2026-11-20.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Un aviso claro cuando la página no tiene servidor, como pasa en Vercel.", "Vercel publica solo web/ y no hay API: ahí «Iniciar sesión» dice «El servidor respondió de forma inesperada» y «Crear cuenta» no puede crear nada. Hoy en Vercel solo se ve la vista del visitante; las otras vistas se ven corriendo el servidor local."),
+                ("Confirmar qué es «Comentarios» del anfitrión.", "Sophia dijo que el anfitrión ve las reseñas y puede responder los comentarios con un gracias o una disculpa. La IA dejó esa frase en «Reseñas» del anfitrión y «Comentarios» dice solo «Próximamente»."),
+                ("Confirmar la pieza de reservar sin sesión antes de construirla.", "«Reservar» todavía no hace nada, porque no hay reservas; falta decir a dónde se vuelve después de iniciar sesión y qué se conserva."),
+                ("No tener un rol de revisor aparte por ahora.", "La arquitectura nombra el rol sin definirlo; con tres personas en el equipo, las tres atienden la cola de verificaciones desde su vista de administrador."),
+            ],
+            "lineas": ("Nuevos completos: roles.py, email_correction.py, test_view_roles.py, test_accounts_correct_email.py, "
+                       "test_views_pages.py, test_vistas_e2e.py, mi-cuenta.html, anfitrion.html, administracion.html, "
+                       "proximamente.html y proximamente.js. estructura.js: reescrito (la tabla de vistas, la barra, el menú, "
+                       "montarCabecera y marcarPestana). cuenta.js: la cabecera por vista, el menú, las páginas protegidas "
+                       "y la vista elegida. cuenta-logica.js: estadoDeCabecera con is_host e is_admin, vistaDe y "
+                       "permisoDePagina. estilos.css: el bloque «La cuenta en la cabecera» ampliado, el bloque «Páginas de "
+                       "cada vista» y reglas del celular. Documentos: vistas.md reescrito con las decisiones; una fila de "
+                       "componentes y otra nueva en el sistema de diseño; el README de las pruebas de principio a fin."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión "
+                        "publicada; todo lo que escriben las pruebas se deshace. Backend en api/correct-unverified-email: "
+                        "«881 passed, 1 warning in 149.34s». Backend en api/view-roles: «906 passed, 1 warning in 156.63s». "
+                        "Web (node y pytest) y principio a fin juntos en web/views: «334 passed in 260.60s». En la primera "
+                        "corrida completa de esa rama una prueba del registro falló («1 failed, 333 passed»): revisó la "
+                        "ventana de inicio de sesión antes de que existiera y lanzó un error; sola, cuatro veces, pasó; se "
+                        "hicieron tolerantes las siete esperas con esa condición y la corrida siguiente pasó completa, "
+                        "pero no se puede asegurar que esa fuera toda la causa. Al ver las capturas y al correr las pruebas "
+                        "se encontró y corrigió que el nombre y el correo se quedaban escritos, ocultos, en «Mi cuenta» "
+                        "después de cerrar sesión, que el enlace con ancla (anfitrion.html#resenas) no llevaba al lugar y "
+                        "que el pie quedaba a media pantalla en las páginas cortas. Las corridas de web y de principio a "
+                        "fin de las dos primeras ramas se hicieron (web 118 y principio a fin 120) pero su salida no se "
+                        "guardó. No se probó en Vercel. Salida copiada en "
+                        "herramientas/bitacora/evidencias/vistas_terminos_correo_pruebas_2026-11-20.txt."),
+        },
+        "decisiones": [
+            ("31.1", "Las secciones que todavía no existen (reservas, mensajes, reseñas, comentarios, propiedades, chats, publicar, verificaciones, casos, cargos y bitácora) son secciones de una página que dicen «Próximamente».", "Cada enlace de la cabecera tiene que llevar a algo que exista y Sophia quiere ver las vistas. Campo: qué hace.", "Pendiente", "", ""),
+            ("31.2", "El administrador elige qué vista mirar desde el menú de su nombre; lo elegido se recuerda con sessionStorage, solo en esa pestaña, y un aviso junto al nombre dice «Viendo como cliente» o «Viendo como anfitrión».", "Ver las vistas con su propia cuenta exige poder cambiar la cabecera aunque la sesión sea de administrador. Campo: qué datos necesita (algo que vive solo en el navegador).", "Pendiente", "", ""),
+            ("31.3", "Un administrador puede abrir anfitrion.html sin tener perfil de anfitrión; la API no lo trata como anfitrión.", "Sophia dijo que el administrador puede ver las vistas de anfitrión y cliente. Campo: qué hace.", "Pendiente", "", ""),
+            ("31.4", "«Buscar hospedaje» sale de la cabecera, porque lo hace «Alojamientos»; solo queda en el menú del anfitrión.", "Con la barra, el enlace sobraba. Campo: qué hace.", "Pendiente", "", ""),
+            ("31.5", "En celular, «Conviértete en anfitrión» y «Publica tu propiedad» se ocultan de la cabecera; el pie sigue llevando a «Anfitriones».", "No caben junto a la marca, la barra y la cuenta. Campo: qué hace.", "Pendiente", "", ""),
+            ("31.6", "El menú del anfitrión trae «Mi cuenta», «Mis reservas» y «Buscar hospedaje».", "Una sola cuenta es huésped y anfitrión; el anfitrión sigue pudiendo reservar. Campo: qué hace.", "Pendiente", "", ""),
+            ("31.7", "«Mi cuenta» muestra solo el nombre completo y el correo que contesta la API.", "Es lo que la API entrega hoy y no hay otras secciones construidas. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("31.8", "La flecha del menú de la cuenta se dibuja con bordes del navegador, sin ícono.", "Sin una señal, el nombre no dice que abre un menú, y las reglas del proyecto piden no usar íconos. Campo: qué hace.", "Pendiente", "", ""),
+            ("31.9", "La prueba que prohibía usar sessionStorage en cuenta.js ahora lo permite solo para la clave integro_view_as, con los valores cliente y anfitrion, y revisa que el uso no sea otro.", "Recordar la vista elegida por el administrador necesita guardarla en el navegador; la llave de sesión sigue viajando solo en la cookie. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("31.10", "Cuatro ramas apiladas (web/terms-checkbox, api/correct-unverified-email, api/view-roles y web/views) que se fusionan en ese orden, en vez de cuatro independientes.", "Cada una necesita lo de la anterior (la casilla en el registro, el registro con la corrección, is_admin en la API, la cabecera que lo usa). Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
         ],
     },
 ]

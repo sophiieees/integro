@@ -1,0 +1,87 @@
+Vistas construidas, casilla de términos y corrección del correo
+20 de noviembre de 2026
+
+Pruebas corridas por la IA en la computadora de Sophia, contra la base integro en el puerto 5433.
+No es una versión publicada. Todo lo que escriben las pruebas se deshace.
+Las ramas están apiladas: cada una contiene las anteriores.
+
+Rama web/terms-checkbox (837d164): la casilla de términos y aviso de privacidad, sin nada que desplegar.
+Rama api/correct-unverified-email (d9c15ff): una cuenta sin comprobar corrige su correo.
+  backend (python -m pytest tests\backend -v -rs), salida guardada:
+    ================= 881 passed, 1 warning in 149.34s (0:02:29) ==================
+       82  test_account_access_tables.py PASSED
+       40  test_accounts_correct_email.py PASSED
+       62  test_accounts_login.py PASSED
+       60  test_accounts_logout.py PASSED
+       76  test_accounts_registration.py PASSED
+      152  test_accounts_validation.py PASSED
+       37  test_accounts_wrong_passwords.py PASSED
+       38  test_config.py PASSED
+       16  test_health.py PASSED
+       34  test_login_attempts_admins_tables.py PASSED
+      171  test_password_strength.py PASSED
+       37  test_serve_web.py PASSED
+       31  test_session_cookie.py PASSED
+       45  test_transaction.py PASSED
+  Las corridas de web y de principio a fin de estas dos ramas se hicieron al construirlas (la IA anotó web 118
+  y principio a fin 120), pero su salida no se guardó. La corrida completa de web/views, que contiene las dos
+  ramas, está abajo.
+
+Rama api/view-roles (f22c5b0): is_admin en /auth/me y las dependencias require_host y require_admin.
+  backend (python -m pytest tests\backend -v -rs), salida guardada:
+    ================= 906 passed, 1 warning in 156.63s (0:02:36) ==================
+       82  test_account_access_tables.py PASSED
+       40  test_accounts_correct_email.py PASSED
+       62  test_accounts_login.py PASSED
+       60  test_accounts_logout.py PASSED
+       76  test_accounts_registration.py PASSED
+      152  test_accounts_validation.py PASSED
+       37  test_accounts_wrong_passwords.py PASSED
+       38  test_config.py PASSED
+       16  test_health.py PASSED
+       34  test_login_attempts_admins_tables.py PASSED
+      171  test_password_strength.py PASSED
+       37  test_serve_web.py PASSED
+       31  test_session_cookie.py PASSED
+       45  test_transaction.py PASSED
+       25  test_view_roles.py PASSED
+
+Rama web/views (b12de8c): la cabecera por vista y las páginas de cada vista.
+  node (node --test tests/web), antes de la corrida de abajo:  # tests 105, # pass 105, # fail 0
+  web y principio a fin juntos (desde backend\, python -m pytest ..\tests\web ..\tests\e2e -v -rs), salida guardada:
+    ======================= 334 passed in 260.60s (0:04:20) =======================
+       49  test_brand_palette.py PASSED
+       34  test_entrar_e2e.py PASSED
+       40  test_estructura_e2e.py PASSED
+       19  test_login_modal.py PASSED
+       40  test_register_page.py PASSED
+       54  test_registro_e2e.py PASSED
+       33  test_structure.py PASSED
+       20  test_views_pages.py PASSED
+       45  test_vistas_e2e.py PASSED
+  En la primera corrida completa de esta rama una prueba falló:
+    1 failed, 333 passed in 193.01s (0:03:13)
+    test_an_email_that_already_has_an_account_is_warned_and_offers_to_sign_in, del registro, con
+    «RuntimeError: Uncaught: !!(!document.getElementById('ventana-entrar').hidden)»: la prueba revisó la
+    ventana de inicio de sesión antes de que existiera y la revisión lanzó un error en lugar de esperar.
+    Corrida sola cuatro veces seguidas pasó las cuatro. No se encontró otra causa; se hicieron tolerantes a que
+    la ventana todavía no exista las siete esperas que tenían esa condición (una en test_entrar_e2e.py, cinco
+    en test_registro_e2e.py y una en test_vistas_e2e.py), y la corrida completa siguiente fue la de arriba,
+    sin fallas. La falla fue intermitente y no se puede asegurar que esa fuera toda su causa.
+
+Lo que se encontró al ver las capturas y al correr las pruebas, y se corrigió:
+  - Las pruebas de principio a fin mostraron que, al cerrar la sesión en «Mi cuenta», el nombre y el correo
+    seguían escritos en la página, ocultos. Ahora se borran.
+  - Con un enlace como anfitrion.html#resenas, el navegador no iba al ancla porque el contenido estaba
+    oculto al cargar. Ahora la página va al ancla cuando ya muestra el contenido.
+  - Las páginas cortas dejaban el pie a media pantalla. Se les puso un alto mínimo.
+  - La prueba que prohibía sessionStorage en cuenta.js ahora lo permite solo para la vista que elige un
+    administrador (clave integro_view_as, valores cliente y anfitrion), y revisa que el uso no sea otro.
+
+Capturas que la IA miró (escritorio y celular, no se guardan en el repositorio): visitante, «Próximamente»,
+cliente con el menú abierto, cliente en el espacio del anfitrión, anfitrión, administrador con el menú
+abierto, administrador viendo como cliente, «Mi cuenta», y en celular el visitante, el cliente con el menú
+abierto y el anfitrión.
+
+No se probó en la versión de Vercel: allí solo se publica web/ y no hay API, así que solo se ve la vista del
+visitante. Las vistas de cliente, anfitrión y administrador se ven corriendo el servidor local.
