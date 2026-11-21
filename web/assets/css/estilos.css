@@ -161,6 +161,14 @@ button, input, select { font: inherit; color: inherit; }
 .ventana-aviso { background: var(--color-alerta-suave); color: var(--color-alerta); border-left: 3px solid var(--color-alerta); padding: 10px 12px; margin-bottom: 14px; font-size: .92rem; }
 .ventana-texto { color: var(--color-tinta-suave); font-size: .95rem; margin-bottom: 14px; }
 .ventana-acciones { display: flex; align-items: center; justify-content: flex-end; gap: 20px; margin-top: 6px; }
+/* El aviso de «Reservar» en la ficha de una propiedad. */
+.reserva-aviso { margin-top: 14px; padding: 14px 16px; background: var(--color-primario-suave); border-left: 3px solid var(--color-acento); border-radius: var(--radio-chico); }
+.reserva-aviso[hidden] { display: none; }
+.reserva-aviso-titulo { font-weight: 600; margin-bottom: 4px; }
+.reserva-aviso-texto { color: var(--color-tinta-suave); font-size: .92rem; }
+.reserva-aviso-error { color: var(--color-alerta); }
+.reserva-aviso-acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.reserva-aviso-acciones .btn { flex: 1 1 8rem; padding: 10px 14px; }
 .ventana-olvido { margin: -6px 0 14px; font-size: .9rem; }
 .ventana-olvido a { color: var(--color-primario); font-weight: 600; text-decoration: none; }
 .ventana-olvido a:hover { text-decoration: underline; text-underline-offset: 3px; }

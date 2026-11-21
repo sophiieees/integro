@@ -171,6 +171,23 @@
     return { permitido: true };
   }
 
+  /* A dónde se puede volver después de iniciar sesión o de crear la cuenta: una página de Íntegro, con su
+     dirección completa (por ejemplo, propiedad.html?id=2&llegada=2026-12-01). Viene de la dirección de la página
+     (?siguiente=...), o sea, de quien escribió o abrió ese enlace: solo se acepta una página de esta lista, escrita
+     sin dirección de otro sitio, sin «javascript:», sin barras ni nada raro. Todo lo demás es null y no se usa.
+     Registro y recuperar contraseña no están: volver a ellas no tiene sentido. */
+  var PAGINAS_DE_REGRESO = [
+    "index.html", "propiedad.html", "como-funciona.html", "anfitriones.html",
+    "mi-cuenta.html", "anfitrion.html", "administracion.html", "proximamente.html"
+  ];
+
+  function siguienteSeguro(valor) {
+    if (typeof valor !== "string" || valor.length === 0 || valor.length > 300) return null;
+    var partes = /^([a-z-]+\.html)(\?[A-Za-z0-9_=&%.\-]*)?(#[A-Za-z0-9_\-]*)?$/.exec(valor);
+    if (!partes || PAGINAS_DE_REGRESO.indexOf(partes[1]) === -1) return null;
+    return valor;
+  }
+
   /* Qué sigue después de pedir cerrar sesión. */
   function despuesDeSalir(status) {
     if (status === 200 || status === 401) return { sesion: false, aviso: null };
@@ -188,6 +205,8 @@
     estadoDeCabecera: estadoDeCabecera,
     vistaDe: vistaDe,
     permisoDePagina: permisoDePagina,
+    siguienteSeguro: siguienteSeguro,
+    PAGINAS_DE_REGRESO: PAGINAS_DE_REGRESO,
     despuesDeSalir: despuesDeSalir,
     minutos: minutos
   };

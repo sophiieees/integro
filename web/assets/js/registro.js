@@ -349,6 +349,14 @@
     });
   });
 
+  /* ---------- Volver a donde se estaba ---------- */
+
+  /* Si la persona llegó desde «Reservar» (?siguiente=propiedad.html?id=2&...), al iniciar sesión vuelve a esa
+     página: lo hace cuenta.js. Aquí solo se le avisa, y solo si la dirección es una permitida. */
+  if (window.INTEGRO_CUENTA && window.INTEGRO_CUENTA.siguienteSeguro(new URLSearchParams(window.location.search).get("siguiente"))) {
+    listo.querySelector("[data-nota-siguiente]").hidden = false;
+  }
+
   /* ---------- Con sesión iniciada no hay a quién registrar ---------- */
 
   fetch(API + "/me", { credentials: "same-origin", headers: { "Accept": "application/json" } }).then(function (respuesta) {
