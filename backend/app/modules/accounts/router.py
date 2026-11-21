@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.api.auth import SESSION_COOKIE, clear_session_cookie, require_session, set_session_cookie
+from app.api.client import client_ip
 from app.api.protection import csrf_token, require_session_for_change
 from app.database.transaction import user_transaction
 from app.modules.accounts.email_correction import CorrectionOutcome, correct_unverified_email
@@ -243,7 +244,7 @@ def correct_email(body: CorrectEmailRequest, request: Request):
         values["new_email"],
         state.settings,
         state.code_sender,
-        ip_address=request.client.host if request.client else None,
+        ip_address=client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
 
@@ -346,7 +347,7 @@ def password_reset_confirm(body: PasswordResetConfirmRequest, request: Request):
         values["new_password"],
         state.settings,
         state.code_sender,
-        ip_address=request.client.host if request.client else None,
+        ip_address=client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
 
@@ -449,7 +450,7 @@ def login(body: LoginRequest, request: Request):
         values["password"],
         state.settings,
         state.code_sender,
-        ip_address=request.client.host if request.client else None,
+        ip_address=client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
 
@@ -500,7 +501,7 @@ def login_verify(body: LoginVerifyRequest, request: Request, response: Response)
         values["email"],
         values["code"],
         state.settings,
-        ip_address=request.client.host if request.client else None,
+        ip_address=client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
 

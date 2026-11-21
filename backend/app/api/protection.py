@@ -22,12 +22,12 @@ Las rutas que solo leen siguen usando require_session.
 
 import hashlib
 import hmac
-from urllib.parse import urlsplit
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 
 from app.api.auth import SESSION_COOKIE, require_session
+from app.api.client import origin_of, own_origin
 from app.core.config import Settings
 from app.modules.accounts.sessions import CurrentSession
 
@@ -56,17 +56,9 @@ def csrf_token(session_token: str, settings: Settings) -> str:
     return hmac.new(key, CSRF_LABEL + session_token.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
-def origin_of(address: str | None) -> str | None:
-    """El origen de una dirección: esquema, servidor y puerto. None si no tiene forma de dirección."""
-    parts = urlsplit((address or "").strip())
-    if parts.scheme not in ("http", "https") or not parts.netloc:
-        return None
-    return f"{parts.scheme}://{parts.netloc}".lower()
-
-
 def allowed_origins(request: Request, settings: Settings) -> set[str]:
     """La dirección de la propia API y las de la lista de la configuración."""
-    origins = {origin_of(str(request.base_url))}
+    origins = {own_origin(request, settings)}
     origins.update(origin_of(item) for item in settings.allowed_origins.split(","))
     origins.discard(None)
     return origins

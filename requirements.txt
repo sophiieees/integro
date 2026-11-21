@@ -1,0 +1,3 @@
+# Vercel instala las dependencias de la raíz del proyecto. Son las mismas del backend: una sola lista, en
+# backend/requirements.txt, con versiones exactas.
+-r backend/requirements.txt

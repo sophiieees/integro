@@ -90,9 +90,50 @@ EMAIL_DELIVERY=console
 2. Abrir la previsualización de la rama y recorrer una lista de pruebas a mano que la IA preparará: registro, código, inicio de sesión, cerrar sesión, recuperar contraseña y reservar sin sesión.
 3. Solo cuando todo funcione, fusionar a `main` y repetir con las variables de producción. Comprar el dominio en Vercel y asignarlo es lo último.
 
+## 5 ter. Lo que ya está en el código (rama `api/vercel-ready`)
+
+- **`api/index.py`:** el punto de entrada. Vercel lo ejecuta como función y le manda todo lo que empiece con `/api/`. Es la misma aplicación de `backend/app/main.py`; no muestra las páginas.
+- **`vercel.json`:** `outputDirectory: web` (las páginas las entrega la red de Vercel, como hoy), una regla que manda `/api/(.*)` a la función, la región `cle1` (Cleveland, la de AWS `us-east-2`, la misma de Neon) y que la función incluya `backend/app/**`.
+- **`.vercelignore`:** no se sube nada de `tests/`, `docs/`, `database/`, `tools/`, `herramientas/`, `.git`, `.claude`, ni ningún `.env` ni entorno virtual.
+- **`requirements.txt` de la raíz:** una sola línea, `-r backend/requirements.txt`, para que haya una sola lista de dependencias. **(sin verificar que Vercel la lea así; si no, se copia la lista y se avisa)**
+- **`.python-version`:** 3.13, la versión con la que se prueba todo.
+- **Variables nuevas:** `DATABASE_SSLMODE` (en Neon, `require`), `DATABASE_CONNECT_TIMEOUT_SECONDS` (en Neon, `10`, porque la primera conexión tras suspenderse tarda más) y `TRUST_PROXY_HEADERS`.
+- **Detrás del proxy de Vercel:** la API ve HTTP aunque la persona entró por HTTPS, y la dirección de quien pide es la del proxy. Con `TRUST_PROXY_HEADERS=true` (solo en Vercel), el origen propio se arma con `X-Forwarded-Proto` y la IP sale de `X-Forwarded-For`. Sin eso, toda petición que cambia algo daría 403, y todas las personas compartirían la espera por dispositivo. Con la variable apagada (como en tu computadora), esos encabezados se ignoran: nadie puede fingir otra dirección.
+
 ## 5 bis. CAPTCHA: qué falta decidir
 
 Es una pieza aparte, después de que la demostración funcione. Opciones: **Cloudflare Turnstile** (gratuito, sin límite de solicitudes publicado, casi siempre invisible; hay que mencionar su adenda de privacidad en el aviso de privacidad), **hCaptcha** (reto visible en el plan gratuito) o **Google reCAPTCHA** (con un tope gratuito). Recomendación: Turnstile. Las cifras de los planes salen de comparativas de terceros y hay que revisarlas en las páginas oficiales antes de decidir. Se necesitan dos llaves del servicio: la pública va en la página; la secreta, solo en el servidor y fuera del repositorio.
+
+## 5 quater. Probar en Vercel, paso a paso
+
+Lo hace Sophia en vercel.com, con el proyecto que ya publica la web. La IA no puede entrar a Vercel.
+
+1. **Variables de entorno.** En el proyecto: Settings, Environment Variables. Se agregan estas diez, primero para **Preview** y, cuando todo funcione, también para **Production**. Los valores salen de `backend/.env.neon`; **nunca** se pegan en el chat:
+
+   | Variable | Valor |
+   |---|---|
+   | `DATABASE_HOST` | la dirección **agrupada** (con `-pooler`) |
+   | `DATABASE_PORT` | `5432` |
+   | `DATABASE_NAME` | `neondb` |
+   | `DATABASE_USER` | `integro_api` |
+   | `DATABASE_PASSWORD` | la contraseña de `integro_api` |
+   | `DATABASE_SSLMODE` | `require` |
+   | `DATABASE_CONNECT_TIMEOUT_SECONDS` | `10` |
+   | `CODE_HASH_SECRET` | la llave de los códigos |
+   | `EMAIL_DELIVERY` | `console` |
+   | `TRUST_PROXY_HEADERS` | `true` |
+
+   Para las que son secretas (`DATABASE_PASSWORD` y `CODE_HASH_SECRET`), activar la opción **Sensitive** si Vercel la ofrece.
+2. **Protección.** Settings, Deployment Protection: **Vercel Authentication** encendida. Si Vercel da a elegir qué cubre, elegir que cubra todos los despliegues, producción incluida. **(sin verificar cómo se llama cada opción en la pantalla)**
+3. **Conectar la rama.** Cuando la rama `api/vercel-ready` esté en GitHub, Vercel crea una previsualización sola. Se abre desde la pestaña Deployments; hay que iniciar sesión en Vercel para verla.
+4. **Lista de pruebas a mano en la previsualización:**
+   - `/api/v1/health` contesta `ok`, y `/api/v1/health/database` dice que la base responde.
+   - La portada, una ficha de propiedad y el registro se ven.
+   - Crear una cuenta: el código aparece en el registro de la función (Vercel, pestaña Logs, línea que empieza con `[MODO DESARROLLO]`).
+   - Comprobar el correo, iniciar sesión (con su código), ver «Mi cuenta», cerrar sesión.
+   - Recuperar la contraseña y reservar sin sesión.
+   - El tiempo que tarda cada paso. Debe ser menor al que se vio desde la computadora (0.5 s por transacción), porque la función y la base están en la misma región.
+5. **Solo cuando todo funcione:** fusionar a `main` y comprobar lo mismo en producción. **Importante:** al fusionar, producción también intenta arrancar la función; si las variables de Production no están, `/api` falla (las páginas siguen igual que hoy). Por eso las variables se cargan en Production *antes* de fusionar.
 
 ## 6. Riesgos
 

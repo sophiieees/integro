@@ -1,0 +1,18 @@
+# Lo que Vercel no necesita para publicar la web y la API. Nada de aquí se sube.
+# Los secretos nunca se suben: tampoco están en el repositorio (.gitignore).
+.git
+.claude
+.env
+.env.*
+backend/.env
+backend/.env.*
+backend/.venv
+.venv
+node_modules
+**/__pycache__
+.pytest_cache
+tests
+docs
+database
+herramientas
+tools

@@ -1,3 +1,13 @@
 {
-  "outputDirectory": "web"
+  "outputDirectory": "web",
+  "regions": ["cle1"],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "backend/app/**",
+      "maxDuration": 30
+    }
+  }
 }

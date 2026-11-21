@@ -39,6 +39,9 @@ SETTINGS_VARIABLES = (
     "SESSION_COOKIE_SECURE",
     "ALLOWED_ORIGINS",
     "SERVE_WEB",
+    "DATABASE_SSLMODE",
+    "DATABASE_CONNECT_TIMEOUT_SECONDS",
+    "TRUST_PROXY_HEADERS",
 )
 
 # Llave inventada, solo para pruebas que no usan la configuración real.
