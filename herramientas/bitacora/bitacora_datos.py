@@ -1888,16 +1888,109 @@ PROMPTS = [
                         "herramientas/bitacora/evidencias/vistas_terminos_correo_pruebas_2026-11-20.txt."),
         },
         "decisiones": [
-            ("31.1", "Las secciones que todavía no existen (reservas, mensajes, reseñas, comentarios, propiedades, chats, publicar, verificaciones, casos, cargos y bitácora) son secciones de una página que dicen «Próximamente».", "Cada enlace de la cabecera tiene que llevar a algo que exista y Sophia quiere ver las vistas. Campo: qué hace.", "Pendiente", "", ""),
-            ("31.2", "El administrador elige qué vista mirar desde el menú de su nombre; lo elegido se recuerda con sessionStorage, solo en esa pestaña, y un aviso junto al nombre dice «Viendo como cliente» o «Viendo como anfitrión».", "Ver las vistas con su propia cuenta exige poder cambiar la cabecera aunque la sesión sea de administrador. Campo: qué datos necesita (algo que vive solo en el navegador).", "Pendiente", "", ""),
-            ("31.3", "Un administrador puede abrir anfitrion.html sin tener perfil de anfitrión; la API no lo trata como anfitrión.", "Sophia dijo que el administrador puede ver las vistas de anfitrión y cliente. Campo: qué hace.", "Pendiente", "", ""),
-            ("31.4", "«Buscar hospedaje» sale de la cabecera, porque lo hace «Alojamientos»; solo queda en el menú del anfitrión.", "Con la barra, el enlace sobraba. Campo: qué hace.", "Pendiente", "", ""),
-            ("31.5", "En celular, «Conviértete en anfitrión» y «Publica tu propiedad» se ocultan de la cabecera; el pie sigue llevando a «Anfitriones».", "No caben junto a la marca, la barra y la cuenta. Campo: qué hace.", "Pendiente", "", ""),
-            ("31.6", "El menú del anfitrión trae «Mi cuenta», «Mis reservas» y «Buscar hospedaje».", "Una sola cuenta es huésped y anfitrión; el anfitrión sigue pudiendo reservar. Campo: qué hace.", "Pendiente", "", ""),
-            ("31.7", "«Mi cuenta» muestra solo el nombre completo y el correo que contesta la API.", "Es lo que la API entrega hoy y no hay otras secciones construidas. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("31.8", "La flecha del menú de la cuenta se dibuja con bordes del navegador, sin ícono.", "Sin una señal, el nombre no dice que abre un menú, y las reglas del proyecto piden no usar íconos. Campo: qué hace.", "Pendiente", "", ""),
-            ("31.9", "La prueba que prohibía usar sessionStorage en cuenta.js ahora lo permite solo para la clave integro_view_as, con los valores cliente y anfitrion, y revisa que el uso no sea otro.", "Recordar la vista elegida por el administrador necesita guardarla en el navegador; la llave de sesión sigue viajando solo en la cookie. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("31.10", "Cuatro ramas apiladas (web/terms-checkbox, api/correct-unverified-email, api/view-roles y web/views) que se fusionan en ese orden, en vez de cuatro independientes.", "Cada una necesita lo de la anterior (la casilla en el registro, el registro con la corrección, is_admin en la API, la cabecera que lo usa). Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
+            ("31.1", "Las secciones que todavía no existen (reservas, mensajes, reseñas, comentarios, propiedades, chats, publicar, verificaciones, casos, cargos y bitácora) son secciones de una página que dicen «Próximamente».", "Cada enlace de la cabecera tiene que llevar a algo que exista y Sophia quiere ver las vistas. Campo: qué hace.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.2", "El administrador elige qué vista mirar desde el menú de su nombre; lo elegido se recuerda con sessionStorage, solo en esa pestaña, y un aviso junto al nombre dice «Viendo como cliente» o «Viendo como anfitrión».", "Ver las vistas con su propia cuenta exige poder cambiar la cabecera aunque la sesión sea de administrador. Campo: qué datos necesita (algo que vive solo en el navegador).", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.3", "Un administrador puede abrir anfitrion.html sin tener perfil de anfitrión; la API no lo trata como anfitrión.", "Sophia dijo que el administrador puede ver las vistas de anfitrión y cliente. Campo: qué hace.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.4", "«Buscar hospedaje» sale de la cabecera, porque lo hace «Alojamientos»; solo queda en el menú del anfitrión.", "Con la barra, el enlace sobraba. Campo: qué hace.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.5", "En celular, «Conviértete en anfitrión» y «Publica tu propiedad» se ocultan de la cabecera; el pie sigue llevando a «Anfitriones».", "No caben junto a la marca, la barra y la cuenta. Campo: qué hace.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.6", "El menú del anfitrión trae «Mi cuenta», «Mis reservas» y «Buscar hospedaje».", "Una sola cuenta es huésped y anfitrión; el anfitrión sigue pudiendo reservar. Campo: qué hace.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.7", "«Mi cuenta» muestra solo el nombre completo y el correo que contesta la API.", "Es lo que la API entrega hoy y no hay otras secciones construidas. Campo: qué datos necesita.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.8", "La flecha del menú de la cuenta se dibuja con bordes del navegador, sin ícono.", "Sin una señal, el nombre no dice que abre un menú, y las reglas del proyecto piden no usar íconos. Campo: qué hace.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.9", "La prueba que prohibía usar sessionStorage en cuenta.js ahora lo permite solo para la clave integro_view_as, con los valores cliente y anfitrion, y revisa que el uso no sea otro.", "Recordar la vista elegida por el administrador necesita guardarla en el navegador; la llave de sesión sigue viajando solo en la cookie. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todas.", "Sin cambios."),
+            ("31.10", "Cuatro ramas apiladas (web/terms-checkbox, api/correct-unverified-email, api/view-roles y web/views) que se fusionan en ese orden, en vez de cuatro independientes.", "Cada una necesita lo de la anterior (la casilla en el registro, el registro con la corrección, is_admin en la API, la cabecera que lo usa). Campo: qué hace (cómo se entrega).", "Aceptar", "Acepto todas.", "Sin cambios."),
+        ],
+    },
+    # ------------------------------------------------------------------ 32
+    {
+        "n": 32,
+        "titulo": "Desviaciones aceptadas, API en Vercel con Neon y recuperar la contraseña",
+        "fecha": "21 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Respuesta al prompt 31: «Si solo con tres vistas, el rol de revisor lo hace el administrador. "
+                     "Desviaciones: acepto todas. Mándame los links para publicar los cambios. Primero hacemos lo del "
+                     "punto dos: faltan reservar sin sesión, recuperar contraseña, el tope de sesión del panel, el "
+                     "segundo factor y el correo real; y después el resto de vistas para que ya no se vea «Próximamente».» "
+                     "Pidió cómo quitar la línea repetida de SESSION_COOKIE_SECURE y cómo meter a la base de datos los "
+                     "dos insert del anfitrión y del administrador, y preguntó dónde ve la base de datos como "
+                     "administrador (si en GitHub). Después contó que el insert dio «INSERT 0 0» y que no podía "
+                     "registrar su correo: «Primero vamos a terminar el punto número 2», con recuperar contraseña, "
+                     "luego el segundo factor, que lo necesita, y al final el correo real; reservar sin sesión «sí, de "
+                     "hecho esa es la idea»; para quien ya inició sesión, el botón de reservas le abre la reserva, pero "
+                     "«vamos poco a poco». Preguntó a qué se refería con los servicios de correo y dijo que el punto 2 "
+                     "es recuperar contraseña, tope de sesión del panel y correo real. Luego: el servidor local no "
+                     "mostraba las listas de país y de lada; «necesito que ya funcione en Vercel»; explicó que el "
+                     "servidor respondía de forma inesperada allí. Íntegro no tiene dominio, pero puede comprarlo en "
+                     "Vercel. Eligió la opción A (API en Vercel con Neon), confirmó el orden de la sección 4, autorizó "
+                     "la migración nueva, y sobre recuperar contraseña: «el código de 6 dígitos se ve muchísimo mejor» "
+                     "que el enlace, 30 minutos está bien, y una cuenta con el correo sin comprobar no puede "
+                     "recuperarla: «primero se debe comprobar y después corregirlo». Quiere que quede lo mejor "
+                     "construido posible desde el inicio. Autorizó restaurar los archivos de migraciones modificados y "
+                     "borrar el nuevo; dijo que el registro local ya se veía; y pidió continuar con la pantalla de "
+                     "recuperar contraseña en la web."),
+        "tarea": ("1) Veredictos del prompt 31: aceptar todas las desviaciones (31.1 a 31.10); el revisor lo hace el "
+                  "administrador. 2) Los links para publicar los cambios. 3) Cómo quitar la línea repetida del .env y "
+                  "cómo meter el anfitrión y el administrador en la base, y dónde ver la base. 4) Cerrar el punto 2, "
+                  "en este orden: recuperar contraseña, segundo factor y correo real, con reservar sin sesión y el "
+                  "tope de sesión del panel; después, las demás vistas. 5) Que el API y la base funcionen en Vercel "
+                  "(opción A: Vercel con Neon). 6) Recuperar contraseña con código de 6 dígitos de 30 minutos y solo "
+                  "con el correo comprobado, primero el servidor y luego la pantalla."),
+        "salida": ("Los links, las instrucciones, y el desglose de cierre de CLAUDE.md. Que el registro local funcione y "
+                   "que la API quede publicada en Vercel."),
+        "respuesta": {
+            "fecha": "21 de noviembre de 2026",
+            "commits": ("Sophia fusionó los cinco PR del prompt 31 (#57 a #61, hasta 9f01748 en main). c50d3b2 y 58bd949 "
+                        "(rama api/password-reset, subida y sin fusionar). 74f84ab (rama web/password-reset, apilada "
+                        "sobre la anterior, subida y sin fusionar). Orden para fusionar: api/password-reset, "
+                        "web/password-reset y, después, la rama de esta bitácora."),
+            "archivos": [
+                ("database/migrations/20261121000005_password_reset_code.sql", "nuevo: one_time_codes admite el uso password_reset, solo por correo. La corrió Sophia en pgAdmin. password_resets se queda sin usar."),
+                ("backend/app/modules/accounts/password_reset.py y router.py", "nuevo password_reset.py: pedir el código y cambiar la contraseña; dos rutas nuevas, POST /auth/password-reset/request y /confirm."),
+                ("backend/app/modules/accounts/codes.py y core/config.py", "create_code con duración propia; PASSWORD_RESET_TTL_SECONDS (1800)."),
+                ("backend/README.md y .env.example", "las dos rutas y la variable nueva."),
+                ("tests/backend/test_accounts_password_reset.py, test_account_access_tables.py y test_config.py", "nuevo el primero (53 pruebas); en el segundo, password_reset deja de ser un uso inválido; en el tercero, el valor por defecto."),
+                ("web/recuperar-contrasena.html, assets/js/recuperar-logica.js y recuperar.js", "nuevos: la página aparte de recuperar la contraseña, con tres pasos, y su lógica sin pantalla."),
+                ("web/assets/js/cuenta.js y assets/css/estilos.css", "«¿Olvidaste tu contraseña?» en la ventana de iniciar sesión, y su estilo."),
+                ("tests/web y tests/e2e", "nuevos recuperar_logica.test.js, test_recover_page.py y test_recuperar_e2e.py; la lista de páginas de estructura al día."),
+                ("docs/diseno/vistas.md, pantallas.md, sistema-de-diseno.md y tests/e2e/README.md", "la decisión del revisor, la pantalla nueva y los archivos de prueba nuevos."),
+                ("herramientas/bitacora/evidencias/recuperar_contrasena_pruebas_2026-11-21.txt", "salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Avisar por correo al dueño de la cuenta cuando su contraseña cambie.", "si alguien más la cambió, el dueño se entera. No se construyó: se anuncia antes."),
+                ("Un aviso claro cuando la página no tiene servidor.", "En Vercel todavía no hay API, así que «Iniciar sesión» dice «El servidor respondió de forma inesperada»."),
+                ("Publicar la API en Vercel con Neon como su propia pieza.", "Necesita que Sophia cree las cuentas y cargue las llaves, y antes comprobar en la documentación de Vercel cómo maneja Python y las conexiones a base de datos con los papeles integro_app e integro_service."),
+                ("Quitar de los archivos de migraciones lo que no es una migración.", "Se había pegado el SQL de pgAdmin dentro de dos migraciones; se restauraron con autorización."),
+            ],
+            "lineas": ("Nuevos completos: la migración, password_reset.py, recuperar-contrasena.html, recuperar-logica.js, "
+                       "recuperar.js y las pruebas de recuperar contraseña. router.py: un bloque «Recuperar la contraseña». "
+                       "codes.py: create_code con ttl_seconds. config.py: password_reset_ttl_seconds. cuenta.js: un párrafo "
+                       "en el formulario de la ventana. estilos.css: tres reglas de .ventana-olvido. Documentos: la "
+                       "decisión 7 de vistas.md, la fila de la pantalla 5, y dos filas en el sistema de diseño y en el "
+                       "README de las pruebas."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro en el puerto 5433, no en una versión "
+                        "publicada; todo lo que escriben las pruebas se deshace. Migración: probada primero en una base "
+                        "en memoria (10 de 10 casos); Sophia la corrió en pgAdmin y dijo que todo corrió perfectamente; "
+                        "antes de correrla, las 48 pruebas nuevas salieron omitidas. Backend en api/password-reset: la "
+                        "primera corrida completa dio «1 failed, 955 passed» (una prueba anterior usaba password_reset "
+                        "como uso inválido); después «960 passed, 1 warning in 164.19s» en c50d3b2 y «963 passed, 1 "
+                        "warning in 184.53s» en 58bd949. Web (node y pytest) y principio a fin juntos en "
+                        "web/password-reset: «375 passed in 361.17s». Al comparar con el registro se encontró que "
+                        "recuperar contraseña no exigía el nivel mínimo de contraseña del registro; se corrigió en "
+                        "58bd949. No se encontró la causa de que el registro local no mostrara las listas de país y de "
+                        "lada: con un navegador de prueba aparecían; Sophia dijo después que ya se veía, sin cambio "
+                        "alguno. No se probó en Vercel. Salida copiada en "
+                        "herramientas/bitacora/evidencias/recuperar_contrasena_pruebas_2026-11-21.txt."),
+        },
+        "decisiones": [
+            ("32.1", "Una migración nueva: one_time_codes admite el uso password_reset, solo por correo, y password_resets se queda sin usar.", "Con un código de 6 dígitos, password_resets exige una huella única por fila y se repetiría entre personas. Campo: qué datos necesita.", "Aceptar", "Si te autoriza la migración nueva. Utilizamos la opción A.", "La migración 20261121000005; Sophia la corrió en pgAdmin."),
+            ("32.2", "Publicar la API en Vercel (opción A) con la base en Neon, para que la web funcione ahí.", "Vercel solo publica web/ y la API necesita dónde correr y una base en la nube. Campo: qué datos necesita.", "Aceptar", "Para el punto número 2 del API me parece bien usar API en Vercel más Neon.", "Todavía no se construye: es su propia pieza, después de las de contraseña y sesión."),
+            ("32.3", "El orden de construcción: recuperar contraseña, tope de sesión, reservar sin sesión, publicar la API, segundo factor y correo real.", "Cada pieza necesita lo de la anterior. Campo: qué hace.", "Aceptar", "Confirmo el orden de la sección 4.", "Se empezó por recuperar contraseña."),
+            ("32.4", "Restaurar los dos archivos de migraciones modificados y borrar el nuevo.", "Tenían el SQL de pgAdmin pegado y un correo personal. Campo: cómo se sabrá que funciona.", "Aceptar", "Para el archivo te doy autorización para que tú lo restaures. Y borres el nuevo.", "Se restauraron y se borró; el árbol quedó limpio."),
+            ("32.5", "Recuperar la contraseña exige el mismo nivel mínimo que el registro (no ser fácil de adivinar, con el nombre de la persona), no solo el formato.", "Sin eso se podía poner por ese camino una contraseña que el registro rechaza. Campo: qué hace.", "Pendiente", "", ""),
+            ("32.6", "Un código equivocado de recuperar contraseña cuenta como fallo de ese dispositivo, para la misma espera del inicio de sesión, sin avisar al dueño de la cuenta.", "Sin eso se podrían adivinar códigos pidiendo códigos nuevos. Campo: qué hace.", "Pendiente", "", ""),
+            ("32.7", "Con una sesión iniciada, la página de recuperar contraseña pide cerrarla primero y oculta el formulario.", "Igual que la página de registro; al cambiar la contraseña se cierran todas las sesiones. Campo: qué hace.", "Pendiente", "", ""),
+            ("32.8", "El texto al pedir el código no promete que llegó: «Si (correo) tiene una cuenta con el correo electrónico comprobado, te enviamos un código de 6 dígitos.» Los textos de la página los redactó la IA.", "La API contesta lo mismo exista o no la cuenta. El prompt no daba los textos. Campo: qué hace.", "Pendiente", "", ""),
+            ("32.9", "Si la contraseña es fácil de adivinar, el campo trae una sola línea («Tu contraseña es muy fácil de adivinar. Revisa los consejos de abajo.») y los consejos se ven una vez, en el indicador.", "Al ver la captura se notó que los mismos consejos salían dos veces. Campo: qué hace.", "Pendiente", "", ""),
+            ("32.10", "Dos ramas apiladas (api/password-reset y web/password-reset) que se fusionan en ese orden.", "La pantalla necesita las rutas. Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
         ],
     },
 ]
