@@ -2177,4 +2177,53 @@ PROMPTS = [
             ("35.10", "DATABASE_SSLMODE con «prefer» por defecto («require» en Neon) y DATABASE_CONNECT_TIMEOUT_SECONDS con 3 por defecto (10 en Neon).", "La primera conexión después de que Neon se suspende tarda más; en su computadora no hay SSL. Campo: qué datos necesita.", "Pendiente", "", ""),
         ],
     },
+    # ------------------------------------------------------------------ 36
+    {
+        "n": 36,
+        "titulo": "Primera publicación de la API en Vercel: variables, tres fallas y las skills que no aparecen",
+        "fecha": "21 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Sophia preguntó en qué parte de Vercel se cargan las variables de Production y cómo crear las diez, porque "
+                     "había fusionado sin cargarlas y «justo falla». Pegó el texto del despliegue que falló al construir "
+                     "(«falló»), una captura de la protección de Vercel («¿así?»), el registro de la función que no arrancaba "
+                     "y la lista de variables que veía. Después: «Ya lo probé, el status dice ok, arrancó la API bien y no hay "
+                     "fallas en el deployment. ¿Qué sigue?» Y preguntó por qué ya no le aparecen las skills /pieza y /bitácora "
+                     "que antes veía en Claude."),
+        "tarea": ("1) Cómo cargar las diez variables en Vercel. 2) Corregir las fallas del despliegue. 3) Revisar la protección. "
+                  "4) Explicar por qué no aparecen las skills. 5) Qué sigue ahora que la API arrancó. 6) Registrar esto en la bitácora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "21 de noviembre de 2026",
+            "commits": ("7e2d62b (rama api/vercel-requirements) y 4ec9212 (rama api/vercel-ignore-anchor), las dos desde main. Sophia "
+                        "las fusionó (#76 y #77, hasta 83e17c1 en main) y Vercel desplegó sola."),
+            "archivos": [
+                ("requirements.txt y backend/requirements.txt", "la lista de dependencias pasa a la raíz, sin «-r»; la del backend la incluye con «-r ../requirements.txt»."),
+                (".vercelignore", "las carpetas de la raíz van con «/» al principio, para no ignorar backend/app/database."),
+                ("tests/backend/test_vercel_ready.py", "la prueba de dependencias dice lo contrario que antes, y tres pruebas nuevas del .vercelignore (48 pruebas en el archivo)."),
+                ("backend/README.md, tools/countries/generate_countries.py y docs/despliegue-vercel-neon.md", "dicen dónde vive ahora la lista de dependencias y por qué."),
+                ("herramientas/bitacora/evidencias/vercel_primera_publicacion_pruebas_2026-11-21.txt", "los textos de las fallas y la salida real de las pruebas."),
+            ],
+            "sugerencias": [
+                ("Cargar las diez variables pegando el contenido de .env.neon en el campo Key, quitando DATABASE_HOST_DIRECT y agregando las tres de Vercel, todas como «Secret».", "evita crear diez una por una y no deja valores visibles."),
+                ("Dejar Vercel Authentication en «All Deployments».", "con la opción estándar el dominio de producción quedaba abierto: se comprobó desde fuera que las páginas se abrían sin iniciar sesión."),
+                ("Antes de dar acceso a Shakti y a Valeria, comprobar si el plan Hobby permite agregarlas como miembros.", "la protección exige ser miembro del equipo en Vercel; no se verificó si Hobby lo permite."),
+                ("Abrir el proyecto de VS Code en la carpeta code/integro.", "las skills del proyecto están en esa carpeta y solo se cargan al abrirla."),
+            ],
+            "lineas": ("requirements.txt: la lista completa. backend/requirements.txt: cuatro líneas, tres de comentario y un include. "
+                       ".vercelignore: reescrito con «/» en las carpetas de la raíz. test_vercel_ready.py: dos pruebas de dependencias "
+                       "(reemplazan una) y cuatro del .vercelignore (reemplazan una)."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro local. Backend en api/vercel-requirements: «1048 passed, 1 "
+                        "warning in 193.36s». Backend en api/vercel-ignore-anchor: «1051 passed, 1 warning in 214.71s». Con la regla "
+                        "vieja del .vercelignore, las pruebas nuevas fallan («2 failed»). En Vercel, la construcción falló por el «-r» "
+                        "y la función por la carpeta ignorada; las dos se corrigieron. Sophia reportó que ahora el estado es «ok» y que "
+                        "el despliegue no tiene fallas; la IA no pudo verificarlo, porque la protección también la redirige a ella. "
+                        "Salida copiada en herramientas/bitacora/evidencias/vercel_primera_publicacion_pruebas_2026-11-21.txt."),
+        },
+        "decisiones": [
+            ("36.1", "La lista de dependencias vive en requirements.txt de la raíz, sin «-r», y backend/requirements.txt la incluye.", "El lector de Vercel no entiende «-r»; así sigue habiendo una sola lista y pip install desde backend/ funciona igual. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("36.2", "Las carpetas de la raíz en .vercelignore se escriben con «/» al principio, y hay pruebas que revisan que no se ignore nada de api/, backend/app/ ni web/.", "Una regla sin «/» ignoraba también backend/app/database y la API no arrancaba. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
+            ("36.3", "Las diez variables de Production se cargan como «Secret», pegando el contenido de .env.neon en el campo Key.", "No deja valores visibles en Vercel y evita crear diez a mano. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("36.4", "Vercel Authentication en «All Deployments», que incluye producción.", "Con la opción estándar, el dominio de producción se abría sin iniciar sesión. Campo: qué hace.", "Pendiente", "", ""),
+        ],
+    },
 ]

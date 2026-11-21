@@ -1,0 +1,62 @@
+Primera publicación de la API en Vercel: tres fallas y su corrección
+21 de noviembre de 2026
+
+Las fallas salieron en Vercel (el proyecto de Sophia, integro-ruby.vercel.app); los textos de abajo los pegó ella desde sus registros,
+salvo lo marcado como «visto desde fuera», que la IA midió con una petición de lectura antes de que se encendiera la protección.
+Las pruebas del backend corrieron en su computadora, contra la base integro local.
+
+1. Construcción del despliegue de main (commit 884f8e2), texto pegado por Sophia:
+     Running "vercel build"
+     Failed to parse "requirements.txt". File content: ... -r backend/requirements.txt
+     Error: [PYTHON_REQUIREMENTS_PARSE_ERROR] could not parse requirements.txt: Error parsing included file in
+     `/vercel/path0/requirements.txt` at position 158
+   Causa: el lector de Vercel no entiende «-r». La posición 158 es justo esa línea del archivo. Con uv 0.13.9 la misma línea sí se
+   lee, y pip también: el defecto era del lector de Vercel. Esto el plan lo marcaba como «sin verificar».
+   Corrección (rama api/vercel-requirements, 7e2d62b): la lista de dependencias pasa a la raíz y backend/requirements.txt la incluye.
+   Backend completo con esa corrección, salida guardada:
+     ================= 1048 passed, 1 warning in 193.36s (0:03:13) =================
+
+2. Después de fusionarla, visto desde fuera (petición de lectura, sin sesión):
+     /               200
+     /registro.html  200
+     /api/v1/health  500, cuerpo: FUNCTION_INVOCATION_FAILED
+   También se vio que las páginas se abrían sin iniciar sesión en Vercel: la protección no estaba activa para producción.
+   Después de que Sophia la dejó en «All Deployments», las tres direcciones contestaron 302 (redirección a iniciar sesión).
+
+3. Registro de la función, texto pegado por Sophia:
+     could not import "api/index.py": ... File "/var/task/backend/app/api/v1/health.py", line 9, in <module>
+     from app.database.connection import read_database_status
+     ModuleNotFoundError: No module named 'app.database'
+   Causa: la regla «database» de .vercelignore, escrita para la carpeta de migraciones de la raíz, valía para cualquier carpeta con
+   ese nombre e ignoraba también backend/app/database. La IA la había escrito sin «/» al principio, y la prueba que debió
+   detectarlo no existía.
+   Corrección (rama api/vercel-ignore-anchor, 4ec9212): las carpetas de la raíz se escriben con «/» al principio, y tres pruebas
+   nuevas: que no se ignore ningún archivo de api/, backend/app/ ni web/; que una carpeta de la raíz no se escriba sin «/»; y que el
+   lector de la prueba sí atrapa el error de antes. Comprobado poniendo la regla vieja: dos de las pruebas fallaron («2 failed, 6
+   passed»); con la corrección, «48 passed». Backend completo, salida guardada:
+     ================= 1051 passed, 1 warning in 214.71s (0:03:34) =================
+       86  test_account_access_tables.py PASSED
+       40  test_accounts_correct_email.py PASSED
+       62  test_accounts_login.py PASSED
+       60  test_accounts_logout.py PASSED
+       67  test_accounts_password_reset.py PASSED
+       76  test_accounts_registration.py PASSED
+      152  test_accounts_validation.py PASSED
+       37  test_accounts_wrong_passwords.py PASSED
+       25  test_admin_session_limit.py PASSED
+       39  test_config.py PASSED
+       16  test_health.py PASSED
+       34  test_login_attempts_admins_tables.py PASSED
+      171  test_password_strength.py PASSED
+       37  test_serve_web.py PASSED
+       31  test_session_cookie.py PASSED
+       45  test_transaction.py PASSED
+       48  test_vercel_ready.py PASSED
+       25  test_view_roles.py PASSED
+
+4. Resultado final, dicho por Sophia: «ya lo probé, el status dice ok, arrancó la API bien y no hay fallas en el deployment».
+   La IA no pudo comprobarlo por su cuenta: la protección de Vercel Authentication ahora la redirige también a ella.
+
+Variables de entorno: Sophia pegó la lista de las que vio en Production (seis: DATABASE_PASSWORD, CODE_HASH_SECRET, EMAIL_DELIVERY,
+DATABASE_SSLMODE, DATABASE_CONNECT_TIMEOUT_SECONDS y TRUST_PROXY_HEADERS). La API arrancó, así que las otras cuatro (DATABASE_HOST,
+DATABASE_PORT, DATABASE_NAME y DATABASE_USER) estaban también, o no se habría podido leer la configuración.
