@@ -37,12 +37,17 @@ class NotAuthenticated(Exception):
     """La petición no trae una sesión que sirva."""
 
 
-def set_session_cookie(response: Response, token: str, days: int, settings: Settings) -> None:
-    """Entrega la llave al navegador en la cookie de sesión, por esos días."""
+def set_session_cookie(
+    response: Response, token: str, days: int, settings: Settings, *, seconds: int | None = None
+) -> None:
+    """Entrega la llave al navegador en la cookie de sesión, por esos días.
+
+    La sesión de un administrador es corta: su cookie dura los segundos que le quedan (seconds).
+    """
     response.set_cookie(
         key=SESSION_COOKIE,
         value=token,
-        max_age=days * SECONDS_PER_DAY,
+        max_age=days * SECONDS_PER_DAY if seconds is None else seconds,
         path="/",
         httponly=True,
         samesite="strict",
@@ -74,7 +79,9 @@ def require_session(request: Request, response: Response) -> CurrentSession:
     session = authenticate(state.pool, token, state.settings)
     if session is None:
         raise NotAuthenticated()
-    set_session_cookie(response, token, idle_days(session.is_host, state.settings), state.settings)
+    set_session_cookie(
+        response, token, idle_days(session.is_host, state.settings), state.settings, seconds=session.cookie_seconds
+    )
     return session
 
 

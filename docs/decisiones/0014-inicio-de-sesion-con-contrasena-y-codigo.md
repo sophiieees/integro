@@ -54,6 +54,8 @@ Son valores de configuración. La sesión se cierra sola cuando pasa ese tiempo 
 | Anfitrión | 7 días, porque maneja dinero y propiedades |
 | Panel de administración | 30 minutos |
 
+Quien es administrador (tabla `admins`) tiene esa sesión corta **en todo el sitio**, no solo al entrar a las pantallas de administración, y además un tope de **12 horas desde que inicia sesión**, aunque la use todo el tiempo (decisión de Sophia del 21 de noviembre de 2026). Si es anfitrión y administrador a la vez, gana el límite del administrador. Los dos tiempos son valores de configuración.
+
 ### Contraseñas incorrectas
 La cuenta nunca se bloquea.
 

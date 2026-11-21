@@ -21,7 +21,7 @@ Reglas que ya están decididas y se mantienen:
 - Un solo registro sirve para huésped y para anfitrión; el perfil de anfitrión se crea después, en Verificación.
 - Los administradores se dan de alta solo a mano, en pgAdmin; la API nunca escribe en `admins`.
 - Un administrador no es anfitrión por serlo, ni al revés: son dos permisos distintos y la API los revisa por separado.
-- La sesión del anfitrión dura 7 días sin uso; la del panel, 30 minutos sin uso y 12 horas como tope (ADR 0014). El segundo factor es obligatorio para anfitriones y panel (arquitectura, sección 7). **Ninguno de los dos existe todavía**: una ruta de administrador con datos no se publica hasta tenerlos.
+- La sesión del anfitrión dura 7 días sin uso; la del administrador, 30 minutos sin uso y 12 horas como tope, en todo el sitio (ADR 0014; el tope ya existe desde el 21 de noviembre de 2026). El segundo factor es obligatorio para anfitriones y panel (arquitectura, sección 7). **El segundo factor todavía no existe**: una ruta de administrador con datos no se publica hasta tenerlos.
 
 ## La cabecera de cada vista
 
