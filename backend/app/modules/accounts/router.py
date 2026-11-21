@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from app.api.auth import SESSION_COOKIE, clear_session_cookie, require_session, set_session_cookie
 from app.api.protection import csrf_token, require_session_for_change
 from app.database.transaction import user_transaction
+from app.modules.accounts.email_correction import CorrectionOutcome, correct_unverified_email
 from app.modules.accounts.login import LoginOutcome, SessionOutcome, finish_login, start_login
 from app.modules.accounts.sessions import (
     CurrentSession,
@@ -33,7 +34,13 @@ from app.modules.accounts.registration import (
     verify_email,
 )
 from app.modules.accounts.password_strength import LABELS, PasswordStrength, password_strength
-from app.modules.accounts.validation import FieldError, password_errors, validate_registration
+from app.modules.accounts.validation import (
+    EMAIL_MAX_LENGTH,
+    EMAIL_PATTERN,
+    FieldError,
+    password_errors,
+    validate_registration,
+)
 
 router = APIRouter(prefix="/auth", tags=["accounts"])
 
@@ -199,6 +206,75 @@ def resend(body: ResendCodeRequest, request: Request):
             [FieldError("email", "hourly_limit", "Ya pediste demasiados códigos. Intenta más tarde.")],
         )
     return ResendCodeResponse(status="sent")
+
+
+class CorrectEmailRequest(BaseModel):
+    email: Any = Field(default=None, examples=["ana@example.com"])
+    password: Any = Field(default=None, examples=["Ejemplo-2026"])
+    new_email: Any = Field(default=None, examples=["ana.torres@example.com"])
+
+
+@router.post(
+    "/correct-unverified-email",
+    response_model=RegisterResponse,
+    responses={401: {"model": ErrorResponse}, 409: {"model": ErrorResponse}, 422: {"model": ErrorResponse},
+               429: {"model": ErrorResponse}},
+    summary="Corregir el correo de una cuenta que todavía no lo ha comprobado",
+)
+def correct_email(body: CorrectEmailRequest, request: Request):
+    """Quien se equivocó de correo al registrarse lo corrige: manda su correo, la
+    contraseña con la que se registró y el correo correcto. El código nuevo va
+    al correo nuevo y deja sin efecto a los anteriores. Solo sirve para una
+    cuenta sin comprobar; una contraseña incorrecta y un correo sin cuenta
+    contestan igual."""
+    values, errors = required_text(body, ("email", "password", "new_email"))
+    if not errors:
+        candidate = values["new_email"].strip().lower()
+        if len(candidate) > EMAIL_MAX_LENGTH or not EMAIL_PATTERN.match(candidate):
+            errors.append(FieldError("new_email", "invalid", "El correo no tiene un formato válido."))
+    if errors:
+        return error_response(422, errors)
+    state = request.app.state
+    result = correct_unverified_email(
+        state.pool,
+        values["email"],
+        values["password"],
+        values["new_email"],
+        state.settings,
+        state.code_sender,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+
+    if result.outcome is CorrectionOutcome.CODE_SENT:
+        return RegisterResponse(status="verification_required", email=values["new_email"].strip().lower())
+    if result.outcome is CorrectionOutcome.TRY_LATER:
+        minutes = -(-result.retry_after_seconds // 60)
+        wait = "1 minuto" if minutes == 1 else f"{minutes} minutos"
+        return error_response(
+            429,
+            [FieldError("credentials", "try_later", f"Demasiados intentos. Inténtalo nuevamente en {wait}.")],
+            retry_after=result.retry_after_seconds,
+        )
+    if result.outcome is CorrectionOutcome.ALREADY_VERIFIED:
+        return error_response(
+            409, [FieldError("email", "already_verified", "Este correo ya está comprobado: no se puede corregir.")]
+        )
+    if result.outcome is CorrectionOutcome.EMAIL_TAKEN:
+        return error_response(
+            409, [FieldError("new_email", "already_registered", "Ya existe una cuenta con este correo.")]
+        )
+    if result.outcome is CorrectionOutcome.SAME_EMAIL:
+        return error_response(
+            422, [FieldError("new_email", "same_email", "Es el mismo correo con el que te registraste.")]
+        )
+    if result.outcome is CorrectionOutcome.HOURLY_LIMIT:
+        return error_response(
+            429, [FieldError("email", "hourly_limit", "Ya pediste demasiados códigos. Inténtalo nuevamente más tarde.")]
+        )
+    return error_response(
+        401, [FieldError("credentials", "invalid_credentials", "El correo o la contraseña no son correctos.")]
+    )
 
 
 # ---------------------------------------------------------------------------

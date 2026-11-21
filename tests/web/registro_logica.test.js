@@ -341,6 +341,62 @@ test("cinco códigos en una hora, sin servidor o con una respuesta rara", () => 
   assert.equal(REGISTRO.despuesDeReenviar(500, null, CORREO).enviado, false);
 });
 
+/* --- Corregir el correo de una cuenta sin comprobar ---------------------------------------- */
+
+test("para corregir el correo hacen falta el correo correcto y la contraseña", () => {
+  assert.deepEqual(REGISTRO.revisarCorreccion({ email: CORREO, password: "Ejemplo-2026", new_email: " ana.torres@prueba.invalid " }),
+    { errores: {}, datos: { email: CORREO, password: "Ejemplo-2026", new_email: "ana.torres@prueba.invalid" } });
+  assert.deepEqual(REGISTRO.revisarCorreccion({ email: CORREO, password: "", new_email: "" }).errores,
+    { new_email: ["Escribe el correo electrónico correcto."], password: ["Escribe tu contraseña."] });
+  assert.deepEqual(REGISTRO.revisarCorreccion({ email: CORREO, password: "x", new_email: "ana@" }).errores,
+    { new_email: ["El correo electrónico no tiene un formato válido."] });
+});
+
+test("correo corregido: vuelve al código con el correo nuevo y avisa que el anterior ya no sirve", () => {
+  const r = REGISTRO.despuesDeCorregir(200, { status: "verification_required", email: "nuevo@prueba.invalid" });
+
+  assert.equal(r.paso, "codigo");
+  assert.equal(r.correo, "nuevo@prueba.invalid");
+  assert.equal(r.texto, "Te enviamos un código de 6 dígitos a nuevo@prueba.invalid. Escríbelo aquí para comprobar tu correo electrónico. Su vigencia es de 5 minutos.");
+  assert.equal(r.nota, "Corregimos tu correo electrónico. El código anterior ya no sirve.");
+  assert.equal(r.aviso, null);
+});
+
+test("contraseña incorrecta al corregir: aviso y se queda en la corrección", () => {
+  const r = REGISTRO.despuesDeCorregir(401, error("credentials", "invalid_credentials", "..."));
+
+  assert.deepEqual([r.paso, r.aviso], ["correccion", "La contraseña no es correcta."]);
+});
+
+test("correo nuevo que ya tiene cuenta, o el mismo correo: el aviso va en su campo", () => {
+  const ocupado = REGISTRO.despuesDeCorregir(409, error("new_email", "already_registered", "Ya existe una cuenta con este correo."));
+  const igual = REGISTRO.despuesDeCorregir(422, error("new_email", "same_email", "Es el mismo correo con el que te registraste."));
+
+  assert.deepEqual(ocupado.errores, { new_email: ["Ya existe una cuenta con este correo."] });
+  assert.deepEqual(igual.errores, { new_email: ["Es el mismo correo con el que te registraste."] });
+  assert.equal(ocupado.paso, "correccion");
+});
+
+test("una cuenta que ya estaba comprobada termina bien, con su nota", () => {
+  const r = REGISTRO.despuesDeCorregir(409, error("email", "already_verified", "Este correo ya está comprobado: no se puede corregir."));
+
+  assert.equal(r.paso, "listo");
+  assert.equal(r.nota, "Tu correo electrónico ya estaba comprobado.");
+});
+
+test("demasiados intentos al corregir: dice cuántos minutos, y con el máximo de códigos, que más tarde", () => {
+  assert.equal(REGISTRO.despuesDeCorregir(429, error("credentials", "try_later", "...", { retry_after: 900 })).aviso,
+    "Se recibieron demasiados intentos desde este dispositivo. Inténtalo nuevamente en 15 minutos.");
+  assert.equal(REGISTRO.despuesDeCorregir(429, error("email", "hourly_limit", "...")).aviso,
+    "Has solicitado demasiados códigos. Inténtalo nuevamente más tarde.");
+});
+
+test("sin servidor o con una respuesta rara, la corrección se queda donde está", () => {
+  assert.equal(REGISTRO.despuesDeCorregir(0, null).aviso, REGISTRO.SIN_SERVIDOR);
+  assert.equal(REGISTRO.despuesDeCorregir(500, null).paso, "correccion");
+  assert.equal(REGISTRO.despuesDeCorregir(500, null).aviso, "El servidor respondió de forma inesperada. Inténtalo nuevamente.");
+});
+
 /* --- El aviso de la contraseña no repite el indicador ---------------------------------- */
 
 test("si la API rechaza la contraseña, en el campo va una sola línea que remite al indicador", () => {

@@ -88,7 +88,7 @@ def notice(page):
 
 def step(page):
     return page.js(
-        "(() => { for (const [id, name] of [['formulario-registro', 'datos'], ['formulario-codigo', 'codigo'], ['registro-listo', 'listo']]) "
+        "(() => { for (const [id, name] of [['formulario-registro', 'datos'], ['formulario-codigo', 'codigo'], ['formulario-correccion', 'correccion'], ['registro-listo', 'listo']]) "
         "{ const e = document.getElementById(id); if (e && !e.hidden) return name; } return null; })()"
     )
 
@@ -522,6 +522,188 @@ def test_another_code_after_a_minute_is_sent_and_works(page, site):
     assert notice(page) is None
     type_code(page, site.codes.code_for(data["email"], "verify_email"))
     assert step(page) == "listo"
+
+
+# --- Corregir el correo -----------------------------------------------------------------
+
+
+CORRECTION = "#formulario-correccion"
+
+
+def open_correction(page):
+    page.click(f"{CODE_FORM} [data-corregir]")
+    page.expect("!document.getElementById('formulario-correccion').hidden")
+
+
+def send_correction(page, new_email, password):
+    page.type(f"{CORRECTION} [name=new_email]", new_email)
+    page.type(f"{CORRECTION} [name=password]", password)
+    before = page.requests()
+    page.press("Enter")
+    page.expect(f"window.__net.started > {before}")
+    page.expect("!Array.from(document.querySelectorAll('.formulario-tarjeta input')).some(i => i.disabled)")
+
+
+def correction_errors(page):
+    return page.js(
+        "Object.fromEntries(Array.from(document.querySelectorAll('#formulario-correccion [data-error-de]')).filter(e => !e.hidden)"
+        ".map(e => [e.getAttribute('data-error-de'), e.textContent]))"
+    )
+
+
+def test_the_code_step_offers_to_correct_the_email_and_opens_the_form(page, site):
+    data = register_up_to_the_code(page, site)
+
+    assert page.text(f"{CODE_FORM} .formulario-pie").strip() == "¿Te equivocaste de correo? Corrígelo"
+    open_correction(page)
+
+    assert step(page) == "correccion"
+    assert page.text("#formulario-correccion h2") == "Corrige tu correo electrónico"
+    assert page.js("document.activeElement.name") == "new_email"
+    assert page.value(f"{CORRECTION} [name=new_email]") == "" and page.value(f"{CORRECTION} [name=password]") == ""
+    assert user_row(site, data["email"]) is not None
+
+
+def test_going_back_from_the_correction_returns_to_the_code_step_untouched(page, site):
+    data = register_up_to_the_code(page, site)
+    open_correction(page)
+
+    page.click(f"{CORRECTION} [data-volver-al-codigo]")
+
+    assert step(page) == "codigo"
+    assert page.js("document.activeElement.name") == "code"
+    assert user_row(site, data["email"]) is not None
+
+
+def test_a_typo_in_the_email_is_corrected_and_the_new_code_checks_it(page, site):
+    data = register_up_to_the_code(page, site)
+    old_code = site.codes.code_for(data["email"], "verify_email")
+    new_email = person()["email"]
+    open_correction(page)
+
+    send_correction(page, new_email, PASSWORD)
+
+    assert step(page) == "codigo", (correction_errors(page), notice(page))
+    assert page.text(f"{CODE_FORM} [data-texto]") == (
+        f"Te enviamos un código de 6 dígitos a {new_email}. Escríbelo aquí para comprobar tu correo electrónico. "
+        "Su vigencia es de 5 minutos."
+    )
+    assert page.text(f"{CODE_FORM} [data-nota]") == "Corregimos tu correo electrónico. El código anterior ya no sirve."
+    assert user_row(site, data["email"]) is None
+    assert user_row(site, new_email) is not None
+    # El teléfono y la cuenta son los mismos: solo cambió el correo.
+    assert user_row(site, new_email)[2] == "+52" + data["number"]
+    new_code = site.codes.code_for(new_email, "verify_email")
+    if new_code != old_code:  # uno en un millón: salió el mismo
+        type_code(page, old_code)
+        assert notice(page) == "El código ingresado no es correcto. Te quedan 4 intentos."
+    type_code(page, new_code)
+    assert step(page) == "listo"
+    assert user_row(site, new_email)[0] is True
+
+
+def test_the_corrected_email_is_the_one_used_to_ask_for_another_code(page, site):
+    data = register_up_to_the_code(page, site)
+    new_email = person()["email"]
+    open_correction(page)
+    send_correction(page, new_email, PASSWORD)
+    age_codes(site, new_email, 61)
+
+    page.click(f"{CODE_FORM} [data-reenviar]")
+    page.expect("!document.querySelector('[data-nota]').hidden && document.querySelector('[data-nota]').textContent.indexOf('código nuevo') !== -1")
+
+    assert page.text(f"{CODE_FORM} [data-nota]") == f"Te enviamos un código nuevo a {new_email}."
+    assert site.codes.sent[-1]["destination"] == new_email
+
+
+def test_the_old_email_can_be_registered_again_after_correcting_it(page, site):
+    data = register_up_to_the_code(page, site)
+    open_correction(page)
+    send_correction(page, person()["email"], PASSWORD)
+
+    assert site.request("GET", "/api/v1/health")[0] == 200
+    status, body = site.request("POST", "/api/v1/auth/register", {
+        "first_name": "Beto", "last_name": "Pérez", "email": data["email"], "password": PASSWORD,
+        "phone": "+5255" + str(uuid.uuid4().int)[:8], "country": "MX", "birth_date": "1990-01-01",
+    })
+
+    assert status == 201, body
+
+
+def test_a_wrong_password_in_the_correction_is_warned_and_cleared(page, site):
+    data = register_up_to_the_code(page, site)
+    open_correction(page)
+
+    send_correction(page, person()["email"], "Ejemplo-2027")
+
+    assert step(page) == "correccion"
+    assert notice(page) == "La contraseña no es correcta."
+    assert page.value(f"{CORRECTION} [name=password]") == ""
+    assert page.js("document.activeElement.name") == "password"
+    assert user_row(site, data["email"]) is not None
+
+
+def test_a_new_email_that_already_has_an_account_is_warned_in_its_field(page, site):
+    existing = make_account(site, first_name="Beto")
+    data = register_up_to_the_code(page, site)
+    open_correction(page)
+
+    send_correction(page, existing["email"], PASSWORD)
+
+    assert step(page) == "correccion"
+    assert correction_errors(page) == {"new_email": "Ya existe una cuenta con este correo."}
+    assert user_row(site, data["email"]) is not None
+
+
+def test_the_same_email_is_warned_in_its_field(page, site):
+    data = register_up_to_the_code(page, site)
+    open_correction(page)
+
+    send_correction(page, data["email"], PASSWORD)
+
+    assert correction_errors(page) == {"new_email": "Es el mismo correo con el que te registraste."}
+
+
+def test_empty_or_badly_written_data_is_warned_without_asking_the_api(page, site):
+    register_up_to_the_code(page, site)
+    open_correction(page)
+    before = page.requests()
+
+    page.press("Enter")
+    assert correction_errors(page) == {"new_email": "Escribe el correo electrónico correcto.", "password": "Escribe tu contraseña."}
+    page.type(f"{CORRECTION} [name=new_email]", "sin-arroba")
+    page.type(f"{CORRECTION} [name=password]", PASSWORD)
+    page.press("Enter")
+    assert correction_errors(page) == {"new_email": "El correo electrónico no tiene un formato válido."}
+
+    assert page.requests() == before
+
+
+def test_six_wrong_passwords_in_the_correction_make_the_device_wait(page, site):
+    register_up_to_the_code(page, site)
+    open_correction(page)
+
+    for _ in range(6):
+        send_correction(page, person()["email"], "Ejemplo-2027")
+        assert notice(page) == "La contraseña no es correcta."
+    send_correction(page, person()["email"], PASSWORD)
+
+    assert notice(page) == "Se recibieron demasiados intentos desde este dispositivo. Inténtalo nuevamente en 15 minutos."
+    assert step(page) == "correccion"
+
+
+def test_the_correction_works_on_a_phone(page, site):
+    page.set_viewport(390, 844, mobile=True)
+    data = register_up_to_the_code(page, site)
+    open_correction(page)
+
+    box = page.js(
+        "(() => { const r = document.querySelector('.formulario-tarjeta').getBoundingClientRect(); return { left: r.left, right: r.right, ancho: innerWidth }; })()"
+    )
+    assert box["left"] >= 0 and box["right"] <= box["ancho"], box
+    send_correction(page, person()["email"], PASSWORD)
+    assert step(page) == "codigo"
+    assert user_row(site, data["email"]) is None
 
 
 # --- Caso 7 ------------------------------------------------------------------------
