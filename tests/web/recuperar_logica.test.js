@@ -210,3 +210,15 @@ test("los textos están en tono formal de tú, nunca de usted", () => {
     assert.doesNotMatch(texto, /\b(usted|su contraseña|ingrese|escriba|verifique)\b/i, texto);
   }
 });
+
+/* --- «Tu contraseña cambió»: 3 segundos y al inicio de sesión (decisión de Sophia del 21 de noviembre de 2026) ---- */
+
+test("la espera es de 3 segundos y lleva a la portada con la ventana de iniciar sesión", () => {
+  assert.equal(LOGICA.SEGUNDOS_DE_ESPERA, 3);
+  assert.equal(LOGICA.DESTINO_AL_TERMINAR, "index.html#entrar");
+});
+
+test("la cuenta regresiva habla en singular y en plural", () => {
+  assert.equal(LOGICA.textoDeEspera(3), "Te llevaremos al inicio de sesión en 3 segundos.");
+  assert.equal(LOGICA.textoDeEspera(1), "Te llevaremos al inicio de sesión en 1 segundo.");
+});

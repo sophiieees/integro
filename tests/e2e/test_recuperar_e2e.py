@@ -24,7 +24,7 @@ Se corren desde backend/ con:  python -m pytest ..\\tests\\e2e -v -rs
 
 import pytest
 from e2e_support import age_codes, browser, make_account, page, sessions_of, site  # noqa: F401
-from test_entrar_e2e import log_in, open_window
+from test_entrar_e2e import log_in, open_window, send_code, send_credentials
 
 NEW_PASSWORD = "Nueva-2026!"
 WEAK = "Contrasena-1234"
@@ -220,9 +220,12 @@ def test_the_right_code_and_a_good_password_change_it_and_the_new_one_logs_in(pa
     # La contraseña no queda escrita en la página.
     assert page.value(f"{FORM_2} [name=new_password]") == ""
     assert NEW_PASSWORD not in page.js("document.body.innerHTML")
-    page.click("#recuperar-listo [data-iniciar-sesion]")
+    # A los 3 segundos se va a la portada con la ventana de iniciar sesión abierta.
+    page.expect("location.pathname === '/index.html'", seconds=10)
     page.expect("document.getElementById('ventana-entrar') && !document.getElementById('ventana-entrar').hidden")
-    log_in(page, site, {**account, "password": NEW_PASSWORD})
+    send_credentials(page, account["email"], NEW_PASSWORD)
+    send_code(page, site.codes.code_for(account["email"], "login"))
+    page.expect("document.querySelector('[data-cuenta]').textContent.indexOf('Cerrar sesión') !== -1")
     assert page.header() == [account["first_name"]]
 
 
@@ -233,7 +236,8 @@ def test_the_old_password_no_longer_works(page, site):
     fill_change(page, code, NEW_PASSWORD)
     submit_change(page)
     assert step(page) == "listo"
-    page.click("#recuperar-listo [data-iniciar-sesion]")
+    page.click("#recuperar-listo [data-ir-a-iniciar-sesion]")
+    page.expect("location.pathname === '/index.html'")
     page.expect("document.getElementById('ventana-entrar') && !document.getElementById('ventana-entrar').hidden")
 
     send_credentials(page, account["email"], account["password"])

@@ -113,3 +113,21 @@ def test_with_a_session_open_the_form_is_hidden():
 
 def test_the_page_signals_when_it_is_ready_for_the_end_to_end_tests():
     assert 'document.documentElement.setAttribute("data-recuperar-listo", "")' in SCREEN
+
+
+def test_the_done_step_counts_three_seconds_and_offers_to_go_now():
+    listo = PAGE.split('id="recuperar-listo"')[1].split("</div>\n        </div>")[0]
+    assert "<h2>Tu contraseña cambió</h2>" in listo
+    assert 'data-espera role="status"' in listo
+    assert 'href="index.html#entrar" data-ir-a-iniciar-sesion>Iniciar sesión ahora</a>' in listo
+    assert "data-iniciar-sesion" not in PAGE
+    # La pantalla ya no abre la ventana por su cuenta: lleva a la portada, que la abre con #entrar.
+
+    assert "window.location.href = LOGICA.DESTINO_AL_TERMINAR" in SCREEN
+    assert "SEGUNDOS_DE_ESPERA = 3" in LOGIC
+
+
+def test_the_account_screen_shows_a_brief_notice_that_does_not_block_the_page():
+    assert "pointer-events: none" in CSS.split(".aviso-de-sesion {")[1].split("}")[0]
+    assert 'aviso.setAttribute("role", "status")' in ACCOUNT_SCREEN
+    assert "aviso.textContent = LOGICA.avisoDeInicio(estado.nombre)" in ACCOUNT_SCREEN

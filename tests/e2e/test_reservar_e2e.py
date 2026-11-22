@@ -257,6 +257,25 @@ def test_signing_in_on_the_same_page_goes_nowhere_and_the_notice_changes(page, s
     assert page.header() == ["Diana"]
 
 
+def test_signing_in_on_another_page_shows_a_brief_notice_and_keeps_what_was_typed(page, site):
+    account = make_account(site, first_name="Diana")
+    go(page, site, FICHA)
+    page.expect("document.documentElement.hasAttribute('data-cuenta-lista')")
+    open_window(page)
+    send_credentials(page, account["email"], account["password"])
+    send_code(page, site.codes.code_for(account["email"], "login"))
+
+    page.expect("document.querySelector('[data-aviso-de-sesion]') !== null")
+    assert page.js("document.querySelector('[data-aviso-de-sesion]').textContent") == "Iniciaste sesión como Diana."
+    assert page.js("document.querySelector('[data-aviso-de-sesion]').getAttribute('role')") == "status"
+    # No recibe clics, no tapa la página y no la recarga: la persona sigue donde estaba, con lo que había escrito.
+    assert page.js("getComputedStyle(document.querySelector('[data-aviso-de-sesion]')).pointerEvents") == "none"
+    assert page.location() == "/" + FICHA
+    assert form_values(page) == ["2026-12-01", "2026-12-03", "3"]
+    # Se quita solo.
+    page.expect("document.querySelector('[data-aviso-de-sesion]') === null", seconds=8)
+
+
 # --- Caso 6: con sesión ----------------------------------------------------------------------------------------------------
 
 
@@ -284,7 +303,7 @@ def test_with_a_session_reserve_says_the_reservations_open_soon(page, site):
     "propiedad.html?x=<script>",
     "../propiedad.html",
 ])
-def test_a_way_back_that_is_not_allowed_is_never_followed(page, site, bad):
+def test_a_way_back_that_is_not_allowed_is_never_followed_and_the_registration_goes_to_the_home_page(page, site, bad):
     account = make_account(site, first_name="Elena")
     go(page, site, "registro.html?siguiente=" + urllib.parse.quote(bad, safe=""))
     assert page.js("document.querySelector('[data-nota-siguiente]').hidden") is True
@@ -294,9 +313,11 @@ def test_a_way_back_that_is_not_allowed_is_never_followed(page, site, bad):
     send_credentials(page, account["email"], account["password"])
     send_code(page, site.codes.code_for(account["email"], "login"))
 
-    page.expect("document.querySelector('[data-cuenta]').textContent.indexOf('Cerrar sesión') !== -1")
+    page.expect("location.pathname === '/index.html'")
+    page.expect("document.documentElement.hasAttribute('data-cuenta-lista')")
+    # Una dirección de regreso que no vale se ignora: se hace lo de siempre desde el registro, ir a la portada.
     assert page.js("location.origin") == site.url
-    assert page.js("location.pathname") == "/registro.html"
+    assert page.js("document.querySelector('[data-cuenta]').textContent.indexOf('Cerrar sesión') !== -1") is True
 
 
 def test_a_safe_way_back_works_from_any_page_with_the_address_in_it(page, site):

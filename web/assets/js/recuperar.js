@@ -7,7 +7,8 @@
    2. El código y la contraseña nueva. POST /api/v1/auth/password-reset/confirm
       cambia la contraseña y cierra todas las sesiones de la cuenta. «Enviar otro
       código» vuelve a llamar a la primera ruta.
-   3. Listo. «Iniciar sesión» abre la ventana de la cabecera (cuenta.js).
+   3. Listo. «Tu contraseña cambió», con una cuenta regresiva de 3 segundos que lleva a la portada con la ventana de
+      iniciar sesión abierta (index.html#entrar); «Iniciar sesión ahora» lleva ahí mismo, sin esperar.
 
    Mientras la persona escribe la contraseña nueva, se califica con
    POST /api/v1/auth/password-strength, igual que en el registro. Esa ruta no
@@ -27,7 +28,7 @@
   var formCambio = document.getElementById("formulario-cambio");
   var listo = document.getElementById("recuperar-listo");
   var aviso = document.querySelector("[data-aviso]");
-  var estado = { enviando: false, correo: "", secuencia: 0, temporizador: null };
+  var estado = { enviando: false, correo: "", secuencia: 0, temporizador: null, cuenta: null };
 
   /* ---------- API ---------- */
 
@@ -192,7 +193,8 @@
         pintarIndicador(LOGICA.vistaDeFortaleza(null, false));
         mostrarErrores({}, formCambio);
         mostrarPaso("listo");
-        listo.querySelector("[data-iniciar-sesion]").focus();
+        listo.querySelector("[data-ir-a-iniciar-sesion]").focus();
+        empezarCuentaRegresiva();
         return;
       }
       mostrarErrores(siguiente.errores, formCambio);
@@ -233,6 +235,24 @@
     formCorreo.elements.email.focus();
   });
 
+  /* ---------- «Tu contraseña cambió»: cuenta regresiva hacia el inicio de sesión ---------- */
+
+  function empezarCuentaRegresiva() {
+    var segundos = LOGICA.SEGUNDOS_DE_ESPERA;
+    var nota = listo.querySelector("[data-espera]");
+    nota.textContent = LOGICA.textoDeEspera(segundos);
+    clearInterval(estado.cuenta);
+    estado.cuenta = setInterval(function () {
+      segundos -= 1;
+      if (segundos <= 0) {
+        clearInterval(estado.cuenta);
+        window.location.href = LOGICA.DESTINO_AL_TERMINAR;
+        return;
+      }
+      nota.textContent = LOGICA.textoDeEspera(segundos);
+    }, 1000);
+  }
+
   /* ---------- Abrir la ventana de iniciar sesión ---------- */
 
   function abrirSesion(e) {
@@ -242,7 +262,6 @@
   }
 
   Array.prototype.forEach.call(document.querySelectorAll("[data-abrir-sesion]"), function (a) { a.addEventListener("click", abrirSesion); });
-  document.querySelector("[data-iniciar-sesion]").addEventListener("click", abrirSesion);
 
   /* ---------- Con sesión iniciada no hay nada que recuperar ---------- */
 
