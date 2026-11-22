@@ -276,6 +276,22 @@ def test_signing_in_on_another_page_shows_a_brief_notice_and_keeps_what_was_type
     page.expect("document.querySelector('[data-aviso-de-sesion]') === null", seconds=8)
 
 
+def test_logging_out_takes_the_sign_in_notice_away_so_the_name_does_not_stay_on_the_page(page, site):
+    account = make_account(site, first_name="Elena")
+    go(page, site, FICHA)
+    page.expect("document.documentElement.hasAttribute('data-cuenta-lista')")
+    open_window(page)
+    send_credentials(page, account["email"], account["password"])
+    send_code(page, site.codes.code_for(account["email"], "login"))
+    page.expect("document.querySelector('[data-aviso-de-sesion]') !== null")
+
+    page.log_out()
+    page.expect("document.querySelector('[data-cuenta]').textContent.indexOf('Cerrar sesión') === -1")
+
+    assert page.js("document.querySelector('[data-aviso-de-sesion]')") is None
+    assert page.js("document.body.textContent.indexOf('Elena')") == -1
+
+
 # --- Caso 6: con sesión ----------------------------------------------------------------------------------------------------
 
 

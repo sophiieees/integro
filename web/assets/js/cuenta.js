@@ -244,7 +244,14 @@
     });
   }
 
+  /* El aviso de que se inició sesión lleva el nombre de la persona: al cerrar la sesión no se queda en la página. */
+  function quitarAvisoDeInicio() {
+    var aviso = document.querySelector("[data-aviso-de-sesion]");
+    if (aviso) aviso.remove();
+  }
+
   function sinSesion() {
+    quitarAvisoDeInicio();
     estado.sesion = false; estado.nombre = null; estado.apellidos = ""; estado.correoDeLaCuenta = ""; estado.clave = null;
     estado.esAnfitrion = false; estado.esAdmin = false;
     guardarVerComo(null);
