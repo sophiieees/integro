@@ -2274,4 +2274,62 @@ PROMPTS = [
             ("37.2", "Crear tres accesos directos personales para /pieza, /bitacora y /doc, fuera del repositorio, que mandan leer la versión del repositorio.", "Las skills del proyecto solo se cargan si el chat se abre con la carpeta integro; así hay una sola versión y no se toca el repositorio. Campo: qué hace.", "Pendiente", "", "Tres archivos SKILL.md en la carpeta personal de skills."),
         ],
     },
+    # ------------------------------------------------------------------ 38
+    {
+        "n": 38,
+        "titulo": "Qué pasa al iniciar sesión: redirecciones, aviso de inicio y decisión del CAPTCHA",
+        "fecha": "21 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Las skills /pieza, /bitacora y /doc siguen sin aparecer en el chat. El código de verificación llega al "
+                     "registro (log) de Vercel y no al correo; Sophia lo entiende, porque con usuarios reales llegará a su "
+                     "correo. Al final se comprará el plan Pro, pero poco a poco. Probó la publicación en Vercel: al iniciar "
+                     "sesión la cabecera cambia (nombre, mi cuenta, mis reservas, mensajes, reseñas, comentarios, cerrar "
+                     "sesión), pero desde el registro se queda en la misma página; al cerrar sesión vuelven «Iniciar sesión» y "
+                     "«Crear cuenta»; Mi cuenta muestra nombre y correo; «Recuperar contraseña» respondió «el servidor "
+                     "respondió de forma inesperada. Inténtalo nuevamente»; reservar sin sesión funciona; todo es muy rápido, "
+                     "tanto que ni se nota que ya se inició sesión. Los ajustes del frontend que notó van después. De momento "
+                     "se sigue con el backend: CAPTCHA, segundo factor y correo real. Sobre las restricciones de las "
+                     "redirecciones: el registro, recuperar contraseña y cualquier otra página están bien. Para recuperar "
+                     "contraseña, 3 segundos le parecen aceptables. El plan gratuito del CAPTCHA es suficiente."),
+        "tarea": ("1) Que el usuario se entere de que ya inició sesión, con un mensaje breve, sin perder lo que estaba haciendo. "
+                  "2) Desde el registro, «Iniciar sesión» devuelve a index.html. 3) Desde recuperar contraseña, que aparezca "
+                  "«Tu contraseña cambió» y redirija otra vez al inicio de iniciar sesión. 4) Desde cualquier otra página, "
+                  "que no cambie: que te retorne a donde estabas. 5) ¿En qué parte vamos del punto 2? 6) Si la parte de la base "
+                  "de datos de recuperar contraseña se coloca desde pgAdmin en su computadora, ¿Neon lo sube y se lo manda a "
+                  "GitHub? 7) El mensaje dice «Iniciaste sesión como» y el nombre. 8) CAPTCHA con el plan gratuito: guiarla. "
+                  "9) Guardar la Site Key. 10) Aceptar las desviaciones, /bitacora y seguir con el CAPTCHA."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "21 de noviembre de 2026",
+            "commits": ("7cc4d39 (rama web/login-redirects, desde main). Sophia la fusionó (#80, ec5f104). La corrección de "
+                        "la base de Neon no es un commit: Sophia corrió en pgAdmin el SQL de la migración 5, que faltaba allá. "
+                        "El widget de Cloudflare Turnstile y su Site Key viven fuera del repositorio."),
+            "archivos": [
+                ("web/assets/js/cuenta-logica.js", "decide a dónde se va al terminar de iniciar sesión (destinoTrasIniciarSesion) y escribe el aviso (avisoDeInicio): funciones puras, probables sin navegador."),
+                ("web/assets/js/cuenta.js", "usa esa decisión: va a la página indicada o muestra el aviso breve sin recargar, para no perder lo escrito."),
+                ("web/assets/css/estilos.css", "estilo del aviso: abajo y al centro, sin recibir clics, con colores de la paleta."),
+                ("web/recuperar-contrasena.html, web/assets/js/recuperar-logica.js y recuperar.js", "«Tu contraseña cambió» con cuenta regresiva de 3 segundos hacia index.html#entrar, que abre la ventana de iniciar sesión."),
+                ("tests/web y tests/e2e", "las pruebas que decían lo contrario se corrigieron y se agregaron las de la lógica, las de la página y las del aviso."),
+            ],
+            "sugerencias": [
+                ("Agregar a tools/database/verify_connection.py una revisión de que las migraciones estén aplicadas.", "en Neon faltaba la migración 5 y «Recuperar contraseña» devolvía error 500; se encontró con una consulta de solo lectura. No se hizo: espera tu respuesta."),
+                ("Corregir en otra rama la fecha máxima de nacimiento de registro.js, que usa la fecha en UTC.", "pasadas las 18:00 en México permite el día siguiente; la prueba test_the_birth_date_cannot_be_in_the_future ya fallaba en main."),
+                ("Poner la Secret Key de Turnstile solo en Vercel, como variable Secret.", "es secreta: no va al chat ni al repositorio."),
+                ("Revisar con Valeria qué decir del uso de Cloudflare en el aviso de privacidad.", "Turnstile recibe datos del navegador de quien se registra."),
+            ],
+            "lineas": ("cuenta-logica.js: constantes PAGINAS_QUE_TERMINAN y PORTADA, funciones archivoDe, destinoTrasIniciarSesion y avisoDeInicio. "
+                       "cuenta.js: mostrarAvisoDeInicio y regresarSiHaceFalta. estilos.css: bloque .aviso-de-sesion y su animación. "
+                       "recuperar-contrasena.html: bloque «recuperar-listo». recuperar-logica.js: SEGUNDOS_DE_ESPERA, DESTINO_AL_TERMINAR y textoDeEspera. "
+                       "recuperar.js: empezarCuentaRegresiva y se quita el clic que abría la ventana."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro local; no se probó en Vercel. node --test tests/web: «pass 155», "
+                        "«fail 0». pytest ..\\tests\\web: «193 passed in 1.24s». Pruebas de navegador de registro, recuperar y reservar: "
+                        "«1 failed, 105 passed in 214.04s». La que falla es test_the_birth_date_cannot_be_in_the_future (esperaba "
+                        "2026-11-21 y la página dio 2026-11-22); sola, con los cambios guardados aparte, también falla («1 failed in 7.58s»), "
+                        "así que ya fallaba en main. No se corrieron las demás pruebas de navegador ni el backend completo."),
+        },
+        "decisiones": [
+            ("38.1", "En «Tu contraseña cambió», cambiar el botón «Iniciar sesión» por el enlace «Iniciar sesión ahora» (index.html#entrar).", "Mientras corre la cuenta regresiva, un botón que abre la ventana en esa misma página se pierde cuando llega la redirección; el enlace lleva al mismo lugar sin esperar. Campo: qué hace.", "Rechazar", "No me gusta nada más que diga «Iniciar sesión» y «Cambiaste tu contraseña».", "Primero había aceptado («Acepto las desviaciones»); al revisar la bitácora la rechazó. Pendiente: Sophia dirá cómo quiere esa pantalla. Mientras tanto, el código de la rama web/login-redirects (7cc4d39) sigue como se fusionó."),
+            ("38.2", "Darle al aviso «Iniciaste sesión como…» su propia animación (aviso-entra), solo de opacidad, en lugar de la de la ventana.", "La animación de la ventana mueve la posición y descentraría el aviso al terminar. Campo: qué hace.", "Aceptar", "Está bien la animación.", "Quedó como estaba en la rama web/login-redirects (7cc4d39)."),
+        ],
+    },
 ]
