@@ -2245,7 +2245,7 @@ PROMPTS = [
             "fecha": "21 de noviembre de 2026",
             "commits": "El commit de este registro, en la rama docs/bitacora-37.",
             "archivos": [
-                ("Fuera del repositorio: C:\\Users\\lises\\.claude\\skills\\\\pieza, bitacora y doc",
+                ("Fuera del repositorio: C:\\Users\\lises\\.claude\\skills\\pieza, bitacora y doc",
                  "tres accesos directos que mandan leer la skill del repositorio y CLAUDE.md, para que /pieza, /bitacora y /doc corran aunque el chat no se abra en la carpeta integro."),
                 ("herramientas/bitacora/bitacora_datos.py", "veredictos 32.5 a 32.10, 33.4 a 33.8, 34.3 a 34.7, 35.7 a 35.10 y 36.1 a 36.4 pasan a Aceptar, y esta entrada."),
             ],
