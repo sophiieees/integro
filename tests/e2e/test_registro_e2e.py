@@ -819,10 +819,13 @@ def test_with_the_account_ready_iniciar_sesion_opens_the_window_and_the_person_g
     page.expect("!document.querySelector('#ventana-entrar form[data-paso=codigo]').hidden")
     page.type("#ventana-entrar form[data-paso=codigo] [name=code]", site.codes.code_for(data["email"], "login"))
     page.press("Enter")
+    # Desde el registro, al iniciar sesión se va a la portada (decisión del 21 de noviembre de 2026).
+    page.expect("location.pathname === '/index.html'")
+    page.expect("document.documentElement.hasAttribute('data-cuenta-lista')")
     page.expect("document.querySelector('[data-cuenta]').textContent.indexOf('Cerrar sesión') !== -1")
 
     assert page.header() == ["Ana"]
-    assert page.location() == "/registro.html"
+    assert page.location() == "/index.html"
     assert sessions_of(site, data["email"]) == (1, 1)
 
 

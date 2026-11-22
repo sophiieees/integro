@@ -78,8 +78,9 @@ def test_the_only_way_back_after_logging_in_goes_through_the_safe_address():
     code = code_of(ACCOUNT_SCREEN)
     assignments = re.findall(r"window\.location\.href\s*=\s*([^;]+);", code)
 
-    assert assignments == ["destino"]
-    assert 'var destino = LOGICA.siguienteSeguro(new URLSearchParams(window.location.search).get("siguiente"));' in code
+    assert assignments == ["decision.destino"]
+    assert "var decision = LOGICA.destinoTrasIniciarSesion(" in code
+    assert 'new URLSearchParams(window.location.search).get("siguiente")' in code
     assert "if (!estado.sesion) return;" in code
     assert "cargarSesion().then(regresarSiHaceFalta);" in code
     assert not re.search(r"location\.(assign|replace)\(", code)

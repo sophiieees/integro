@@ -188,6 +188,33 @@
     return valor;
   }
 
+  /* Las páginas cuyo trabajo termina al iniciar sesión: el registro («Tu cuenta está lista») y recuperar la
+     contraseña («Tu contraseña cambió»). Quedarse ahí no tiene sentido: se va a la portada. */
+  var PAGINAS_QUE_TERMINAN = ["registro.html", "recuperar-contrasena.html"];
+  var PORTADA = "index.html";
+
+  function archivoDe(ruta) {
+    var archivo = String(ruta || "").split("/").pop();
+    return archivo === "" ? PORTADA : archivo;
+  }
+
+  /* A dónde va la persona al terminar de iniciar sesión (decisiones de Sophia del 21 de noviembre de 2026):
+     - si la dirección trae ?siguiente= con una página permitida (siguienteSeguro), a esa página;
+     - si estaba en el registro o en recuperar la contraseña, a la portada;
+     - desde cualquier otra página no se mueve: sigue donde estaba, para no perder lo que estaba haciendo.
+     ruta es window.location.pathname; siguiente, el valor de ?siguiente=. */
+  function destinoTrasIniciarSesion(ruta, siguiente) {
+    var seguro = siguienteSeguro(siguiente);
+    if (seguro) return { ir: true, destino: seguro };
+    if (PAGINAS_QUE_TERMINAN.indexOf(archivoDe(ruta)) !== -1) return { ir: true, destino: PORTADA };
+    return { ir: false, destino: null };
+  }
+
+  /* El aviso breve que ve quien inicia sesión sin cambiar de página. */
+  function avisoDeInicio(nombre) {
+    return "Iniciaste sesión como " + nombre + ".";
+  }
+
   /* Qué sigue después de pedir cerrar sesión. */
   function despuesDeSalir(status) {
     if (status === 200 || status === 401) return { sesion: false, aviso: null };
@@ -206,6 +233,9 @@
     vistaDe: vistaDe,
     permisoDePagina: permisoDePagina,
     siguienteSeguro: siguienteSeguro,
+    destinoTrasIniciarSesion: destinoTrasIniciarSesion,
+    avisoDeInicio: avisoDeInicio,
+    PAGINAS_QUE_TERMINAN: PAGINAS_QUE_TERMINAN,
     PAGINAS_DE_REGRESO: PAGINAS_DE_REGRESO,
     despuesDeSalir: despuesDeSalir,
     minutos: minutos

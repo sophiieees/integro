@@ -274,12 +274,29 @@
     });
   }
 
-  /* Si la dirección trae ?siguiente=... (la deja la pantalla de reservar al mandar a crear una cuenta), al terminar de
-     iniciar sesión se vuelve a esa página. Solo si es una página de Íntegro permitida (siguienteSeguro). */
+  /* Un aviso breve, sobre la página, de que ya se inició sesión. Se quita solo y no tapa nada: no recibe clics. */
+  function mostrarAvisoDeInicio() {
+    var anterior = document.querySelector("[data-aviso-de-sesion]");
+    if (anterior) anterior.remove();
+    var aviso = document.createElement("div");
+    aviso.className = "aviso-de-sesion";
+    aviso.setAttribute("role", "status");
+    aviso.setAttribute("data-aviso-de-sesion", "");
+    aviso.textContent = LOGICA.avisoDeInicio(estado.nombre);
+    document.body.appendChild(aviso);
+    window.setTimeout(function () { aviso.remove(); }, 4000);
+  }
+
+  /* Al terminar de iniciar sesión (decisiones de Sophia del 21 de noviembre de 2026): se va a donde diga
+     destinoTrasIniciarSesion (la página de ?siguiente=, si es una permitida, o la portada si estaba en el registro o en
+     recuperar la contraseña); desde cualquier otra página no se mueve, y se avisa con un mensaje breve. */
   function regresarSiHaceFalta() {
     if (!estado.sesion) return;
-    var destino = LOGICA.siguienteSeguro(new URLSearchParams(window.location.search).get("siguiente"));
-    if (destino) window.location.href = destino;
+    var decision = LOGICA.destinoTrasIniciarSesion(
+      window.location.pathname, new URLSearchParams(window.location.search).get("siguiente")
+    );
+    if (decision.ir) { window.location.href = decision.destino; return; }
+    mostrarAvisoDeInicio();
   }
 
   /* ---------- La ventana ---------- */

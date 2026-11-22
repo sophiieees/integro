@@ -31,6 +31,10 @@
   var RESPUESTA_RARA = "El servidor respondió de forma inesperada. Inténtalo nuevamente.";
   var CAMPOS = ["email", "code", "new_password"];
   var AVISO_CONTRASENA = "Tu contraseña aún no cumple lo que se indica abajo.";
+  /* Al cambiar la contraseña se muestra «Tu contraseña cambió» y, a los 3 segundos (decisión de Sophia del 21 de noviembre
+     de 2026), se va a la portada con la ventana de iniciar sesión abierta (#entrar). */
+  var SEGUNDOS_DE_ESPERA = 3;
+  var DESTINO_AL_TERMINAR = "index.html#entrar";
   var AVISO_CONTRASENA_FACIL = "Tu contraseña es muy fácil de adivinar. Revisa los consejos de abajo.";
 
   function plural(n, uno, varios) { return n + " " + (n === 1 ? uno : varios); }
@@ -167,6 +171,11 @@
     return base;
   }
 
+  /* Lo que dice la cuenta regresiva de «Tu contraseña cambió». */
+  function textoDeEspera(segundos) {
+    return "Te llevaremos al inicio de sesión en " + plural(segundos, "segundo", "segundos") + ".";
+  }
+
   /* La pantalla cuando ya hay una sesión iniciada. */
   function avisoDeSesionIniciada(nombre) {
     return "Ya iniciaste sesión como " + nombre + ". Para recuperar tu contraseña, primero cierra sesión.";
@@ -176,6 +185,9 @@
     CAMPOS: CAMPOS,
     SIN_SERVIDOR: SIN_SERVIDOR,
     AVISO_CONTRASENA: AVISO_CONTRASENA,
+    SEGUNDOS_DE_ESPERA: SEGUNDOS_DE_ESPERA,
+    DESTINO_AL_TERMINAR: DESTINO_AL_TERMINAR,
+    textoDeEspera: textoDeEspera,
     AVISO_CONTRASENA_FACIL: AVISO_CONTRASENA_FACIL,
     revisarCorreo: revisarCorreo,
     revisarCambio: revisarCambio,

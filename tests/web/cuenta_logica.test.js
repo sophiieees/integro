@@ -299,3 +299,27 @@ test("una respuesta rara no rompe la ventana", () => {
   assert.equal(LOGICA.despuesDelCodigo(500, { errors: [] }).paso, "codigo");
   assert.equal(LOGICA.estadoDeCabecera(200, {}).sesion, false);
 });
+
+/* --- A dónde se va al terminar de iniciar sesión (decisiones de Sophia del 21 de noviembre de 2026) ---------------- */
+
+test("desde el registro y desde recuperar la contraseña se va a la portada", () => {
+  assert.deepEqual(LOGICA.destinoTrasIniciarSesion("/registro.html", null), { ir: true, destino: "index.html" });
+  assert.deepEqual(LOGICA.destinoTrasIniciarSesion("/recuperar-contrasena.html", ""), { ir: true, destino: "index.html" });
+});
+
+test("desde cualquier otra página no se mueve", () => {
+  for (const ruta of ["/index.html", "/", "/propiedad.html", "/mi-cuenta.html", "/anfitrion.html", "/administracion.html"]) {
+    assert.deepEqual(LOGICA.destinoTrasIniciarSesion(ruta, null), { ir: false, destino: null }, ruta);
+  }
+});
+
+test("una página de regreso permitida manda sobre lo demás; una que no vale se ignora", () => {
+  const permitida = LOGICA.PAGINAS_DE_REGRESO[0];
+  assert.deepEqual(LOGICA.destinoTrasIniciarSesion("/registro.html", permitida), { ir: true, destino: permitida });
+  assert.deepEqual(LOGICA.destinoTrasIniciarSesion("/registro.html", "https://malo.invalid/"), { ir: true, destino: "index.html" });
+  assert.deepEqual(LOGICA.destinoTrasIniciarSesion("/propiedad.html", "//malo.invalid"), { ir: false, destino: null });
+});
+
+test("el aviso de inicio dice el nombre", () => {
+  assert.equal(LOGICA.avisoDeInicio("Ana"), "Iniciaste sesión como Ana.");
+});
