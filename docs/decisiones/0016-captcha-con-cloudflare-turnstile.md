@@ -11,6 +11,8 @@
 - La página resuelve el desafío y manda el resultado en el encabezado `X-Captcha-Token`. La API se lo pregunta a Cloudflare con la llave secreta (`siteverify`), antes de revisar el formulario. Un resultado sirve una sola vez y dura 5 minutos.
 - **Sin resultado, vacío, repetido, vencido o falso:** `400`, `captcha_failed`. **Si Cloudflare no responde** (red caída, 5 segundos sin respuesta, error de su servidor, respuesta que no se entiende) **o la llave secreta falta o no sirve:** `503`, `captcha_unavailable`. En los dos casos no se crea ni se envía nada.
 - **Siempre activo, sin interruptor.** Una variable mal escrita o borrada en Vercel dejaría el sistema sin protección sin que nadie lo notara. En la computadora y en las pruebas se usan las llaves de prueba de Cloudflare, que siempre pasan, y las pruebas automáticas usan un verificador que acepta solo un resultado inventado, así que ninguna llama a Cloudflare.
+- **Una acción por ruta** (sugerencia aceptada el 22 de noviembre de 2026): el widget de cada pantalla declara su acción (`register`, `login`, `password_reset`, `resend_code`, `correct_email`), Cloudflare la devuelve al comprobar y la API la compara con la que espera la ruta. Un resultado de una acción no sirve en otra; sin acción o con otra es `captcha_failed`.
+- **Las llaves de prueba solo valen en la computadora de Sophia** (sugerencia aceptada el 22 de noviembre de 2026): siempre pasan, así que con `SESSION_COOKIE_SECURE=false` se aceptan y, donde la cookie exige HTTPS (la nube), se tratan como si faltaran: `503`, tanto la llave secreta como la pública. Con llaves de prueba Cloudflare no devuelve la acción (lo dice su documentación), y por eso solo con ellas no se compara.
 - La llave pública no se escribe en las páginas: la API la entrega en `GET /auth/captcha`, para que cada ambiente use la suya (de prueba en la computadora, real en la nube). La secreta solo vive en el servidor.
 - Variables: `TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET_KEY`. Sin ellas la API arranca (la salud sigue respondiendo) y las cinco rutas contestan `503`.
 - No se agrega ninguna dependencia: la comprobación usa la biblioteca estándar de Python.
@@ -19,7 +21,7 @@
 - Si Cloudflare cae, nadie puede registrarse ni iniciar sesión hasta que vuelva. Se aceptó porque es poco frecuente y breve, y porque dejar pasar abriría la puerta justo cuando no hay filtro. Con usuarios reales se puede revisar si conviene dejar entrar a quien ya tiene cuenta durante una caída.
 - En el plan gratuito el widget lista los hostnames exactos (sin comodín, hasta 10): hay que agregar el dominio propio cuando se compre.
 - Hay que decir en el aviso de privacidad que Cloudflare recibe datos del navegador (pendiente con Valeria).
-- Las llaves de prueba (empiezan con `1x`, `2x` o `3x`) dejarían pasar a cualquiera: nunca van en Vercel. Una guarda que las rechace fuera de desarrollo queda como sugerencia.
+- Quien use un entorno que no sea ni la computadora de Sophia ni la nube con HTTPS (por ejemplo, una segunda computadora de desarrollo con la cookie sin `Secure`) también puede usar las llaves de prueba: la guarda mira `SESSION_COOKIE_SECURE`, que ya solo se apaga en desarrollo.
 
 ## Fuente
 Decisión de Sophia del 21 y 22 de noviembre de 2026 (prompt 38 de la bitácora y la conversación que le siguió).

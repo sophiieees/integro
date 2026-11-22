@@ -105,7 +105,7 @@ class SingleConnectionPool:
 class AcceptsAnyCaptcha:
     """El CAPTCHA de las pruebas de pantalla: acepta lo que llegue, o nada."""
 
-    def verify(self, token):
+    def verify(self, token, action):
         return CaptchaResult.PASSED
 
 

@@ -146,7 +146,7 @@ def captcha_config(request: Request):
     status_code=201,
     response_model=RegisterResponse,
     responses={**CAPTCHA_RESPONSES, 409: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
-    dependencies=[Depends(require_captcha)],
+    dependencies=[Depends(require_captcha("register"))],
     summary="Crear una cuenta",
 )
 def register(body: RegisterRequest, request: Request):
@@ -208,7 +208,7 @@ def verify(body: VerifyEmailRequest, request: Request):
     "/resend-code",
     response_model=ResendCodeResponse,
     responses={**CAPTCHA_RESPONSES, 422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
-    dependencies=[Depends(require_captcha)],
+    dependencies=[Depends(require_captcha("resend_code"))],
     summary="Pedir otro código para comprobar el correo",
 )
 def resend(body: ResendCodeRequest, request: Request):
@@ -249,7 +249,7 @@ class CorrectEmailRequest(BaseModel):
     response_model=RegisterResponse,
     responses={**CAPTCHA_RESPONSES, 401: {"model": ErrorResponse}, 409: {"model": ErrorResponse},
                422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
-    dependencies=[Depends(require_captcha)],
+    dependencies=[Depends(require_captcha("correct_email"))],
     summary="Corregir el correo de una cuenta que todavía no lo ha comprobado",
 )
 def correct_email(body: CorrectEmailRequest, request: Request):
@@ -335,7 +335,7 @@ class PasswordResetConfirmResponse(BaseModel):
     "/password-reset/request",
     response_model=PasswordResetRequestResponse,
     responses={**CAPTCHA_RESPONSES, 422: {"model": ErrorResponse}},
-    dependencies=[Depends(require_captcha)],
+    dependencies=[Depends(require_captcha("password_reset"))],
     summary="Recuperar la contraseña, paso 1: pedir el código",
 )
 def password_reset_request(body: PasswordResetRequest, request: Request):
@@ -465,7 +465,7 @@ def wait_response(seconds: int | None) -> JSONResponse:
     response_model=LoginResponse,
     responses={**CAPTCHA_RESPONSES, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse},
                422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
-    dependencies=[Depends(require_captcha)],
+    dependencies=[Depends(require_captcha("login"))],
     summary="Iniciar sesión, paso 1: correo y contraseña",
 )
 def login(body: LoginRequest, request: Request):

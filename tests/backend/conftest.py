@@ -122,9 +122,11 @@ class FakeCaptcha:
     def __init__(self, result: CaptchaResult | None = None):
         self.result = result
         self.seen = []
+        self.actions = []
 
-    def verify(self, token):
+    def verify(self, token, action):
         self.seen.append(token)
+        self.actions.append(action)
         if self.result is not None:
             return self.result
         return CaptchaResult.PASSED if token == TEST_CAPTCHA_TOKEN else CaptchaResult.FAILED
