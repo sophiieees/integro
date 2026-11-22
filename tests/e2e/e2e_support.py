@@ -41,6 +41,7 @@ import pytest
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "backend"))
 
+from app.api.captcha import CaptchaResult  # noqa: E402
 from app.core.config import ENV_FILE, load_settings  # noqa: E402
 from app.database.connection import create_pool  # noqa: E402
 from app.database.transaction import system_transaction  # noqa: E402
@@ -99,6 +100,13 @@ class SingleConnectionPool:
     @contextmanager
     def connection(self, timeout=None):
         yield self._connection
+
+
+class AcceptsAnyCaptcha:
+    """El CAPTCHA de las pruebas de pantalla: acepta lo que llegue, o nada."""
+
+    def verify(self, token):
+        return CaptchaResult.PASSED
 
 
 class CodeBox:
@@ -169,6 +177,9 @@ def site():
                 pool = SingleConnectionPool(connection)
                 application.state.pool = pool
                 application.state.code_sender = codes
+                # Estas pruebas son de las pantallas, no del CAPTCHA: aquí todo resultado vale. El CAPTCHA se prueba en
+                # tests/backend/test_captcha.py y, en la página, en las pruebas del widget.
+                application.state.captcha = AcceptsAnyCaptcha()
                 try:
                     yield Site(url=f"http://127.0.0.1:{port}", pool=pool, codes=codes, settings=settings)
                 finally:

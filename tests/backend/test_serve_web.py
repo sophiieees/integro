@@ -109,7 +109,8 @@ def test_the_api_routes_still_belong_to_the_api(client):
 
 def test_an_api_route_keeps_its_own_answer_for_a_post(client):
     """Las páginas no se tragan las peticiones de la API."""
-    response = client.post("/api/v1/auth/login", json={})
+    # verify-email no pide CAPTCHA: aquí se prueba que las páginas no se tragan los POST, no el CAPTCHA.
+    response = client.post("/api/v1/auth/verify-email", json={})
 
     assert response.status_code == 422
     assert response.json()["errors"][0]["code"] == "required"

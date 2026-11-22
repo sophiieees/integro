@@ -48,7 +48,7 @@ Decididas el 21 de noviembre de 2026:
 2. **Plan de Vercel:** se prueba en Hobby con la protección de Vercel Authentication encendida. Se pasa a Pro antes de que entre alguien que no sea del equipo; antes de eso, Sophia avisa a Shakti y a Valeria. Todavía no se ha comprado nada.
 3. **Demostración solo para el equipo**, hasta tener el correo real.
 4. **La base se crea directo en Neon**, no desde la integración de Vercel.
-5. **CAPTCHA:** hace falta. Todavía no existe (la arquitectura lo pide en el registro y en el inicio de sesión). Es una pieza aparte, antes de abrir el sitio a personas de fuera; no bloquea la demostración del equipo porque va detrás de Vercel Authentication. Falta elegir el servicio (sección 5 bis).
+5. **CAPTCHA:** Cloudflare Turnstile, plan gratuito (ADR 0016, 22 de noviembre de 2026). Siempre activo, sin interruptor. Si Cloudflare no responde, se rechaza. Detalles en la sección 5 bis.
 
 Por decidir:
 
@@ -100,9 +100,22 @@ EMAIL_DELIVERY=console
 - **Variables nuevas:** `DATABASE_SSLMODE` (en Neon, `require`), `DATABASE_CONNECT_TIMEOUT_SECONDS` (en Neon, `10`, porque la primera conexión tras suspenderse tarda más) y `TRUST_PROXY_HEADERS`.
 - **Detrás del proxy de Vercel:** la API ve HTTP aunque la persona entró por HTTPS, y la dirección de quien pide es la del proxy. Con `TRUST_PROXY_HEADERS=true` (solo en Vercel), el origen propio se arma con `X-Forwarded-Proto` y la IP sale de `X-Forwarded-For`. Sin eso, toda petición que cambia algo daría 403, y todas las personas compartirían la espera por dispositivo. Con la variable apagada (como en tu computadora), esos encabezados se ignoran: nadie puede fingir otra dirección.
 
-## 5 bis. CAPTCHA: qué falta decidir
+## 5 bis. CAPTCHA con Cloudflare Turnstile
 
-Es una pieza aparte, después de que la demostración funcione. Opciones: **Cloudflare Turnstile** (gratuito, sin límite de solicitudes publicado, casi siempre invisible; hay que mencionar su adenda de privacidad en el aviso de privacidad), **hCaptcha** (reto visible en el plan gratuito) o **Google reCAPTCHA** (con un tope gratuito). Recomendación: Turnstile. Las cifras de los planes salen de comparativas de terceros y hay que revisarlas en las páginas oficiales antes de decidir. Se necesitan dos llaves del servicio: la pública va en la página; la secreta, solo en el servidor y fuera del repositorio.
+Decidido el 22 de noviembre de 2026 (ADR 0016): Turnstile, plan gratuito, modo Managed, en cinco rutas (registro, primer paso de iniciar sesión, pedir el código de recuperar la contraseña, pedir otro código de verificación y corregir el correo). Siempre activo; si Cloudflare no responde o falta la llave secreta, la acción se rechaza.
+
+**Qué hay que cargar en Vercel antes de fusionar** (Settings, Environment Variables, Production). Sin esto, el registro y el inicio de sesión contestan `503` en producción, porque nada se deja pasar sin comprobar:
+
+| Variable | Valor |
+|---|---|
+| `TURNSTILE_SITE_KEY` | la llave **pública** del widget «Integro» (empieza con `0x4`) |
+| `TURNSTILE_SECRET_KEY` | la llave **secreta** del mismo widget, como **Secret**. Solo en Vercel y en tu gestor de contraseñas; nunca en el chat ni en el repositorio |
+
+**El widget en Cloudflare** (Application security, Turnstile): modo Managed, y en Hostname Management los **hostnames exactos** donde se muestra, uno por línea y sin comodines: hoy `integro-ruby.vercel.app`. Al comprar el dominio propio se agrega aquí también, o el desafío no carga en ese dominio. Si se borra el widget y se crea otro, las dos llaves cambian y hay que actualizar las dos variables de Vercel.
+
+**Cómo se comprueba que quedó bien:** `/api/v1/auth/captcha` contesta la llave pública y no `503`; en el registro aparece el desafío; con una llave secreta equivocada, las acciones contestan `503` y el registro de la función dice `invalid-input-secret`.
+
+**Pendiente con Valeria:** qué decir de Cloudflare en el aviso de privacidad (Turnstile recibe datos del navegador de quien se registra o inicia sesión).
 
 ## 5 quater. Probar en Vercel, paso a paso
 
@@ -122,8 +135,10 @@ Lo hace Sophia en vercel.com, con el proyecto que ya publica la web. La IA no pu
    | `CODE_HASH_SECRET` | la llave de los códigos |
    | `EMAIL_DELIVERY` | `console` |
    | `TRUST_PROXY_HEADERS` | `true` |
+   | `TURNSTILE_SITE_KEY` | la llave pública del widget (desde la pieza del CAPTCHA; ver 5 bis) |
+   | `TURNSTILE_SECRET_KEY` | la llave secreta del widget, como Secret (ver 5 bis) |
 
-   Para las que son secretas (`DATABASE_PASSWORD` y `CODE_HASH_SECRET`), activar la opción **Sensitive** si Vercel la ofrece.
+   Para las que son secretas (`DATABASE_PASSWORD`, `CODE_HASH_SECRET` y `TURNSTILE_SECRET_KEY`), activar la opción **Sensitive** si Vercel la ofrece.
 2. **Protección.** Settings, Deployment Protection: **Vercel Authentication** encendida. Si Vercel da a elegir qué cubre, elegir que cubra todos los despliegues, producción incluida. **(sin verificar cómo se llama cada opción en la pantalla)**
 3. **Conectar la rama.** Cuando la rama `api/vercel-ready` esté en GitHub, Vercel crea una previsualización sola. Se abre desde la pestaña Deployments; hay que iniciar sesión en Vercel para verla.
 4. **Lista de pruebas a mano en la previsualización:**
@@ -140,7 +155,7 @@ Lo hace Sophia en vercel.com, con el proyecto que ya publica la web. La IA no pu
 - Sin el correo real, nadie de fuera puede crear una cuenta. Es lo esperado para esta etapa.
 - La conexión de la API hoy no exige SSL: usa `prefer`, que cifra cuando el servidor lo ofrece. Neon sí lo ofrece, y el script lo comprueba; después se agrega `sslmode=require` como valor de configuración.
 - Cualquiera con acceso a los registros de la función de Vercel ve los códigos mientras el modo sea `console`.
-- El registro de cuentas todavía no tiene CAPTCHA (ADR de seguridad pendiente): con la API abierta al público, alguien podría crear cuentas en masa. Por eso la demostración va detrás de Vercel Authentication.
+- El CAPTCHA (ADR 0016) frena que un programa cree cuentas en masa o pida códigos sin parar, pero depende de Cloudflare: si cae, nadie puede registrarse ni iniciar sesión hasta que vuelva (se rechaza en lugar de dejar pasar). Mientras no haya correo real, la demostración sigue detrás de Vercel Authentication.
 - El plan gratuito de Neon se queda sin horas si algo mantiene la base despierta; las conexiones fallan hasta el mes siguiente.
 - Vercel Authentication exige ser miembro del equipo en Vercel para ver el sitio. **(sin verificar si el plan Hobby permite agregar a Shakti y a Valeria como miembros)**: si no, ellas necesitarían Pro, o un enlace compartible de Vercel, o ver la demostración en pantalla compartida. Hay que comprobarlo antes de avisarles.
 - Vercel Authentication solo cubre producción si se elige «All Deployments»; con la opción estándar el dominio de producción queda abierto (se comprobó el 21 de noviembre de 2026).

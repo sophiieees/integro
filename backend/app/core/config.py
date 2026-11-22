@@ -102,6 +102,12 @@ class Settings(BaseSettings):
     # reescribe siempre (Vercel). En la computadora de Sophia va apagado.
     trust_proxy_headers: bool = False
 
+    # CAPTCHA con Cloudflare Turnstile (ADR 0016). La llave pública va dentro de las páginas, que la piden a la API; la
+    # secreta solo la usa el servidor. Siempre hay CAPTCHA: no hay interruptor, y si falta alguna llave las acciones que
+    # lo piden se rechazan en lugar de dejar pasar. En desarrollo y en pruebas valen las llaves de prueba de Cloudflare.
+    turnstile_site_key: str | None = None
+    turnstile_secret_key: SecretStr | None = None
+
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:
     """Lee y valida la configuración.
