@@ -17,6 +17,12 @@ Especificación confirmada por Sophia el 22 de noviembre de 2026 (ADR 0016):
         password-reset/confirm) no lo piden y ni siquiera le preguntan a Cloudflare.
     GET /auth/captcha
      6. Con llave pública configurada entrega {"site_key": ...}; sin ella, 503.
+    Acción por ruta y llaves de prueba (sugerencias aceptadas por Sophia el 22 de noviembre de 2026)
+     7. Cada ruta espera su acción (register, login, password_reset, resend_code, correct_email)
+        y Cloudflare la devuelve: un resultado de otra acción, o sin acción, es captcha_failed.
+     8. Las llaves de prueba de Cloudflare (1x, 2x, 3x) solo valen con SESSION_COOKIE_SECURE=false, es decir, en la
+        computadora de Sophia; allí la acción no se compara, porque Cloudflare no la devuelve. Donde la cookie exige
+        HTTPS (la nube), una llave de prueba, secreta o pública, se trata como si faltara: 503.
 
 TurnstileVerifier se prueba contra un servidor HTTP local que hace de Cloudflare, con
 respuestas de verdad (no con un doble de la función): así se comprueba lo que se manda
@@ -50,6 +56,10 @@ from test_accounts_registration import new_form
 
 SECRET = "llave-secreta-inventada-del-captcha"
 TOKEN = "resultado-inventado-del-desafio"
+ACTION = "login"
+# Llaves de prueba de Cloudflare: públicas, siempre pasan y no devuelven la acción.
+TEST_SECRET = "1x0000000000000000000000000000000AA"
+TEST_SITE_KEY = "1x00000000000000000000AA"
 
 
 # ---------------------------------------------------------------------------
@@ -62,7 +72,7 @@ class FakeCloudflare:
 
     def __init__(self):
         self.status = 200
-        self.body = json.dumps({"success": True}).encode()
+        self.body = json.dumps({"success": True, "action": ACTION}).encode()
         self.delay = 0.0
         self.requests = []
         owner = self
@@ -118,7 +128,7 @@ def verifier(cloudflare):
 
 
 def test_a_good_result_passes_and_cloudflare_gets_the_secret_and_the_result_as_a_form(verifier, cloudflare):
-    assert verifier.verify(TOKEN) is CaptchaResult.PASSED
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.PASSED
 
     assert len(cloudflare.requests) == 1
     sent = cloudflare.requests[0]
@@ -127,51 +137,74 @@ def test_a_good_result_passes_and_cloudflare_gets_the_secret_and_the_result_as_a
     assert sent["form"] == {"secret": [SECRET], "response": [TOKEN]}
 
 
+def test_a_result_made_for_another_action_does_not_pass(verifier, cloudflare):
+    """El resultado del registro no sirve para iniciar sesión."""
+    cloudflare.answer({"success": True, "action": "register"})
+
+    assert verifier.verify(TOKEN, "login") is CaptchaResult.FAILED
+    assert verifier.verify(TOKEN, "register") is CaptchaResult.PASSED
+
+
+@pytest.mark.parametrize("answer", [{"success": True}, {"success": True, "action": ""}, {"success": True, "action": None},
+                                    {"success": True, "action": ["login"]}, {"success": True, "action": "LOGIN"}])
+def test_a_result_without_the_action_or_with_another_one_fails_with_real_keys(verifier, cloudflare, answer):
+    cloudflare.answer(answer)
+
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.FAILED
+
+
+def test_with_test_keys_the_action_is_not_compared_because_cloudflare_does_not_return_it(cloudflare):
+    without_check = TurnstileVerifier(TEST_SECRET, url=cloudflare.url, timeout=2, check_action=False)
+    cloudflare.answer({"success": True, "hostname": "example.com"})
+
+    assert without_check.verify(TOKEN, ACTION) is CaptchaResult.PASSED
+
+
 @pytest.mark.parametrize("code", ["invalid-input-response", "missing-input-response", "timeout-or-duplicate", "bad-request"])
 def test_a_result_cloudflare_refuses_fails_so_the_person_can_try_again(verifier, cloudflare, code):
     cloudflare.answer({"success": False, "error-codes": [code]})
 
-    assert verifier.verify(TOKEN) is CaptchaResult.FAILED
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.FAILED
 
 
 def test_a_refusal_without_codes_also_fails(verifier, cloudflare):
     cloudflare.answer({"success": False})
 
-    assert verifier.verify(TOKEN) is CaptchaResult.FAILED
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.FAILED
 
 
 @pytest.mark.parametrize("code", ["invalid-input-secret", "missing-input-secret", "internal-error"])
 def test_a_problem_that_is_ours_or_cloudflares_is_unavailable_not_a_failure_of_the_person(verifier, cloudflare, code):
     cloudflare.answer({"success": False, "error-codes": [code]})
 
-    assert verifier.verify(TOKEN) is CaptchaResult.UNAVAILABLE
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.UNAVAILABLE
 
 
 @pytest.mark.parametrize("status", [400, 429, 500, 502, 503])
 def test_an_error_answer_from_cloudflare_is_unavailable(verifier, cloudflare, status):
-    cloudflare.answer({"success": True}, status=status)
+    cloudflare.answer({"success": True, "action": ACTION}, status=status)
 
-    assert verifier.verify(TOKEN) is CaptchaResult.UNAVAILABLE
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.UNAVAILABLE
 
 
 @pytest.mark.parametrize("body", [b"", b"<html>no soy json</html>", b"[1, 2]", b'"hola"', b"null", b"\xff\xfe"])
 def test_an_answer_that_is_not_understood_is_unavailable(verifier, cloudflare, body):
     cloudflare.answer(body)
 
-    assert verifier.verify(TOKEN) is CaptchaResult.UNAVAILABLE
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.UNAVAILABLE
 
 
 @pytest.mark.parametrize("success", ["true", 1, "yes", None])
 def test_only_a_real_true_passes(verifier, cloudflare, success):
-    cloudflare.answer({"success": success})
+    cloudflare.answer({"success": success, "action": ACTION})
 
-    assert verifier.verify(TOKEN) is CaptchaResult.FAILED
+    assert verifier.verify(TOKEN, ACTION) is CaptchaResult.FAILED
 
 
 def test_nobody_listening_is_unavailable(closed_port):
     lost = TurnstileVerifier(SECRET, url=f"http://127.0.0.1:{closed_port}/turnstile/v0/siteverify", timeout=2)
 
-    assert lost.verify(TOKEN) is CaptchaResult.UNAVAILABLE
+    assert lost.verify(TOKEN, ACTION) is CaptchaResult.UNAVAILABLE
 
 
 def test_a_cloudflare_that_does_not_answer_in_time_is_unavailable(cloudflare):
@@ -179,7 +212,7 @@ def test_a_cloudflare_that_does_not_answer_in_time_is_unavailable(cloudflare):
     impatient = TurnstileVerifier(SECRET, url=cloudflare.url, timeout=0.3)
 
     started = time.monotonic()
-    result = impatient.verify(TOKEN)
+    result = impatient.verify(TOKEN, ACTION)
 
     assert result is CaptchaResult.UNAVAILABLE
     assert time.monotonic() - started < 1.2
@@ -187,21 +220,21 @@ def test_a_cloudflare_that_does_not_answer_in_time_is_unavailable(cloudflare):
 
 @pytest.mark.parametrize("token", [None, "", "   ", "x" * (TOKEN_MAX_LENGTH + 1)])
 def test_a_missing_empty_or_oversized_result_fails_without_asking_cloudflare(verifier, cloudflare, token):
-    assert verifier.verify(token) is CaptchaResult.FAILED
+    assert verifier.verify(token, ACTION) is CaptchaResult.FAILED
     assert cloudflare.requests == []
 
 
 def test_a_result_of_the_maximum_length_is_still_sent(verifier, cloudflare):
-    assert verifier.verify("x" * TOKEN_MAX_LENGTH) is CaptchaResult.PASSED
+    assert verifier.verify("x" * TOKEN_MAX_LENGTH, ACTION) is CaptchaResult.PASSED
     assert len(cloudflare.requests) == 1
 
 
 def test_the_log_never_carries_the_secret_or_the_result(cloudflare, caplog):
     caplog.set_level("DEBUG")
     cloudflare.answer({"success": False, "error-codes": ["invalid-input-secret"]})
-    TurnstileVerifier(SECRET, url=cloudflare.url, timeout=2).verify(TOKEN)
+    TurnstileVerifier(SECRET, url=cloudflare.url, timeout=2).verify(TOKEN, ACTION)
     cloudflare.answer(b"no es json")
-    TurnstileVerifier(SECRET, url=cloudflare.url, timeout=2).verify(TOKEN)
+    TurnstileVerifier(SECRET, url=cloudflare.url, timeout=2).verify(TOKEN, ACTION)
 
     assert "invalid-input-secret" in caplog.text
     assert SECRET not in caplog.text
@@ -234,8 +267,43 @@ def test_without_a_secret_key_everything_is_unavailable_never_allowed(settings_w
     )
 
     assert isinstance(chosen, UnconfiguredVerifier)
-    assert chosen.verify(TOKEN) is CaptchaResult.UNAVAILABLE
-    assert chosen.verify(None) is CaptchaResult.UNAVAILABLE
+    assert chosen.verify(TOKEN, ACTION) is CaptchaResult.UNAVAILABLE
+    assert chosen.verify(None, ACTION) is CaptchaResult.UNAVAILABLE
+
+
+def test_a_test_secret_key_is_accepted_only_on_sophias_computer(settings_without_database, cloudflare):
+    from pydantic import SecretStr
+
+    local = settings_with(settings_without_database, turnstile_secret_key=SecretStr(TEST_SECRET), session_cookie_secure=False)
+    cloud = settings_with(settings_without_database, turnstile_secret_key=SecretStr(TEST_SECRET), session_cookie_secure=True)
+    cloudflare.answer({"success": True, "hostname": "example.com"})  # como contesta con llaves de prueba: sin acción
+
+    assert create_captcha_verifier(local, url=cloudflare.url).verify(TOKEN, ACTION) is CaptchaResult.PASSED
+    refused = create_captcha_verifier(cloud, url=cloudflare.url)
+    assert isinstance(refused, UnconfiguredVerifier)
+    assert refused.verify(TOKEN, ACTION) is CaptchaResult.UNAVAILABLE
+    assert len(cloudflare.requests) == 1  # a Cloudflare solo se le preguntó en la computadora de Sophia
+
+
+@pytest.mark.parametrize("secure", [True, False])
+def test_a_real_secret_key_always_checks_the_action(settings_without_database, cloudflare, secure):
+    from pydantic import SecretStr
+
+    settings = settings_with(settings_without_database, turnstile_secret_key=SecretStr("0x4AAAAAAAreal-inventada"),
+                             session_cookie_secure=secure)
+    cloudflare.answer({"success": True, "action": "register"})
+    chosen = create_captcha_verifier(settings, url=cloudflare.url)
+
+    assert chosen.verify(TOKEN, "login") is CaptchaResult.FAILED
+    assert chosen.verify(TOKEN, "register") is CaptchaResult.PASSED
+
+
+@pytest.mark.parametrize("key", ["1x00000000000000000000AA", "2x00000000000000000000AB", "3x00000000000000000000FF"])
+def test_every_kind_of_test_key_is_recognized(key):
+    from app.api.captcha import is_test_key
+
+    assert is_test_key(key) is True
+    assert is_test_key("0x4AAAAAAGNy2A7zsC9zvpyP") is False
 
 
 def test_the_keys_are_read_from_the_environment_and_the_secret_is_not_printed(clean_environment):
@@ -270,6 +338,8 @@ ROUTES = {
     "resend": "/api/v1/auth/resend-code",
     "correct": "/api/v1/auth/correct-unverified-email",
 }
+ACTIONS = {"register": "register", "login": "login", "reset": "password_reset", "resend": "resend_code",
+           "correct": "correct_email"}
 WITHOUT_CAPTCHA = {
     "verify-email": "/api/v1/auth/verify-email",
     "login-verify": "/api/v1/auth/login/verify",
@@ -373,6 +443,20 @@ def test_the_captcha_is_asked_before_the_form_is_checked(api):
     assert response.json() == CAPTCHA_BODY
 
 
+@pytest.mark.parametrize("name", ROUTES)
+def test_each_route_asks_for_its_own_action(api, name):
+    api.client.post(ROUTES[name], json={})
+
+    assert api.captcha.actions == [ACTIONS[name]]
+
+
+def test_the_five_actions_are_different_and_valid_for_the_widget():
+    import re
+
+    assert len(set(ACTIONS.values())) == 5
+    assert all(re.fullmatch(r"[A-Za-z0-9_-]{1,32}", action) for action in ACTIONS.values())
+
+
 @pytest.mark.parametrize("name", WITHOUT_CAPTCHA)
 def test_the_steps_that_ask_for_a_code_do_not_ask_for_the_captcha(api, name):
     without_header(api)
@@ -404,15 +488,17 @@ def test_the_documentation_of_the_api_lists_the_header_and_the_two_answers(api):
 def test_the_whole_chain_from_the_header_to_cloudflare(api, cloudflare, name):
     api.client.app.state.captcha = TurnstileVerifier(SECRET, url=cloudflare.url, timeout=2)
 
-    cloudflare.answer({"success": True})
+    cloudflare.answer({"success": True, "action": ACTIONS[name]})
     passed = api.client.post(ROUTES[name], json={}, headers={CAPTCHA_HEADER: TOKEN})
+    cloudflare.answer({"success": True, "action": "otra_accion"})
+    other_action = api.client.post(ROUTES[name], json={}, headers={CAPTCHA_HEADER: TOKEN})
     cloudflare.answer({"success": False, "error-codes": ["timeout-or-duplicate"]})
     repeated = api.client.post(ROUTES[name], json={}, headers={CAPTCHA_HEADER: TOKEN})
     cloudflare.answer({}, status=500)
     down = api.client.post(ROUTES[name], json={}, headers={CAPTCHA_HEADER: TOKEN})
 
-    assert (passed.status_code, repeated.status_code, down.status_code) == (422, 400, 503)
-    assert [request["form"]["response"] for request in cloudflare.requests] == [[TOKEN]] * 3
+    assert (passed.status_code, other_action.status_code, repeated.status_code, down.status_code) == (422, 400, 400, 503)
+    assert [request["form"]["response"] for request in cloudflare.requests] == [[TOKEN]] * 4
 
 
 # --- Sin llave secreta ---------------------------------------------------------------------------------
@@ -461,6 +547,30 @@ def test_without_a_site_key_the_page_is_told_503(settings_without_database, site
     assert response.status_code == 503
     assert response.json() == UNAVAILABLE_BODY
     assert response.headers["cache-control"] == "no-store"
+
+
+def test_a_test_site_key_is_given_only_on_sophias_computer(settings_without_database):
+    local = settings_with(settings_without_database, turnstile_site_key=TEST_SITE_KEY, session_cookie_secure=False)
+    cloud = settings_with(settings_without_database, turnstile_site_key=TEST_SITE_KEY, session_cookie_secure=True)
+
+    with TestClient(create_app(local)) as client:
+        assert client.get("/api/v1/auth/captcha").json() == {"site_key": TEST_SITE_KEY}
+    with TestClient(create_app(cloud)) as client:
+        response = client.get("/api/v1/auth/captcha")
+        assert response.status_code == 503
+        assert TEST_SITE_KEY not in response.text
+
+
+def test_the_routes_refuse_everything_when_the_cloud_has_a_test_secret_key(settings_without_database):
+    from pydantic import SecretStr
+
+    cloud = settings_with(settings_without_database, turnstile_secret_key=SecretStr(TEST_SECRET), session_cookie_secure=True)
+    with TestClient(create_app(cloud)) as client:
+        assert client.get("/api/v1/health").status_code == 200
+        for name, path in ROUTES.items():
+            response = client.post(path, json={}, headers={CAPTCHA_HEADER: "XXXX.DUMMY.TOKEN.XXXX"})
+            assert response.status_code == 503, name
+            assert response.json() == UNAVAILABLE_BODY, name
 
 
 def test_the_site_key_route_only_reads(settings_without_database):

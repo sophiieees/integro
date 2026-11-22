@@ -13,9 +13,15 @@ La página resuelve el desafío de Cloudflare y manda el resultado en el encabez
 pregunta a Cloudflare con la llave secreta, que solo vive en el servidor. Un resultado sirve una sola vez y dura 5
 minutos, así que la página pide uno nuevo antes de cada petición.
 
+- Cada ruta espera una acción distinta (login, register...), que el widget de su pantalla declara. Cloudflare la
+  devuelve al comprobar, y un resultado de una acción no sirve en otra.
+- Las llaves de prueba de Cloudflare (empiezan con 1x, 2x o 3x) siempre pasan, así que solo se aceptan en la computadora
+  de Sophia (SESSION_COOKIE_SECURE=false). En la nube se rechazan: dejarían pasar a cualquiera sin que nadie lo notara.
+  Con ellas Cloudflare no devuelve la acción, y por eso solo con ellas no se compara.
+
 Una ruta lo pide así:
 
-    @router.post("/ruta", dependencies=[Depends(require_captcha)])
+    @router.post("/ruta", dependencies=[Depends(require_captcha("login"))])
 """
 
 import json
@@ -57,20 +63,28 @@ class CaptchaResult(Enum):
 
 
 class CaptchaVerifier(Protocol):
-    def verify(self, token: str | None) -> CaptchaResult:
-        """Dice si el resultado del desafío vale. Nunca levanta error: si no puede comprobar, UNAVAILABLE."""
+    def verify(self, token: str | None, action: str) -> CaptchaResult:
+        """Dice si el resultado del desafío vale para esa acción. Nunca levanta error: si no puede comprobar, UNAVAILABLE."""
         ...
 
 
 class TurnstileVerifier:
     """Le pregunta a Cloudflare si el resultado del desafío es bueno."""
 
-    def __init__(self, secret_key: str, url: str = TURNSTILE_VERIFY_URL, timeout: float = TIMEOUT_SECONDS):
+    def __init__(
+        self,
+        secret_key: str,
+        url: str = TURNSTILE_VERIFY_URL,
+        timeout: float = TIMEOUT_SECONDS,
+        check_action: bool = True,
+    ):
         self._secret_key = secret_key
         self._url = url
         self._timeout = timeout
+        # Con las llaves de prueba Cloudflare no devuelve la acción, y no hay con qué compararla.
+        self._check_action = check_action
 
-    def verify(self, token: str | None) -> CaptchaResult:
+    def verify(self, token: str | None, action: str) -> CaptchaResult:
         if not token or not token.strip() or len(token) > TOKEN_MAX_LENGTH:
             return CaptchaResult.FAILED
         form = urllib.parse.urlencode({"secret": self._secret_key, "response": token}).encode("utf-8")
@@ -89,6 +103,9 @@ class TurnstileVerifier:
             logger.warning("Cloudflare Turnstile contestó algo que no se entiende.")
             return CaptchaResult.UNAVAILABLE
         if payload.get("success") is True:
+            # Un resultado de otra acción (por ejemplo, el del registro usado en el inicio de sesión) no vale.
+            if self._check_action and payload.get("action") != action:
+                return CaptchaResult.FAILED
             return CaptchaResult.PASSED
         codes = payload.get("error-codes")
         codes = [code for code in codes if isinstance(code, str)] if isinstance(codes, list) else []
@@ -99,11 +116,24 @@ class TurnstileVerifier:
 
 
 class UnconfiguredVerifier:
-    """Sin llave secreta no hay con qué comprobar: toda petición se rechaza, nunca se deja pasar."""
+    """Sin una llave que sirva no hay con qué comprobar: toda petición se rechaza, nunca se deja pasar."""
 
-    def verify(self, token: str | None) -> CaptchaResult:
-        logger.error("Falta TURNSTILE_SECRET_KEY: las acciones que piden CAPTCHA se rechazan.")
+    def __init__(self, reason: str = "Falta TURNSTILE_SECRET_KEY"):
+        self._reason = reason
+
+    def verify(self, token: str | None, action: str) -> CaptchaResult:
+        logger.error("%s: las acciones que piden CAPTCHA se rechazan.", self._reason)
         return CaptchaResult.UNAVAILABLE
+
+
+def is_test_key(key: str) -> bool:
+    """Las llaves de prueba de Cloudflare empiezan con 1x, 2x o 3x; las reales, con 0x."""
+    return key.startswith(("1x", "2x", "3x"))
+
+
+def allows_test_keys(settings: Settings) -> bool:
+    """Las llaves de prueba solo valen donde la cookie de sesión puede viajar sin HTTPS: la computadora de Sophia."""
+    return not settings.session_cookie_secure
 
 
 def secret_key_of(settings: Settings) -> str | None:
@@ -112,13 +142,23 @@ def secret_key_of(settings: Settings) -> str | None:
 
 
 def site_key_of(settings: Settings) -> str | None:
-    return (settings.turnstile_site_key or "").strip() or None
+    """La llave pública, o None si falta o es de prueba donde no se aceptan."""
+    key = (settings.turnstile_site_key or "").strip()
+    if not key or (is_test_key(key) and not allows_test_keys(settings)):
+        return None
+    return key
 
 
-def create_captcha_verifier(settings: Settings) -> CaptchaVerifier:
+def create_captcha_verifier(settings: Settings, url: str = TURNSTILE_VERIFY_URL) -> CaptchaVerifier:
     """Elige cómo se comprueba según la configuración."""
     secret = secret_key_of(settings)
-    return TurnstileVerifier(secret) if secret else UnconfiguredVerifier()
+    if secret is None:
+        return UnconfiguredVerifier()
+    if is_test_key(secret):
+        if not allows_test_keys(settings):
+            return UnconfiguredVerifier("TURNSTILE_SECRET_KEY es una llave de prueba y aquí no se aceptan")
+        return TurnstileVerifier(secret, url=url, check_action=False)
+    return TurnstileVerifier(secret, url=url)
 
 
 class CaptchaRejected(Exception):
@@ -136,14 +176,21 @@ def captcha_rejected_response(request: Request, error: CaptchaRejected) -> JSONR
     return JSONResponse(status_code=error.status_code, content=body, headers={"Cache-Control": "no-store"})
 
 
-def require_captcha(
-    request: Request,
-    captcha_token: str | None = Header(default=None, alias=CAPTCHA_HEADER, description="Resultado del desafío de Cloudflare Turnstile."),
-) -> None:
-    """Corta la petición si el resultado del CAPTCHA falta, no vale o no se pudo comprobar."""
-    result = request.app.state.captcha.verify(captcha_token)
-    if result is CaptchaResult.PASSED:
-        return
-    if result is CaptchaResult.UNAVAILABLE:
-        raise CaptchaRejected(503, "captcha_unavailable")
-    raise CaptchaRejected(400, "captcha_failed")
+def require_captcha(action: str):
+    """La dependencia de una ruta: corta la petición si el resultado del CAPTCHA falta, no vale para esa acción o no
+    se pudo comprobar. La acción es la que declara el widget de la pantalla (letras, números, _ y -)."""
+
+    def dependency(
+        request: Request,
+        captcha_token: str | None = Header(
+            default=None, alias=CAPTCHA_HEADER, description="Resultado del desafío de Cloudflare Turnstile."
+        ),
+    ) -> None:
+        result = request.app.state.captcha.verify(captcha_token, action)
+        if result is CaptchaResult.PASSED:
+            return
+        if result is CaptchaResult.UNAVAILABLE:
+            raise CaptchaRejected(503, "captcha_unavailable")
+        raise CaptchaRejected(400, "captcha_failed")
+
+    return dependency

@@ -113,7 +113,7 @@ Decidido el 22 de noviembre de 2026 (ADR 0016): Turnstile, plan gratuito, modo M
 
 **El widget en Cloudflare** (Application security, Turnstile): modo Managed, y en Hostname Management los **hostnames exactos** donde se muestra, uno por línea y sin comodines: hoy `integro-ruby.vercel.app`. Al comprar el dominio propio se agrega aquí también, o el desafío no carga en ese dominio. Si se borra el widget y se crea otro, las dos llaves cambian y hay que actualizar las dos variables de Vercel.
 
-**Cómo se comprueba que quedó bien:** `/api/v1/auth/captcha` contesta la llave pública y no `503`; en el registro aparece el desafío; con una llave secreta equivocada, las acciones contestan `503` y el registro de la función dice `invalid-input-secret`.
+**Cómo se comprueba que quedó bien:** `/api/v1/auth/captcha` contesta la llave pública y no `503`; en el registro aparece el desafío; con una llave secreta equivocada, las acciones contestan `503` y el registro de la función dice `invalid-input-secret`. Si por error se pusiera en Vercel una llave de prueba de Cloudflare (empieza con `1x`, `2x` o `3x`), la API la rechaza: `/api/v1/auth/captcha` y las cinco acciones contestan `503`, y el registro de la función lo dice.
 
 **Pendiente con Valeria:** qué decir de Cloudflare en el aviso de privacidad (Turnstile recibe datos del navegador de quien se registra o inicia sesión).
 
