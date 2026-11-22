@@ -12,6 +12,7 @@ from app.api.v1.router import router as api_v1_router
 from app.core.config import WEB_DIRECTORY, Settings, load_settings
 from app.database.connection import create_pool
 from app.api.auth import NotAuthenticated, not_authenticated_response
+from app.api.captcha import CaptchaRejected, captcha_rejected_response, create_captcha_verifier
 from app.api.protection import Forbidden, forbidden_response
 from app.notifications import create_code_sender
 from app.web import mount_web
@@ -31,6 +32,7 @@ def create_app(settings: Settings | None = None, web_directory: Path | None = WE
     async def lifespan(application: FastAPI):
         application.state.settings = settings or load_settings()
         application.state.code_sender = create_code_sender(application.state.settings)
+        application.state.captcha = create_captcha_verifier(application.state.settings)
         # Las páginas se agregan al arrancar, cuando ya se leyó la
         # configuración. Son lo último que se busca: las rutas de la API
         # ganan siempre.
@@ -58,6 +60,8 @@ def create_app(settings: Settings | None = None, web_directory: Path | None = WE
     # Y toda ruta que cambia algo responde igual cuando la petición no pasa
     # las defensas contra páginas ajenas: 403.
     application.add_exception_handler(Forbidden, forbidden_response)
+    # Las acciones que cualquiera puede pedir sin sesión piden CAPTCHA: 400 si no lo resolvió, 503 si no se pudo comprobar.
+    application.add_exception_handler(CaptchaRejected, captcha_rejected_response)
     return application
 
 

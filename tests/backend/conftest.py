@@ -16,6 +16,7 @@ BACKEND_DIRECTORY = Path(__file__).resolve().parents[2] / "backend"
 sys.path.insert(0, str(BACKEND_DIRECTORY))
 
 from app.api.auth import SESSION_COOKIE  # noqa: E402
+from app.api.captcha import CAPTCHA_HEADER, CaptchaResult  # noqa: E402
 from app.core.config import ENV_FILE, Settings, load_settings  # noqa: E402
 from app.database.connection import create_pool  # noqa: E402
 from app.main import create_app  # noqa: E402
@@ -42,6 +43,8 @@ SETTINGS_VARIABLES = (
     "DATABASE_SSLMODE",
     "DATABASE_CONNECT_TIMEOUT_SECONDS",
     "TRUST_PROXY_HEADERS",
+    "TURNSTILE_SITE_KEY",
+    "TURNSTILE_SECRET_KEY",
 )
 
 # Llave inventada, solo para pruebas que no usan la configuración real.
@@ -106,6 +109,27 @@ def rollback_pool(real_pool):
             yield SingleConnectionPool(connection)
 
 
+# Resultado del desafío que las pruebas mandan en X-Captcha-Token. Cualquier otro lo rechaza el CAPTCHA de mentira.
+TEST_CAPTCHA_TOKEN = "resultado-inventado-del-captcha"
+
+
+class FakeCaptcha:
+    """En lugar de preguntarle a Cloudflare, acepta solo TEST_CAPTCHA_TOKEN y anota lo que le llegó.
+
+    Las pruebas del CAPTCHA de verdad (TurnstileVerifier) hablan con un servidor local, en test_captcha.py.
+    """
+
+    def __init__(self, result: CaptchaResult | None = None):
+        self.result = result
+        self.seen = []
+
+    def verify(self, token):
+        self.seen.append(token)
+        if self.result is not None:
+            return self.result
+        return CaptchaResult.PASSED if token == TEST_CAPTCHA_TOKEN else CaptchaResult.FAILED
+
+
 class RecordingSender:
     """En lugar de enviar el código lo anota, para que la prueba pueda leerlo."""
 
@@ -147,6 +171,7 @@ class Api:
     pool: SingleConnectionPool
     sender: RecordingSender
     settings: Settings
+    captcha: FakeCaptcha
 
 
 @pytest.fixture
@@ -156,9 +181,13 @@ def api(rollback_pool):
     application = create_app(settings)
     with TestClient(application) as client:
         sender = RecordingSender()
+        captcha = FakeCaptcha()
         application.state.pool = rollback_pool
         application.state.code_sender = sender
-        yield Api(client=client, pool=rollback_pool, sender=sender, settings=settings)
+        application.state.captcha = captcha
+        # Como la página, el cliente de pruebas manda el resultado del CAPTCHA en cada petición.
+        client.headers[CAPTCHA_HEADER] = TEST_CAPTCHA_TOKEN
+        yield Api(client=client, pool=rollback_pool, sender=sender, settings=settings, captcha=captcha)
 
 
 @pytest.fixture

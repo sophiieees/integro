@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.api.auth import SESSION_COOKIE, clear_session_cookie, require_session, set_session_cookie
+from app.api.captcha import CaptchaRejected, require_captcha, site_key_of
 from app.api.client import client_ip
 from app.api.protection import csrf_token, require_session_for_change
 from app.database.transaction import user_transaction
@@ -91,6 +92,11 @@ class ErrorResponse(BaseModel):
     errors: list[ErrorItem]
 
 
+# Las rutas que piden CAPTCHA (app/api/captcha.py) pueden contestar además estos dos: 400 si no se resolvió o ya se usó,
+# 503 si no se pudo comprobar con Cloudflare.
+CAPTCHA_RESPONSES = {400: {"model": ErrorResponse}, 503: {"model": ErrorResponse}}
+
+
 def error_response(status_code: int, errors: list[FieldError], **extra) -> JSONResponse:
     body = {
         "errors": [
@@ -115,11 +121,32 @@ def required_text(body: BaseModel, fields: tuple[str, ...]) -> tuple[dict[str, s
     return values, errors
 
 
+class CaptchaConfigResponse(BaseModel):
+    site_key: str
+
+
+@router.get(
+    "/captcha",
+    response_model=CaptchaConfigResponse,
+    responses={503: {"model": ErrorResponse}},
+    summary="La llave pública del CAPTCHA, para que la página lo muestre",
+)
+def captcha_config(request: Request):
+    """Entrega la llave pública de Cloudflare Turnstile. No es secreta: viaja dentro de la página de todos modos. Se
+    pide a la API, y no se escribe en las páginas, para que en la computadora de Sophia y en las pruebas valgan las
+    llaves de prueba de Cloudflare y en la nube la real. Sin llave pública configurada contesta 503."""
+    site_key = site_key_of(request.app.state.settings)
+    if site_key is None:
+        raise CaptchaRejected(503, "captcha_unavailable")
+    return CaptchaConfigResponse(site_key=site_key)
+
+
 @router.post(
     "/register",
     status_code=201,
     response_model=RegisterResponse,
-    responses={409: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    responses={**CAPTCHA_RESPONSES, 409: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    dependencies=[Depends(require_captcha)],
     summary="Crear una cuenta",
 )
 def register(body: RegisterRequest, request: Request):
@@ -180,7 +207,8 @@ def verify(body: VerifyEmailRequest, request: Request):
 @router.post(
     "/resend-code",
     response_model=ResendCodeResponse,
-    responses={422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    responses={**CAPTCHA_RESPONSES, 422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    dependencies=[Depends(require_captcha)],
     summary="Pedir otro código para comprobar el correo",
 )
 def resend(body: ResendCodeRequest, request: Request):
@@ -219,8 +247,9 @@ class CorrectEmailRequest(BaseModel):
 @router.post(
     "/correct-unverified-email",
     response_model=RegisterResponse,
-    responses={401: {"model": ErrorResponse}, 409: {"model": ErrorResponse}, 422: {"model": ErrorResponse},
-               429: {"model": ErrorResponse}},
+    responses={**CAPTCHA_RESPONSES, 401: {"model": ErrorResponse}, 409: {"model": ErrorResponse},
+               422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    dependencies=[Depends(require_captcha)],
     summary="Corregir el correo de una cuenta que todavía no lo ha comprobado",
 )
 def correct_email(body: CorrectEmailRequest, request: Request):
@@ -305,7 +334,8 @@ class PasswordResetConfirmResponse(BaseModel):
 @router.post(
     "/password-reset/request",
     response_model=PasswordResetRequestResponse,
-    responses={422: {"model": ErrorResponse}},
+    responses={**CAPTCHA_RESPONSES, 422: {"model": ErrorResponse}},
+    dependencies=[Depends(require_captcha)],
     summary="Recuperar la contraseña, paso 1: pedir el código",
 )
 def password_reset_request(body: PasswordResetRequest, request: Request):
@@ -433,8 +463,9 @@ def wait_response(seconds: int | None) -> JSONResponse:
 @router.post(
     "/login",
     response_model=LoginResponse,
-    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse},
+    responses={**CAPTCHA_RESPONSES, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse},
                422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    dependencies=[Depends(require_captcha)],
     summary="Iniciar sesión, paso 1: correo y contraseña",
 )
 def login(body: LoginRequest, request: Request):

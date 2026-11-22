@@ -41,6 +41,7 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `POST /api/v1/auth/password-strength` | Califica una contraseña mientras la persona la escribe. `200 {"level": "reliable", "label": "Confiable", "weaknesses": [], "hints": [], "strengths": [], "raise_hints": ["Usa dos símbolos distintos para subir un nivel."], "meets_rules": true, "accepted": true, "errors": []}`. No guarda ni anota nada. `accepted` dice si el registro la aceptaría. `weaknesses` y `hints` dicen lo que le resta; `strengths` y `raise_hints`, lo que le suma: `strengths` trae `varied_symbols` cuando dos símbolos distintos ya le subieron el nivel y `raise_hints` trae el consejo cuando todavía puede subir. |
 | `POST /api/v1/auth/login` | Inicio de sesión, paso 1: correo y contraseña. `200 {"status": "code_required"}` y envía un código al correo. `401` si el correo o la contraseña no son correctos (la misma respuesta en los dos casos); `403` si el correo no está comprobado; `429` si no han pasado 60 segundos o ya van 5 códigos en una hora. |
 | `POST /api/v1/auth/login/verify` | Inicio de sesión, paso 2: el código. `200 {"status": "session_opened", "expires_at": "..."}` y entrega la llave en la cookie `integro_session`; el texto de la respuesta no trae la llave. `400` si el código es incorrecto, venció o agotó sus 5 intentos, y entonces no hay cookie. |
+| `GET /api/v1/auth/captcha` | La llave pública del CAPTCHA: `200 {"site_key": "..."}`. La página la pide para mostrar el desafío de Cloudflare Turnstile. No es secreta. `503` si no está configurada. |
 | `GET /api/v1/auth/me` | Los datos de la persona con sesión, con `is_host` e `is_admin`, que dicen qué vistas tiene (docs/diseno/vistas.md). La llave llega en la cookie `integro_session`, que el navegador manda solo; sin una cookie que sirva responde `401`. Cada uso renueva la cookie. |
 | `POST /api/v1/auth/logout` | Cierra la sesión actual y borra su cookie. `200 {"status": "signed_out"}`. `401` sin sesión; `403` si la petición no pasa las defensas. |
 | `GET /api/v1/auth/sessions` | Las sesiones abiertas de la persona: `{"sessions": [{"id", "created_at", "last_used_at", "expires_at", "ip_address", "user_agent", "current"}]}`. Nunca la llave ni su huella. |
@@ -50,6 +51,8 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `GET /` y lo demás | Las páginas de `web/`: la portada en `/`, y `propiedad.html`, `anfitriones.html`, `como-funciona.html` y `assets/` por su nombre. Las rutas de arriba ganan siempre. |
 
 La API muestra también la web (`app/web.py`): al arrancarla, `http://127.0.0.1:8000/` abre la portada. Así la página y la API viven en la misma dirección y el navegador manda la cookie de sesión. Ocurre si la carpeta `web/` existe junto a `backend/` y se apaga con `SERVE_WEB=false`. Solo entrega archivos de `web/`, solo para leerlos, y pide al navegador que pregunte siempre si cambiaron.
+
+**CAPTCHA (ADR 0016).** Cinco rutas lo piden: `register`, `login` (paso 1), `password-reset/request`, `resend-code` y `correct-unverified-email`. La página resuelve el desafío de Cloudflare Turnstile y manda el resultado en el encabezado `X-Captcha-Token`; la API se lo pregunta a Cloudflare con la llave secreta (`app/api/captcha.py`). Un resultado sirve una sola vez y dura 5 minutos, así que la página pide uno nuevo antes de cada petición. Se revisa antes que el formulario. Sin resultado, vacío, repetido o falso: `400` con el código `captcha_failed`. Si Cloudflare no responde (red, tiempo de 5 segundos, error suyo) o la llave secreta falta o no sirve: `503` con `captcha_unavailable`; nunca se deja pasar. En los dos casos no se crea ni se envía nada y el aviso sale con el campo `captcha`. Los pasos en los que se escribe un código (`verify-email`, `login/verify`, `password-reset/confirm`) no lo piden. **No hay interruptor:** el CAPTCHA siempre está activo; en la computadora y en las pruebas valen las llaves de prueba de Cloudflare.
 
 Los avisos de las rutas de Cuentas salen siempre con la misma forma, para ponerlos junto a su campo: `{"errors": [{"field": "password", "code": "missing_symbol", "message": "..."}]}`.
 
@@ -146,6 +149,15 @@ Y la que deja que la cookie de sesión viaje sin HTTPS, porque el servidor de es
 ```powershell
 Add-Content .env "SESSION_COOKIE_SECURE=false"
 ```
+
+Las llaves del CAPTCHA. En tu computadora van las **llaves de prueba** de Cloudflare, que son públicas y siempre pasan, así que no hace falta una cuenta ni un dominio:
+
+```powershell
+Add-Content .env "TURNSTILE_SITE_KEY=1x00000000000000000000AA"
+Add-Content .env "TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA"
+```
+
+Las llaves reales (la pública empieza con `0x4`) van solo en las variables de Vercel. Las de prueba empiezan con `1x`, `2x` o `3x` y **nunca** se ponen en Vercel: allí dejarían pasar a cualquiera. Sin estas dos líneas la API arranca, pero las cinco rutas del CAPTCHA contestan `503`.
 
 Cada variable va una sola vez. Si `CODE_HASH_SECRET=` quedó vacía por haber copiado la plantilla, esa línea se borra en el Bloc de notas.
 

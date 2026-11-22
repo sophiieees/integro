@@ -19,5 +19,6 @@ Un archivo por decisión, numerado en orden de registro. Formato: contexto, deci
 | 0013 | PostgreSQL propio, sin Supabase, con autenticación propia | Aceptada |
 | 0014 | Inicio de sesión con contraseña, con código y con los dos; códigos por correo y WhatsApp, sin SMS | Aceptada; detalles del registro pendientes |
 | 0015 | La sesión se guarda en la base de datos, no en un JWT | Aceptada |
+| 0016 | CAPTCHA con Cloudflare Turnstile, siempre activo | Aceptada |
 
 Decisiones programadas que todavía no tienen ADR: procesador de pagos, proveedor de verificación de identidad, proveedor de LLM, ciudad de lanzamiento, nube de la base de datos y de la API, almacenamiento de archivos privados y la empresa que envía los correos y los mensajes de WhatsApp.
