@@ -1985,12 +1985,12 @@ PROMPTS = [
             ("32.2", "Publicar la API en Vercel (opción A) con la base en Neon, para que la web funcione ahí.", "Vercel solo publica web/ y la API necesita dónde correr y una base en la nube. Campo: qué datos necesita.", "Aceptar", "Para el punto número 2 del API me parece bien usar API en Vercel más Neon.", "Todavía no se construye: es su propia pieza, después de las de contraseña y sesión."),
             ("32.3", "El orden de construcción: recuperar contraseña, tope de sesión, reservar sin sesión, publicar la API, segundo factor y correo real.", "Cada pieza necesita lo de la anterior. Campo: qué hace.", "Aceptar", "Confirmo el orden de la sección 4.", "Se empezó por recuperar contraseña."),
             ("32.4", "Restaurar los dos archivos de migraciones modificados y borrar el nuevo.", "Tenían el SQL de pgAdmin pegado y un correo personal. Campo: cómo se sabrá que funciona.", "Aceptar", "Para el archivo te doy autorización para que tú lo restaures. Y borres el nuevo.", "Se restauraron y se borró; el árbol quedó limpio."),
-            ("32.5", "Recuperar la contraseña exige el mismo nivel mínimo que el registro (no ser fácil de adivinar, con el nombre de la persona), no solo el formato.", "Sin eso se podía poner por ese camino una contraseña que el registro rechaza. Campo: qué hace.", "Pendiente", "", ""),
-            ("32.6", "Un código equivocado de recuperar contraseña cuenta como fallo de ese dispositivo, para la misma espera del inicio de sesión, sin avisar al dueño de la cuenta.", "Sin eso se podrían adivinar códigos pidiendo códigos nuevos. Campo: qué hace.", "Pendiente", "", ""),
-            ("32.7", "Con una sesión iniciada, la página de recuperar contraseña pide cerrarla primero y oculta el formulario.", "Igual que la página de registro; al cambiar la contraseña se cierran todas las sesiones. Campo: qué hace.", "Pendiente", "", ""),
-            ("32.8", "El texto al pedir el código no promete que llegó: «Si (correo) tiene una cuenta con el correo electrónico comprobado, te enviamos un código de 6 dígitos.» Los textos de la página los redactó la IA.", "La API contesta lo mismo exista o no la cuenta. El prompt no daba los textos. Campo: qué hace.", "Pendiente", "", ""),
-            ("32.9", "Si la contraseña es fácil de adivinar, el campo trae una sola línea («Tu contraseña es muy fácil de adivinar. Revisa los consejos de abajo.») y los consejos se ven una vez, en el indicador.", "Al ver la captura se notó que los mismos consejos salían dos veces. Campo: qué hace.", "Pendiente", "", ""),
-            ("32.10", "Dos ramas apiladas (api/password-reset y web/password-reset) que se fusionan en ese orden.", "La pantalla necesita las rutas. Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
+            ("32.5", "Recuperar la contraseña exige el mismo nivel mínimo que el registro (no ser fácil de adivinar, con el nombre de la persona), no solo el formato.", "Sin eso se podía poner por ese camino una contraseña que el registro rechaza. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("32.6", "Un código equivocado de recuperar contraseña cuenta como fallo de ese dispositivo, para la misma espera del inicio de sesión, sin avisar al dueño de la cuenta.", "Sin eso se podrían adivinar códigos pidiendo códigos nuevos. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("32.7", "Con una sesión iniciada, la página de recuperar contraseña pide cerrarla primero y oculta el formulario.", "Igual que la página de registro; al cambiar la contraseña se cierran todas las sesiones. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("32.8", "El texto al pedir el código no promete que llegó: «Si (correo) tiene una cuenta con el correo electrónico comprobado, te enviamos un código de 6 dígitos.» Los textos de la página los redactó la IA.", "La API contesta lo mismo exista o no la cuenta. El prompt no daba los textos. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("32.9", "Si la contraseña es fácil de adivinar, el campo trae una sola línea («Tu contraseña es muy fácil de adivinar. Revisa los consejos de abajo.») y los consejos se ven una vez, en el indicador.", "Al ver la captura se notó que los mismos consejos salían dos veces. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("32.10", "Dos ramas apiladas (api/password-reset y web/password-reset) que se fusionan en ese orden.", "La pantalla necesita las rutas. Campo: qué hace (cómo se entrega).", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
         ],
     },
     # ------------------------------------------------------------------ 33
@@ -2044,11 +2044,11 @@ PROMPTS = [
             ("33.1", "Avisar por correo al dueño de la cuenta cuando se cambie la contraseña al recuperarla.", "Si alguien más la cambia, el dueño se entera. Campo: qué hace.", "Aceptar", "Acepto la sugerencia de avisar por correo cuando se cambie la contraseña.", "Rama api/password-changed-notice (commit 1a11d1a)."),
             ("33.2", "El tope de sesión del panel se aplica a toda sesión de administrador, en todo el sitio, y no solo a las rutas de administración.", "Es lo más simple y lo más seguro: una sesión de administrador olvidada se cierra sola. Campo: qué hace.", "Aceptar", "Eligió «Toda sesión de administrador (Recomendado)».", "Rama api/admin-session-limit (commit b0d6111)."),
             ("33.3", "Además de los 30 minutos sin uso, un tope de 12 horas desde que el administrador inicia sesión.", "Está en vistas.md pero no en el ADR 0014, que solo dice 30 minutos. Campo: qué datos necesita.", "Aceptar", "Eligió «Sí, 12 horas desde que inicia sesión (Recomendado)».", "Quedó en el ADR 0014 y en la configuración."),
-            ("33.4", "Una sesión de administrador vencida por estos límites se cierra en la base (revoked_at), no solo se rechaza.", "Así no vuelve a servir aunque cambien las fechas, y no aparece entre las sesiones abiertas. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("33.5", "La cookie de un administrador dura lo que le queda a la sesión, y se vuelve a entregar así en cada uso.", "Sin eso la cookie duraría 30 días aunque la sesión dure 30 minutos. Campo: qué hace.", "Pendiente", "", ""),
-            ("33.6", "El papel se lee en cada petición: una sesión abierta antes de que la persona fuera administradora se cierra si ya pasaron los límites; si es anfitrión y administrador, gana el límite del administrador.", "El papel de administrador se lee de la base en cada petición, y es el más delicado. Campo: qué hace.", "Pendiente", "", ""),
-            ("33.7", "El texto del aviso de cambio de contraseña lo redactó la IA: «La contraseña de tu cuenta de Íntegro se cambió el (fecha). Navegador: (…). Dirección: (…). Por seguridad cerramos todas tus sesiones. Si no fuiste tú, vuelve a recuperar tu contraseña desde «¿Olvidaste tu contraseña?».»", "El prompt no daba el texto, y no hay otro camino de ayuda construido al cual remitir. Campo: qué hace.", "Pendiente", "", ""),
-            ("33.8", "Dos ramas independientes desde main (api/admin-session-limit y api/password-changed-notice), no apiladas.", "No dependen una de la otra. Campo: qué hace (cómo se entrega).", "Pendiente", "", ""),
+            ("33.4", "Una sesión de administrador vencida por estos límites se cierra en la base (revoked_at), no solo se rechaza.", "Así no vuelve a servir aunque cambien las fechas, y no aparece entre las sesiones abiertas. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("33.5", "La cookie de un administrador dura lo que le queda a la sesión, y se vuelve a entregar así en cada uso.", "Sin eso la cookie duraría 30 días aunque la sesión dure 30 minutos. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("33.6", "El papel se lee en cada petición: una sesión abierta antes de que la persona fuera administradora se cierra si ya pasaron los límites; si es anfitrión y administrador, gana el límite del administrador.", "El papel de administrador se lee de la base en cada petición, y es el más delicado. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("33.7", "El texto del aviso de cambio de contraseña lo redactó la IA: «La contraseña de tu cuenta de Íntegro se cambió el (fecha). Navegador: (…). Dirección: (…). Por seguridad cerramos todas tus sesiones. Si no fuiste tú, vuelve a recuperar tu contraseña desde «¿Olvidaste tu contraseña?».»", "El prompt no daba el texto, y no hay otro camino de ayuda construido al cual remitir. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("33.8", "Dos ramas independientes desde main (api/admin-session-limit y api/password-changed-notice), no apiladas.", "No dependen una de la otra. Campo: qué hace (cómo se entrega).", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
         ],
     },
     # ------------------------------------------------------------------ 34
@@ -2101,11 +2101,11 @@ PROMPTS = [
         "decisiones": [
             ("34.1", "La advertencia en pantalla antes de que venza la sesión del administrador se hace después, junto con la primera pantalla del panel.", "Hoy todas las pantallas del panel dicen «Próximamente» y no hay con qué probarla en uso real. Campo: qué hace.", "Aceptar", "Lo de la advertencia, pues lo vamos a hacer después.", "No se construyó."),
             ("34.2", "Para quien ya tiene sesión, «Reservar» dice «Las reservas se abren pronto» y guarda sus fechas en la dirección.", "Todavía no hay reservas que abrir. Campo: qué hace.", "Aceptar", "Para alguien que ya inicia con la sesión, el botón de reservas le abre la reserva, pero en este caso vamos poco a poco, entonces sí me parece.", "Rama web/reserve-without-session (commit 98554d3)."),
-            ("34.3", "Las fechas no son obligatorias al dar clic en «Reservar»: se guardan las que haya, y solo se avisa si una salida es igual o anterior a la llegada o una fecha no existe.", "El prompt no decía qué pasa sin fechas. Campo: qué hace.", "Pendiente", "", ""),
-            ("34.4", "Lo elegido se escribe en la dirección de la página al dar clic en «Reservar», sin recargar ni agregar pasos al historial.", "Sophia pidió guardarlo en la dirección; no dijo en qué momento. Campo: qué hace.", "Pendiente", "", ""),
-            ("34.5", "Después de iniciar sesión, solo se vuelve a una página de Íntegro de una lista; registro y recuperar contraseña no están, y cualquier otra dirección se ignora.", "?siguiente= viene de la dirección de la página y no debe servir para mandar a alguien a otro sitio. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("34.6", "Si la persona inicia sesión en la misma página, no se va a ningún lado: el aviso cambia a «Ya iniciaste sesión» y sus fechas siguen ahí.", "La ventana de iniciar sesión ya la deja en la misma página. Campo: qué hace.", "Pendiente", "", ""),
-            ("34.7", "Los textos del aviso los redactó la IA: «Para reservar necesitas una cuenta. Inicia sesión o crea tu cuenta. Volverás a esta propiedad con tus fechas y tus huéspedes.» y los otros dos.", "El prompt no daba los textos. Campo: qué hace.", "Pendiente", "", ""),
+            ("34.3", "Las fechas no son obligatorias al dar clic en «Reservar»: se guardan las que haya, y solo se avisa si una salida es igual o anterior a la llegada o una fecha no existe.", "El prompt no decía qué pasa sin fechas. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("34.4", "Lo elegido se escribe en la dirección de la página al dar clic en «Reservar», sin recargar ni agregar pasos al historial.", "Sophia pidió guardarlo en la dirección; no dijo en qué momento. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("34.5", "Después de iniciar sesión, solo se vuelve a una página de Íntegro de una lista; registro y recuperar contraseña no están, y cualquier otra dirección se ignora.", "?siguiente= viene de la dirección de la página y no debe servir para mandar a alguien a otro sitio. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("34.6", "Si la persona inicia sesión en la misma página, no se va a ningún lado: el aviso cambia a «Ya iniciaste sesión» y sus fechas siguen ahí.", "La ventana de iniciar sesión ya la deja en la misma página. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("34.7", "Los textos del aviso los redactó la IA: «Para reservar necesitas una cuenta. Inicia sesión o crea tu cuenta. Volverás a esta propiedad con tus fechas y tus huéspedes.» y los otros dos.", "El prompt no daba los textos. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
         ],
     },
     # ------------------------------------------------------------------ 35
@@ -2171,10 +2171,10 @@ PROMPTS = [
             ("35.4", "Hace falta un CAPTCHA en el registro y el inicio de sesión, como pieza aparte antes de abrir el sitio.", "No existe y con la API pública se podrían crear cuentas en masa. Campo: qué hace.", "Aceptar", "Creo que hay que hacer el CAPTCHA, porque eso es que no hay.", "Pendiente de construirse; el servicio sugerido es Cloudflare Turnstile."),
             ("35.5", "Quedarse con el proyecto de Neon en Ohio y poner la función de Vercel en Cleveland (cle1), en vez de crear otro proyecto en Virginia.", "Neon no permite cambiar la región; Cleveland es la región de AWS us-east-2, la misma. Campo: qué datos necesita.", "Aceptar", "Me quedo en Ohio.", "vercel.json con regions: cle1."),
             ("35.6", "Cloudflare Turnstile como servicio del CAPTCHA, y confirmar sus planes en las páginas oficiales antes de decidir.", "Gratuito y casi siempre invisible; las cifras vienen de comparativas de terceros. Campo: qué datos necesita.", "Aceptar", "Me parece bien las ambas recomendaciones.", "Pendiente de construirse."),
-            ("35.7", "Un script de verificación (tools/database/verify_connection.py) que solo lee y no imprime contraseñas, y que se corre contra Neon antes de publicar.", "Comprobar que los papeles por transacción funcionan en la conexión agrupada de Neon, algo que su documentación no confirma. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("35.8", "TRUST_PROXY_HEADERS: detrás de Vercel, el origen propio sale de X-Forwarded-Proto y la IP de X-Forwarded-For; apagado por defecto, y apagado esos encabezados se ignoran.", "Sin esto toda petición que cambia algo daría 403 y todas las personas compartirían la espera por dispositivo. Cualquiera puede escribir esos encabezados. Campo: qué hace.", "Pendiente", "", ""),
-            ("35.9", "La estructura de Vercel: las páginas de web/ salen de la red de Vercel, /api/(.*) va a una función api/index.py, el requirements.txt de la raíz apunta a -r backend/requirements.txt y .vercelignore deja fuera tests, docs, database, herramientas y tools.", "La documentación de Vercel no confirma cómo conviven una web estática y una función de Python en un solo proyecto. Campo: qué hace.", "Pendiente", "", ""),
-            ("35.10", "DATABASE_SSLMODE con «prefer» por defecto («require» en Neon) y DATABASE_CONNECT_TIMEOUT_SECONDS con 3 por defecto (10 en Neon).", "La primera conexión después de que Neon se suspende tarda más; en su computadora no hay SSL. Campo: qué datos necesita.", "Pendiente", "", ""),
+            ("35.7", "Un script de verificación (tools/database/verify_connection.py) que solo lee y no imprime contraseñas, y que se corre contra Neon antes de publicar.", "Comprobar que los papeles por transacción funcionan en la conexión agrupada de Neon, algo que su documentación no confirma. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("35.8", "TRUST_PROXY_HEADERS: detrás de Vercel, el origen propio sale de X-Forwarded-Proto y la IP de X-Forwarded-For; apagado por defecto, y apagado esos encabezados se ignoran.", "Sin esto toda petición que cambia algo daría 403 y todas las personas compartirían la espera por dispositivo. Cualquiera puede escribir esos encabezados. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("35.9", "La estructura de Vercel: las páginas de web/ salen de la red de Vercel, /api/(.*) va a una función api/index.py, el requirements.txt de la raíz apunta a -r backend/requirements.txt y .vercelignore deja fuera tests, docs, database, herramientas y tools.", "La documentación de Vercel no confirma cómo conviven una web estática y una función de Python en un solo proyecto. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("35.10", "DATABASE_SSLMODE con «prefer» por defecto («require» en Neon) y DATABASE_CONNECT_TIMEOUT_SECONDS con 3 por defecto (10 en Neon).", "La primera conexión después de que Neon se suspende tarda más; en su computadora no hay SSL. Campo: qué datos necesita.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
         ],
     },
     # ------------------------------------------------------------------ 36
@@ -2220,10 +2220,58 @@ PROMPTS = [
                         "Salida copiada en herramientas/bitacora/evidencias/vercel_primera_publicacion_pruebas_2026-11-21.txt."),
         },
         "decisiones": [
-            ("36.1", "La lista de dependencias vive en requirements.txt de la raíz, sin «-r», y backend/requirements.txt la incluye.", "El lector de Vercel no entiende «-r»; así sigue habiendo una sola lista y pip install desde backend/ funciona igual. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("36.2", "Las carpetas de la raíz en .vercelignore se escriben con «/» al principio, y hay pruebas que revisan que no se ignore nada de api/, backend/app/ ni web/.", "Una regla sin «/» ignoraba también backend/app/database y la API no arrancaba. Campo: cómo se sabrá que funciona.", "Pendiente", "", ""),
-            ("36.3", "Las diez variables de Production se cargan como «Secret», pegando el contenido de .env.neon en el campo Key.", "No deja valores visibles en Vercel y evita crear diez a mano. Campo: qué datos necesita.", "Pendiente", "", ""),
-            ("36.4", "Vercel Authentication en «All Deployments», que incluye producción.", "Con la opción estándar, el dominio de producción se abría sin iniciar sesión. Campo: qué hace.", "Pendiente", "", ""),
+            ("36.1", "La lista de dependencias vive en requirements.txt de la raíz, sin «-r», y backend/requirements.txt la incluye.", "El lector de Vercel no entiende «-r»; así sigue habiendo una sola lista y pip install desde backend/ funciona igual. Campo: qué datos necesita.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("36.2", "Las carpetas de la raíz en .vercelignore se escriben con «/» al principio, y hay pruebas que revisan que no se ignore nada de api/, backend/app/ ni web/.", "Una regla sin «/» ignoraba también backend/app/database y la API no arrancaba. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("36.3", "Las diez variables de Production se cargan como «Secret», pegando el contenido de .env.neon en el campo Key.", "No deja valores visibles en Vercel y evita crear diez a mano. Campo: qué datos necesita.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+            ("36.4", "Vercel Authentication en «All Deployments», que incluye producción.", "Con la opción estándar, el dominio de producción se abría sin iniciar sesión. Campo: qué hace.", "Aceptar", "Acepto todos.", "Sin cambios: queda como se entregó."),
+        ],
+    },
+    # ------------------------------------------------------------------ 37
+    {
+        "n": 37,
+        "titulo": "Estado del punto 2, skills y veredictos abiertos",
+        "fecha": "20 y 21 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Las skills /pieza, /bitacora y /doc las programé para que siempre corrieran cuando estuviéramos aquí "
+                     "en Íntegro; necesito que corran. De los veredictos 0.8 y 0.10 ya sabemos la respuesta; siguen "
+                     "pendientes."),
+        "tarea": ("1) ¿En qué parte del proyecto vamos actualmente? Quiero saber si seguimos en el paso 2. 2) /bitacora con "
+                  "lo que se tiene. 3) /pieza comienza con Recuperar contraseña, Tope de sesión del panel de administración "
+                  "y Envío real de correos, para cerrar el punto dos. 4) Ordena los veredictos abiertos, excepto 0.8 y "
+                  "0.10. 5) Me preocupa lo de mis skills: justo las programé para que corrieran siempre que estuviéramos "
+                  "aquí; necesito que corran. 6) Acepto todos. 7) /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "21 de noviembre de 2026",
+            "commits": "El commit de este registro, en la rama docs/bitacora-37.",
+            "archivos": [
+                ("Fuera del repositorio: C:\\\\Users\\\\lises\\\\.claude\\\\skills\\\\pieza, bitacora y doc",
+                 "tres accesos directos que mandan leer la skill del repositorio y CLAUDE.md, para que /pieza, /bitacora y /doc corran aunque el chat no se abra en la carpeta integro."),
+                ("herramientas/bitacora/bitacora_datos.py", "veredictos 32.5 a 32.10, 33.4 a 33.8, 34.3 a 34.7, 35.7 a 35.10 y 36.1 a 36.4 pasan a Aceptar, y esta entrada."),
+            ],
+            "sugerencias": [
+                ("Cerrar el punto 2 con una sola pieza, el envío real de correos, que va en el chat de programación.",
+                 "recuperar contraseña y el tope de sesión del administrador ya estaban hechos (prompts 32 y 33); EMAIL_DELIVERY sigue en console."),
+                ("Elegir la empresa que envía los correos y la dirección de salida antes de esa pieza.",
+                 "sin ellas no hay a dónde conectar el envío, y el dominio de salida debe configurarse con la empresa o los correos caen en spam."),
+                ("Un camino de ayuda con una persona para quien pierda su correo.",
+                 "el aviso de cambio de contraseña (33.7) manda a recuperarla, y eso no detiene a quien entró al correo."),
+                ("Encender TRUST_PROXY_HEADERS solo en Vercel.",
+                 "en tu computadora cualquiera podría escribir esos encabezados (35.8)."),
+                ("Confirmar que .env.neon no se subió al repositorio y apagar la protección de Vercel cuando el sitio deba ser público.",
+                 "tiene la contraseña de la base, y con la protección activa nadie sin cuenta de Vercel puede abrir el sitio (36.3 y 36.4)."),
+            ],
+            "lineas": "bitacora_datos.py: veinticuatro filas de veredicto y esta entrada.",
+            "pruebas": ("No hay pruebas automáticas: no cambió código de la aplicación. En main se comprobó que existen las "
+                        "rutas /password-reset/request y /password-reset/confirm, los límites del administrador en "
+                        "backend/.env.example (SESSION_IDLE_MINUTES_ADMIN=30 y SESSION_MAX_HOURS_ADMIN=12) y "
+                        "EMAIL_DELIVERY=console. Los tres accesos directos quedaron de 15 líneas cada uno, con la misma "
+                        "descripción que la skill original, y aparecieron en la lista de skills de la sesión; no se "
+                        "ejecutaron para probarlos."),
+        },
+        "decisiones": [
+            ("37.1", "No construir Recuperar contraseña ni el tope de sesión del administrador, porque ya estaban hechos; el punto 2 se cierra con el envío real de correos, y esa pieza va en el chat de programación.", "Sophia pidió /pieza para las tres, pero el repositorio ya tenía las dos primeras (prompts 32 y 33), y la regla de los dos chats manda programar en el otro. Campo: qué hace.", "Pendiente", "", "Sin cambios en el código."),
+            ("37.2", "Crear tres accesos directos personales para /pieza, /bitacora y /doc, fuera del repositorio, que mandan leer la versión del repositorio.", "Las skills del proyecto solo se cargan si el chat se abre con la carpeta integro; así hay una sola versión y no se toca el repositorio. Campo: qué hace.", "Pendiente", "", "Tres archivos SKILL.md en la carpeta personal de skills."),
         ],
     },
 ]
