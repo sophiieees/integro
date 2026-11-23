@@ -408,6 +408,9 @@ body.con-ventana { overflow: hidden; }
 .formulario-aviso[hidden] { display: none; }
 .formulario-nota { color: var(--color-tinta-suave); margin-bottom: 14px; }
 .formulario-nota[hidden] { display: none; }
+/* La zona del CAPTCHA: el widget de Cloudflare solo aparece si necesita que la persona haga algo. */
+.captcha { display: flex; justify-content: center; }
+.captcha:empty { display: none; }
 .formulario-acciones { display: flex; align-items: center; justify-content: flex-end; gap: 20px; margin-top: 6px; }
 .formulario-acciones-dos { justify-content: space-between; }
 .formulario-tarjeta button:disabled, .formulario-tarjeta input:disabled, .formulario-tarjeta select:disabled { opacity: .6; cursor: default; }

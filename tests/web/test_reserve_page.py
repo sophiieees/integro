@@ -40,7 +40,9 @@ def test_the_property_page_has_the_fields_the_address_fills_and_a_place_for_the_
 def test_the_property_page_loads_the_scripts_in_order():
     scripts = re.findall(r'<script src="assets/js/([a-z-]+)\.js"></script>', PAGE)
 
-    assert scripts == ["datos", "app", "estructura", "cuenta-logica", "cuenta", "reservar-logica", "reservar"]
+    assert scripts == [
+        "datos", "app", "estructura", "captcha-logica", "captcha", "cuenta-logica", "cuenta", "reservar-logica", "reservar",
+    ]
 
 
 def test_the_notice_is_written_as_text_never_as_html():

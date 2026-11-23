@@ -75,6 +75,7 @@
                 <span class="campo-error" id="registro-error-terms" data-error-de="terms" hidden></span>
               </div>
             </div>
+            <div class="captcha" data-captcha="register"></div>
             <div class="formulario-acciones">
               <button type="submit" class="btn btn-primario">Crear cuenta</button>
             </div>
@@ -89,6 +90,7 @@
               <label class="campo-etiqueta" for="registro-codigo">Código</label>
               <input type="text" id="registro-codigo" name="code" autocomplete="one-time-code" inputmode="numeric" maxlength="6" pattern="[0-9]*">
             </div>
+            <div class="captcha" data-captcha="resend_code"></div>
             <div class="formulario-acciones formulario-acciones-dos">
               <button type="button" class="btn-enlace" data-reenviar>Enviar otro código</button>
               <button type="submit" class="btn btn-primario">Comprobar correo</button>
@@ -109,6 +111,7 @@
               <input type="password" id="correccion-contrasena" name="password" autocomplete="current-password" aria-describedby="correccion-error-password">
               <span class="campo-error" id="correccion-error-password" data-error-de="password" hidden></span>
             </div>
+            <div class="captcha" data-captcha="correct_email"></div>
             <div class="formulario-acciones formulario-acciones-dos">
               <button type="button" class="btn-enlace" data-volver-al-codigo>Volver al código</button>
               <button type="submit" class="btn btn-primario">Corregir correo</button>
@@ -132,6 +135,8 @@
   <footer class="pie" data-pie></footer>
 
   <script src="assets/js/estructura.js"></script>
+  <script src="assets/js/captcha-logica.js"></script>
+  <script src="assets/js/captcha.js"></script>
   <script src="assets/js/cuenta-logica.js"></script>
   <script src="assets/js/cuenta.js"></script>
   <script src="assets/js/paises.js"></script>

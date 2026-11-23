@@ -17,6 +17,15 @@
 - Variables: `TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET_KEY`. Sin ellas la API arranca (la salud sigue respondiendo) y las cinco rutas contestan `503`.
 - No se agrega ninguna dependencia: la comprobación usa la biblioteca estándar de Python.
 
+### En las pantallas
+- Cada zona del widget es un `div` con `data-captcha="<acción>"` en el HTML (`register`, `login`, `password_reset`, `resend_code` o `correct_email`). La acción se declara una sola vez, ahí: es la que el widget le dice a Cloudflare y la que la API espera en su ruta. Una zona sin una acción conocida no se dibuja.
+- La zona va justo antes de los botones del formulario: en el registro (tres: datos, código y corrección del correo), en recuperar la contraseña (dos: pedir el código y pedir otro) y en el primer paso de la ventana de iniciar sesión.
+- El widget se pide con `appearance: interaction-only`: queda escondido y solo aparece si Cloudflare necesita que la persona haga algo.
+- El widget de cada paso se dibuja cuando el paso se muestra, para que el resultado esté listo antes de que la persona termine de escribir. La ventana de iniciar sesión lo dibuja al abrirse. Quien ya tiene sesión no lo dibuja.
+- Un resultado sirve una sola vez: al mandarlo, el widget se reinicia y ya va por el siguiente. Si el resultado no llega en 20 segundos, o el desafío falla, la pantalla avisa y no manda nada.
+- El script de Cloudflare y la llave pública solo se piden cuando una pantalla necesita un widget, no en cada página del sitio. La portada no contacta a Cloudflare.
+- Si la API contesta 400 o 503 por el CAPTCHA, la pantalla muestra «No pudimos comprobar que eres una persona. Inténtalo de nuevo.» y conserva lo escrito.
+
 ## Consecuencias
 - Si Cloudflare cae, nadie puede registrarse ni iniciar sesión hasta que vuelva. Se aceptó porque es poco frecuente y breve, y porque dejar pasar abriría la puerta justo cuando no hay filtro. Con usuarios reales se puede revisar si conviene dejar entrar a quien ya tiene cuenta durante una caída.
 - En el plan gratuito el widget lista los hostnames exactos (sin comodín, hasta 10): hay que agregar el dominio propio cuando se compre.

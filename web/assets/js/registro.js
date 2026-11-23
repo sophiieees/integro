@@ -5,6 +5,8 @@
       API envía un código al correo.
    2. El código. POST /api/v1/auth/verify-email comprueba el correo; «Enviar otro
       código» llama a POST /api/v1/auth/resend-code.
+   Las tres acciones que piden CAPTCHA (registrar, pedir otro código y corregir el correo) esperan el resultado del
+   desafío de Cloudflare y lo mandan en X-Captcha-Token (captcha.js, ADR 0016).
    3. Listo. «Iniciar sesión» abre la ventana de la cabecera (cuenta.js).
 
    Mientras la persona escribe, la contraseña se califica con
@@ -17,6 +19,8 @@
   "use strict";
 
   var LOGICA = window.INTEGRO_REGISTRO;
+  var CAPTCHA = window.INTEGRO_CAPTCHA;
+  var CAPTCHA_LOGICA = window.INTEGRO_CAPTCHA_LOGICA;
   var form = document.getElementById("formulario-registro");
   if (!LOGICA || !form) return;
 
@@ -26,13 +30,18 @@
   var listo = document.getElementById("registro-listo");
   var aviso = document.querySelector("[data-aviso]");
   var estado = { enviando: false, correo: "", telefonoCambiado: false, secuencia: 0, temporizador: null };
+  var zonaDatos = form.querySelector("[data-captcha]");
+  var zonaCodigo = formCodigo.querySelector("[data-captcha]");
+  var zonaCorreccion = formCorreccion.querySelector("[data-captcha]");
 
   /* ---------- API ---------- */
 
-  function peticion(ruta, cuerpo) {
+  function peticion(ruta, cuerpo, captcha) {
+    var cabeceras = { "Accept": "application/json", "Content-Type": "application/json" };
+    if (captcha) cabeceras[CAPTCHA_LOGICA.ENCABEZADO] = captcha;
     return fetch(API + ruta, {
       method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      headers: cabeceras,
       body: JSON.stringify(cuerpo),
       credentials: "same-origin"
     }).then(function (respuesta) {
@@ -43,6 +52,16 @@
       });
     }, function () {
       return { status: 0, cuerpo: null };
+    });
+  }
+
+  /* Una petición que pide CAPTCHA: primero espera el resultado del desafío de la zona y lo manda en el encabezado. Si no
+     hubo resultado, contesta con la misma forma que la API, y quien llama lo trata como cualquier aviso del CAPTCHA. */
+  function peticionConCaptcha(ruta, cuerpo, zona) {
+    return CAPTCHA.obtener(zona).then(function (resultado) {
+      if (resultado.sinServidor) return { status: 0, cuerpo: null };
+      if (!resultado.token) return CAPTCHA_LOGICA.respuestaSinResultado(resultado.aviso);
+      return peticion(ruta, cuerpo, resultado.token);
     });
   }
 
@@ -88,6 +107,9 @@
     var visible = paso === "datos" ? form : paso === "codigo" ? formCodigo : paso === "correccion" ? formCorreccion : listo;
     var titulo = visible.querySelector("h2");
     if (titulo) { titulo.setAttribute("tabindex", "-1"); titulo.focus(); }
+    /* El desafío de cada paso se prepara cuando el paso se muestra. */
+    if (paso === "codigo") CAPTCHA.preparar(zonaCodigo);
+    if (paso === "correccion") CAPTCHA.preparar(zonaCorreccion);
   }
 
   function ocupado(si) {
@@ -196,8 +218,10 @@
     mostrarErrores(revision.errores);
     if (LOGICA.hayErrores(revision.errores)) { enfocar(LOGICA.primerCampoConError(revision.errores)); return; }
     ocupado(true);
-    peticion("/register", revision.datos).then(function (r) {
+    peticionConCaptcha("/register", revision.datos, zonaDatos).then(function (r) {
       ocupado(false);
+      var avisoCaptcha = CAPTCHA_LOGICA.avisoDe(r.status, r.cuerpo);
+      if (avisoCaptcha) { mostrarAviso(avisoCaptcha); return; }
       var siguiente = LOGICA.despuesDeRegistrar(r.status, r.cuerpo, revision.datos.email);
       if (siguiente.paso === "codigo") {
         estado.correo = siguiente.correo;
@@ -280,8 +304,10 @@
     mostrarAviso(null);
     mostrarNota(null);
     ocupado(true);
-    peticion("/resend-code", { email: estado.correo }).then(function (r) {
+    peticionConCaptcha("/resend-code", { email: estado.correo }, zonaCodigo).then(function (r) {
       ocupado(false);
+      var avisoCaptcha = CAPTCHA_LOGICA.avisoDe(r.status, r.cuerpo);
+      if (avisoCaptcha) { mostrarAviso(avisoCaptcha); formCodigo.elements.code.focus(); return; }
       var siguiente = LOGICA.despuesDeReenviar(r.status, r.cuerpo, estado.correo);
       mostrarAviso(siguiente.aviso);
       mostrarNota(siguiente.nota);
@@ -320,8 +346,10 @@
       return;
     }
     ocupado(true);
-    peticion("/correct-unverified-email", revision.datos).then(function (r) {
+    peticionConCaptcha("/correct-unverified-email", revision.datos, zonaCorreccion).then(function (r) {
       ocupado(false);
+      var avisoCaptcha = CAPTCHA_LOGICA.avisoDe(r.status, r.cuerpo);
+      if (avisoCaptcha) { mostrarAviso(avisoCaptcha); formCorreccion.elements.password.focus(); return; }
       var siguiente = LOGICA.despuesDeCorregir(r.status, r.cuerpo);
       mostrarErrores(siguiente.errores, formCorreccion);
       mostrarAviso(siguiente.aviso);
@@ -369,6 +397,8 @@
     nota.hidden = false;
     form.hidden = true;
   }, function () { /* sin servidor: el formulario avisará al mandarlo */ }).then(function () {
+    /* Sin sesión iniciada, el desafío del formulario se prepara mientras la persona lo llena. */
+    if (!form.hidden) CAPTCHA.preparar(zonaDatos);
     document.documentElement.setAttribute("data-registro-listo", "");
   });
 })();

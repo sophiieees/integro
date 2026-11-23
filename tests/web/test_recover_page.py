@@ -58,7 +58,10 @@ def test_the_password_rules_and_the_indicator_are_the_same_as_in_the_registratio
 def test_the_page_loads_the_scripts_in_order():
     scripts = re.findall(r'<script src="assets/js/([a-z-]+)\.js"></script>', PAGE)
 
-    assert scripts == ["estructura", "cuenta-logica", "cuenta", "paises", "registro-logica", "recuperar-logica", "recuperar"]
+    assert scripts == [
+        "estructura", "captcha-logica", "captcha", "cuenta-logica", "cuenta", "paises", "registro-logica",
+        "recuperar-logica", "recuperar",
+    ]
 
 
 def test_the_page_header_and_footer_are_the_empty_spaces_the_script_fills():

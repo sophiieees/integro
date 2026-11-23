@@ -12,6 +12,7 @@ Decisión de Sophia del 19 de noviembre de 2026: las pruebas de una pantalla no 
 | Base | La base `integro` del usuario de `backend/.env`. Todo lo que escribe el navegador va dentro de una sola transacción que se deshace al terminar el archivo: no queda ninguna fila. |
 | Navegador | Edge o Chrome sin ventana, con un perfil nuevo que se borra al terminar. Cada prueba usa un contexto limpio, sin cookies de otra, y un nombre de navegador propio para que la espera por dispositivo (ADR 0014) de una no cuente en la siguiente. |
 | Códigos | No se envían: la prueba los lee de un anotador, igual que en `tests/backend/`. |
+| CAPTCHA | No se toca internet. La página recibe un widget de Cloudflare Turnstile de mentira (`FAKE_TURNSTILE`, en `e2e_support.py`) que entrega un resultado nuevo cada vez, y la API comprueba ese resultado como Cloudflare: una sola vez y para la acción de su pantalla (`StubCaptcha`). La llave pública que entrega la API es una de prueba de Cloudflare. |
 
 ## Qué hace falta
 
@@ -41,6 +42,7 @@ Tardan unos dos minutos.
 | `test_estructura_e2e.py` | La cabecera del visitante y el pie armados con un script: la barra y la pestaña de cada página, que los enlaces lleven a donde dicen, el botón dorado, la cabecera fija, el celular y la página sin JavaScript. |
 | `test_reservar_e2e.py` | «Reservar» sin sesión: lo que trae la dirección, el aviso, lo que se guarda en la dirección, las fechas que no pueden ser, el viaje completo de registrarse y volver a la misma propiedad, iniciar sesión en la misma página, las direcciones de regreso que no se siguen y el celular. |
 | `test_recuperar_e2e.py` | La pantalla de recuperar la contraseña: el enlace de la ventana, los tres pasos, el código y sus intentos, la contraseña débil, las sesiones que se cierran y el celular. Necesita la migración `20261121000005_password_reset_code.sql` en la base. |
+| `test_captcha_e2e.py` | El CAPTCHA en las pantallas: el widget de cada zona con su acción, que se dibuje cuando el paso se muestra y no en la portada, que cada petición mande un resultado nuevo, esperar un desafío lento, y qué dice la pantalla si el desafío falla o la API lo rechaza (400 y 503). |
 | `test_vistas_e2e.py` | Las cuatro vistas: la cabecera de cada una, el menú de la cuenta, Próximamente, Mi cuenta, las páginas protegidas con quién las ve y quién no, y el administrador mirando las otras vistas con su propia cuenta. |
 
 Una prueba de pantalla verifica lo que se ve, no solo el HTML: por ejemplo, que una ventana cerrada deje de tapar la página (`covers_the_page`) y que un botón reciba el clic (`is_clickable`).

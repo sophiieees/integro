@@ -1,6 +1,8 @@
 /* Íntegro, la pantalla de recuperar la contraseña
    -------------------------------------------------------------------
    recuperar-contrasena.html tiene tres pasos (los de recuperar-logica.js):
+   Pedir el código (y pedir otro) lleva CAPTCHA: espera el resultado del desafío de Cloudflare y lo manda en
+   X-Captcha-Token (captcha.js, ADR 0016).
    1. El correo. POST /api/v1/auth/password-reset/request envía un código de 6
       dígitos al correo, si la cuenta existe y su correo está comprobado. La API
       contesta lo mismo en todos los casos.
@@ -21,6 +23,8 @@
   "use strict";
 
   var LOGICA = window.INTEGRO_RECUPERAR;
+  var CAPTCHA = window.INTEGRO_CAPTCHA;
+  var CAPTCHA_LOGICA = window.INTEGRO_CAPTCHA_LOGICA;
   var formCorreo = document.getElementById("formulario-correo");
   if (!LOGICA || !formCorreo) return;
 
@@ -29,13 +33,17 @@
   var listo = document.getElementById("recuperar-listo");
   var aviso = document.querySelector("[data-aviso]");
   var estado = { enviando: false, correo: "", secuencia: 0, temporizador: null, cuenta: null };
+  var zonaCorreo = formCorreo.querySelector("[data-captcha]");
+  var zonaCodigo = formCambio.querySelector("[data-captcha]");
 
   /* ---------- API ---------- */
 
-  function peticion(ruta, cuerpo) {
+  function peticion(ruta, cuerpo, captcha) {
+    var cabeceras = { "Accept": "application/json", "Content-Type": "application/json" };
+    if (captcha) cabeceras[CAPTCHA_LOGICA.ENCABEZADO] = captcha;
     return fetch(API + ruta, {
       method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      headers: cabeceras,
       body: JSON.stringify(cuerpo),
       credentials: "same-origin"
     }).then(function (respuesta) {
@@ -46,6 +54,16 @@
       });
     }, function () {
       return { status: 0, cuerpo: null };
+    });
+  }
+
+  /* Una petición que pide CAPTCHA: primero espera el resultado del desafío de la zona y lo manda en el encabezado. Si no
+     hubo resultado, contesta con la misma forma que la API, y quien llama lo trata como cualquier aviso del CAPTCHA. */
+  function peticionConCaptcha(ruta, cuerpo, zona) {
+    return CAPTCHA.obtener(zona).then(function (resultado) {
+      if (resultado.sinServidor) return { status: 0, cuerpo: null };
+      if (!resultado.token) return CAPTCHA_LOGICA.respuestaSinResultado(resultado.aviso);
+      return peticion(ruta, cuerpo, resultado.token);
     });
   }
 
@@ -87,6 +105,9 @@
     var visible = paso === "correo" ? formCorreo : paso === "codigo" ? formCambio : listo;
     var titulo = visible.querySelector("h2");
     if (titulo) { titulo.setAttribute("tabindex", "-1"); titulo.focus(); }
+    /* El desafío de cada paso se prepara cuando el paso se muestra. */
+    if (paso === "correo") CAPTCHA.preparar(zonaCorreo);
+    if (paso === "codigo") CAPTCHA.preparar(zonaCodigo);
   }
 
   function ocupado(si) {
@@ -158,8 +179,10 @@
     }
     mostrarErrores({}, formCorreo);
     ocupado(true);
-    peticion("/password-reset/request", { email: correo }).then(function (r) {
+    peticionConCaptcha("/password-reset/request", { email: correo }, zonaCorreo).then(function (r) {
       ocupado(false);
+      var avisoCaptcha = CAPTCHA_LOGICA.avisoDe(r.status, r.cuerpo);
+      if (avisoCaptcha) { mostrarAviso(avisoCaptcha); formCorreo.elements.email.focus(); return; }
       var siguiente = LOGICA.despuesDePedir(r.status, r.cuerpo, correo);
       if (siguiente.paso === "codigo") { pasarAlCodigo(siguiente); return; }
       mostrarErrores(siguiente.errores, formCorreo);
@@ -212,8 +235,10 @@
     mostrarAviso(null);
     mostrarNota(null);
     ocupado(true);
-    peticion("/password-reset/request", { email: estado.correo }).then(function (r) {
+    peticionConCaptcha("/password-reset/request", { email: estado.correo }, zonaCodigo).then(function (r) {
       ocupado(false);
+      var avisoCaptcha = CAPTCHA_LOGICA.avisoDe(r.status, r.cuerpo);
+      if (avisoCaptcha) { mostrarAviso(avisoCaptcha); formCambio.elements.code.focus(); return; }
       var siguiente = LOGICA.despuesDePedir(r.status, r.cuerpo, estado.correo);
       if (siguiente.paso === "codigo") {
         mostrarErrores({}, formCambio);
@@ -276,6 +301,8 @@
     formCorreo.hidden = true;
     document.querySelector("[data-intro]").hidden = true;
   }, function () { /* sin servidor: el formulario avisará al mandarlo */ }).then(function () {
+    /* Sin sesión iniciada, el desafío del primer paso se prepara mientras la persona escribe su correo. */
+    if (!formCorreo.hidden) CAPTCHA.preparar(zonaCorreo);
     document.documentElement.setAttribute("data-recuperar-listo", "");
   });
 })();
