@@ -13,8 +13,10 @@ from app.core.config import WEB_DIRECTORY, Settings, load_settings
 from app.database.connection import create_pool
 from app.api.auth import NotAuthenticated, not_authenticated_response
 from app.api.captcha import CaptchaRejected, captcha_rejected_response, create_captcha_verifier
+from app.api.delivery import delivery_failed_response
 from app.api.protection import Forbidden, forbidden_response
 from app.notifications import create_code_sender
+from app.notifications.sender import DeliveryFailed
 from app.web import mount_web
 
 
@@ -62,6 +64,8 @@ def create_app(settings: Settings | None = None, web_directory: Path | None = WE
     application.add_exception_handler(Forbidden, forbidden_response)
     # Las acciones que cualquiera puede pedir sin sesión piden CAPTCHA: 400 si no lo resolvió, 503 si no se pudo comprobar.
     application.add_exception_handler(CaptchaRejected, captcha_rejected_response)
+    # Un código que no se pudo enviar por correo: 503 (ADR 0017). Las rutas que no pueden decirlo así lo atrapan antes.
+    application.add_exception_handler(DeliveryFailed, delivery_failed_response)
     return application
 
 

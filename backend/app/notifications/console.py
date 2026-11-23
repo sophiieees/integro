@@ -7,32 +7,7 @@ esa ventana.
 
 from typing import Any
 
-
-def failed_logins_text(details: dict[str, Any]) -> str:
-    """El texto del aviso de intentos fallidos. No lleva ninguna contraseña."""
-    when = details["at"].strftime("%Y-%m-%d %H:%M:%S %Z").strip()
-    return (
-        f"Hubo {details['failures']} intentos fallidos de entrar a tu cuenta. "
-        f"Último intento: {when}. "
-        f"Navegador: {details.get('user_agent') or 'desconocido'}. "
-        f"Dirección: {details.get('ip_address') or 'desconocida'}. "
-        "Si no fuiste tú, cambia tu contraseña."
-    )
-
-
-def password_changed_text(details: dict[str, Any]) -> str:
-    """El texto del aviso de que la contraseña cambió. No lleva ninguna contraseña ni código."""
-    when = details["at"].strftime("%Y-%m-%d %H:%M:%S %Z").strip()
-    return (
-        f"La contraseña de tu cuenta de Íntegro se cambió el {when}. "
-        f"Navegador: {details.get('user_agent') or 'desconocido'}. "
-        f"Dirección: {details.get('ip_address') or 'desconocida'}. "
-        "Por seguridad cerramos todas tus sesiones. "
-        "Si no fuiste tú, vuelve a recuperar tu contraseña desde «¿Olvidaste tu contraseña?»."
-    )
-
-
-KIND_TEXTS = {"failed_logins": failed_logins_text, "password_changed": password_changed_text}
+from app.notifications.messages import KIND_TEXTS, failed_logins_text, password_changed_text  # noqa: F401
 
 
 class ConsoleCodeSender:

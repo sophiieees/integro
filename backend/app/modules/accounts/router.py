@@ -63,6 +63,9 @@ class RegisterRequest(BaseModel):
 class RegisterResponse(BaseModel):
     status: Literal["verification_required"]
     email: str
+    # Solo viene, en false, si el proveedor del correo falló: lo guardado quedó guardado y la persona pide otro código
+    # (ADR 0017). Cuando el correo sale no aparece, y la respuesta es la de siempre.
+    email_sent: bool | None = None
 
 
 class VerifyEmailRequest(BaseModel):
@@ -145,6 +148,7 @@ def captcha_config(request: Request):
     "/register",
     status_code=201,
     response_model=RegisterResponse,
+    response_model_exclude_none=True,
     responses={**CAPTCHA_RESPONSES, 409: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
     dependencies=[Depends(require_captcha("register"))],
     summary="Crear una cuenta",
@@ -158,7 +162,7 @@ def register(body: RegisterRequest, request: Request):
         return error_response(422, errors)
     state = request.app.state
     try:
-        register_account(state.pool, data, state.settings, state.code_sender)
+        email_sent = register_account(state.pool, data, state.settings, state.code_sender)
     except AlreadyRegistered as error:
         messages = {
             "email": "Ya existe una cuenta con este correo.",
@@ -167,7 +171,7 @@ def register(body: RegisterRequest, request: Request):
         return error_response(
             409, [FieldError(error.field, "already_registered", messages[error.field])]
         )
-    return RegisterResponse(status="verification_required", email=data.email)
+    return RegisterResponse(status="verification_required", email=data.email, email_sent=None if email_sent else False)
 
 
 @router.post(
@@ -247,6 +251,7 @@ class CorrectEmailRequest(BaseModel):
 @router.post(
     "/correct-unverified-email",
     response_model=RegisterResponse,
+    response_model_exclude_none=True,
     responses={**CAPTCHA_RESPONSES, 401: {"model": ErrorResponse}, 409: {"model": ErrorResponse},
                422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
     dependencies=[Depends(require_captcha("correct_email"))],
@@ -278,7 +283,11 @@ def correct_email(body: CorrectEmailRequest, request: Request):
     )
 
     if result.outcome is CorrectionOutcome.CODE_SENT:
-        return RegisterResponse(status="verification_required", email=values["new_email"].strip().lower())
+        return RegisterResponse(
+            status="verification_required",
+            email=values["new_email"].strip().lower(),
+            email_sent=None if result.email_sent else False,
+        )
     if result.outcome is CorrectionOutcome.TRY_LATER:
         minutes = -(-result.retry_after_seconds // 60)
         wait = "1 minuto" if minutes == 1 else f"{minutes} minutos"
