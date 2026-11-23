@@ -27,6 +27,7 @@
               <input type="email" id="recuperar-correo" name="email" autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="recuperar-error-email">
               <span class="campo-error" id="recuperar-error-email" data-error-de="email" hidden></span>
             </div>
+            <div class="captcha" data-captcha="password_reset"></div>
             <div class="formulario-acciones">
               <button type="submit" class="btn btn-primario">Enviar código</button>
             </div>
@@ -53,6 +54,7 @@
                 <ul class="fortaleza-consejos" data-fortaleza-consejos></ul>
               </div>
             </div>
+            <div class="captcha" data-captcha="password_reset"></div>
             <div class="formulario-acciones formulario-acciones-dos">
               <button type="button" class="btn-enlace" data-reenviar>Enviar otro código</button>
               <button type="submit" class="btn btn-primario">Cambiar contraseña</button>
@@ -76,6 +78,8 @@
   <footer class="pie" data-pie></footer>
 
   <script src="assets/js/estructura.js"></script>
+  <script src="assets/js/captcha-logica.js"></script>
+  <script src="assets/js/captcha.js"></script>
   <script src="assets/js/cuenta-logica.js"></script>
   <script src="assets/js/cuenta.js"></script>
   <script src="assets/js/paises.js"></script>

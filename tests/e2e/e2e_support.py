@@ -64,6 +64,54 @@ COUNT_REQUESTS = """
 """
 
 
+# El widget de Cloudflare Turnstile de mentira. Las pruebas no tocan internet: la página encuentra window.turnstile ya
+# puesto y no carga el script de Cloudflare. Hace lo que el de verdad: render() empieza el desafío y entrega el resultado
+# por callback; reset() lo vuelve a empezar y entrega otro resultado, distinto; un fallo llama a error-callback.
+# window.__stub deja a la prueba cambiar su comportamiento: mode "ok" (por defecto), "error" o "never" (nunca responde),
+# y delay (milisegundos). Anota lo que pasó en window.__stub.renders y window.__stub.issued.
+FAKE_TURNSTILE = """
+(() => {
+  const stub = window.__stub = { mode: "ok", delay: 5, renders: [], issued: [], resets: 0 };
+  const widgets = {};
+  // Cada carga de página tiene su propio identificador: los resultados de Cloudflare nunca se repiten entre páginas.
+  const run = Math.random().toString(36).slice(2, 10);
+  let counter = 0;
+  const deliver = (id) => {
+    const widget = widgets[id];
+    if (stub.mode === "never") return;
+    setTimeout(() => {
+      if (stub.mode === "error") {
+        if (widget.options["error-callback"]) widget.options["error-callback"]("stub-error");
+        return;
+      }
+      counter += 1;
+      const token = "STUB-" + widget.options.action + "-" + run + "-" + counter;
+      stub.issued.push(token);
+      widget.options.callback(token);
+    }, stub.delay);
+  };
+  window.turnstile = {
+    render(element, options) {
+      const id = "stub-" + Object.keys(widgets).length;
+      widgets[id] = { element, options };
+      element.setAttribute("data-stub-widget", id);
+      element.setAttribute("data-stub-action", options.action);
+      element.setAttribute("data-stub-sitekey", options.sitekey);
+      element.setAttribute("data-stub-appearance", options.appearance);
+      stub.renders.push({ id, action: options.action, sitekey: options.sitekey, appearance: options.appearance });
+      deliver(id);
+      return id;
+    },
+    reset(id) { stub.resets += 1; deliver(id); },
+    remove() {},
+  };
+})();
+"""
+
+# La llave pública que la API entrega a las pruebas: una de prueba de Cloudflare, que solo vale con la cookie sin Secure.
+STUB_SITE_KEY = "1x00000000000000000000AA"
+
+
 def free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.bind(("127.0.0.1", 0))
@@ -102,11 +150,29 @@ class SingleConnectionPool:
         yield self._connection
 
 
-class AcceptsAnyCaptcha:
-    """El CAPTCHA de las pruebas de pantalla: acepta lo que llegue, o nada."""
+class StubCaptcha:
+    """El CAPTCHA de las pruebas de pantalla: se porta como Cloudflare con el widget de mentira.
+
+    Acepta un resultado del widget de prueba (STUB-<acción>-<n>) una sola vez y solo para la acción de su pantalla, como
+    hace Cloudflare. Las peticiones directas de Site.request mandan STUB-DIRECT-<id>, que sirve para cualquier acción.
+    Anota todo lo que le llegó en seen. force deja a la prueba pedir otra respuesta: CaptchaResult.FAILED o UNAVAILABLE.
+    """
+
+    def __init__(self):
+        self.seen = []
+        self.used = set()
+        self.force = None
 
     def verify(self, token, action):
-        return CaptchaResult.PASSED
+        self.seen.append((token, action))
+        if self.force is not None:
+            return self.force
+        if not token or not token.startswith("STUB-") or token in self.used:
+            return CaptchaResult.FAILED
+        self.used.add(token)
+        if token.startswith("STUB-DIRECT-"):
+            return CaptchaResult.PASSED
+        return CaptchaResult.PASSED if token.split("-")[1] == action else CaptchaResult.FAILED
 
 
 class CodeBox:
@@ -134,13 +200,15 @@ class Site:
     pool: SingleConnectionPool
     codes: CodeBox
     settings: object
+    captcha: object
 
     def request(self, method: str, path: str, body: dict | None = None) -> tuple[int, dict | None]:
         """Una petición a la API como un programa cualquiera, sin navegador."""
         data = json.dumps(body).encode() if body is not None else None
         request = urllib.request.Request(
             self.url + path, data=data, method=method,
-            headers={"Content-Type": "application/json", "Origin": self.url},
+            headers={"Content-Type": "application/json", "Origin": self.url,
+                     "X-Captcha-Token": "STUB-DIRECT-" + uuid.uuid4().hex},
         )
         try:
             with urllib.request.urlopen(request, timeout=15) as response:
@@ -157,7 +225,7 @@ def site():
     import uvicorn
 
     # El servidor local no tiene HTTPS: la cookie de sesión viaja sin Secure.
-    settings = load_settings().model_copy(update={"session_cookie_secure": False})
+    settings = load_settings().model_copy(update={"session_cookie_secure": False, "turnstile_site_key": STUB_SITE_KEY})
     real_pool = create_pool(settings)
     real_pool.open(wait=True, timeout=10)
     server = None
@@ -177,11 +245,12 @@ def site():
                 pool = SingleConnectionPool(connection)
                 application.state.pool = pool
                 application.state.code_sender = codes
-                # Estas pruebas son de las pantallas, no del CAPTCHA: aquí todo resultado vale. El CAPTCHA se prueba en
-                # tests/backend/test_captcha.py y, en la página, en las pruebas del widget.
-                application.state.captcha = AcceptsAnyCaptcha()
+                # El CAPTCHA se porta como Cloudflare con el widget de mentira de la página (FAKE_TURNSTILE). El de verdad
+                # se prueba en tests/backend/test_captcha.py.
+                captcha = StubCaptcha()
+                application.state.captcha = captcha
                 try:
-                    yield Site(url=f"http://127.0.0.1:{port}", pool=pool, codes=codes, settings=settings)
+                    yield Site(url=f"http://127.0.0.1:{port}", pool=pool, codes=codes, settings=settings, captcha=captcha)
                 finally:
                     server.should_exit = True
                     thread.join(15)
@@ -208,6 +277,7 @@ class Page:
         self._events: list[dict] = []
         self.send("Page.enable")
         self.send("Page.addScriptToEvaluateOnNewDocument", source=COUNT_REQUESTS)
+        self.send("Page.addScriptToEvaluateOnNewDocument", source=FAKE_TURNSTILE)
 
     # --- protocolo ---------------------------------------------------------
 

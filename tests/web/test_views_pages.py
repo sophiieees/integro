@@ -79,8 +79,9 @@ def test_each_page_loads_the_scripts_in_order(name):
     text = read(name)
     scripts = re.findall(r'<script src="assets/js/([a-z-]+)\.js"></script>', text)
 
-    assert scripts[:3] == ["estructura", "cuenta-logica", "cuenta"]
-    assert scripts[3:] == (["proximamente"] if name == "proximamente.html" else [])
+    # Los dos del CAPTCHA van antes de cuenta.js, que los usa en la ventana de iniciar sesión (ADR 0016).
+    assert scripts[:5] == ["estructura", "captcha-logica", "captcha", "cuenta-logica", "cuenta"]
+    assert scripts[5:] == (["proximamente"] if name == "proximamente.html" else [])
 
 
 def test_proximamente_is_public_and_its_title_comes_from_the_address():

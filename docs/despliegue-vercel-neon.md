@@ -115,6 +115,8 @@ Decidido el 22 de noviembre de 2026 (ADR 0016): Turnstile, plan gratuito, modo M
 
 **Cómo se comprueba que quedó bien:** `/api/v1/auth/captcha` contesta la llave pública y no `503`; en el registro aparece el desafío; con una llave secreta equivocada, las acciones contestan `503` y el registro de la función dice `invalid-input-secret`. Si por error se pusiera en Vercel una llave de prueba de Cloudflare (empieza con `1x`, `2x` o `3x`), la API la rechaza: `/api/v1/auth/captcha` y las cinco acciones contestan `503`, y el registro de la función lo dice.
 
+**Qué se ve en las pantallas:** el widget está escondido y casi nunca aparece. Para comprobar que dibuja bien, en el navegador (herramientas de desarrollo, pestaña Network) al abrir el registro, la recuperación de contraseña o la ventana de iniciar sesión se ve una petición a `/api/v1/auth/captcha` y otra a `challenges.cloudflare.com`; en la portada no hay ninguna de las dos hasta abrir la ventana. Si el hostname del sitio no está en el widget de Cloudflare, el desafío falla y las pantallas avisan «No pudimos comprobar que eres una persona».
+
 **Pendiente con Valeria:** qué decir de Cloudflare en el aviso de privacidad (Turnstile recibe datos del navegador de quien se registra o inicia sesión).
 
 ## 5 quater. Probar en Vercel, paso a paso

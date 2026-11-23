@@ -26,6 +26,8 @@
   var LOGICA = window.INTEGRO_CUENTA;
   if (!LOGICA) return;
   var ESTRUCTURA = window.INTEGRO_ESTRUCTURA || null;
+  var CAPTCHA = window.INTEGRO_CAPTCHA;
+  var CAPTCHA_LOGICA = window.INTEGRO_CAPTCHA_LOGICA;
 
   var API = "/api/v1/auth";
   var VER_COMO = "integro_view_as";
@@ -40,10 +42,11 @@
 
   /* ---------- API ---------- */
 
-  function peticion(metodo, ruta, cuerpo, clave) {
+  function peticion(metodo, ruta, cuerpo, clave, captcha) {
     var cabeceras = { "Accept": "application/json" };
     if (cuerpo) cabeceras["Content-Type"] = "application/json";
     if (clave) cabeceras["X-CSRF-Token"] = clave;
+    if (captcha) cabeceras[CAPTCHA_LOGICA.ENCABEZADO] = captcha;
     return fetch(API + ruta, {
       method: metodo,
       headers: cabeceras,
@@ -57,6 +60,16 @@
       });
     }, function () {
       return { status: 0, cuerpo: null };
+    });
+  }
+
+  /* Una petición que pide CAPTCHA (ADR 0016): primero espera el resultado del desafío y lo manda en el encabezado. Si no
+     hubo resultado, contesta con la misma forma que la API, y quien llama lo trata como cualquier aviso del CAPTCHA. */
+  function peticionConCaptcha(metodo, ruta, cuerpo, zona) {
+    return CAPTCHA.obtener(zona).then(function (resultado) {
+      if (resultado.sinServidor) return { status: 0, cuerpo: null };
+      if (!resultado.token) return CAPTCHA_LOGICA.respuestaSinResultado(resultado.aviso);
+      return peticion(metodo, ruta, cuerpo, null, resultado.token);
     });
   }
 
@@ -321,6 +334,7 @@
           "<label class=\"campo\"><span>Correo electrónico</span><input type=\"email\" name=\"email\" autocomplete=\"email\" inputmode=\"email\" spellcheck=\"false\"></label>" +
           "<label class=\"campo\"><span>Contraseña</span><input type=\"password\" name=\"password\" autocomplete=\"current-password\"></label>" +
           "<p class=\"ventana-olvido\"><a href=\"recuperar-contrasena.html\">¿Olvidaste tu contraseña?</a></p>" +
+          "<div class=\"captcha\" data-captcha=\"login\"></div>" +
           "<div class=\"ventana-acciones\">" +
             "<button type=\"button\" class=\"btn-enlace\" data-cancelar>Cancelar</button>" +
             "<button type=\"submit\" class=\"btn btn-primario\">Continuar</button>" +
@@ -377,7 +391,11 @@
     formulario("correo").reset();
     formulario("codigo").reset();
     mostrarPaso("correo", estado.servidor ? null : LOGICA.SIN_SERVIDOR, "email");
+    /* El resultado del desafío se prepara mientras la persona escribe. */
+    CAPTCHA.preparar(zonaDelCaptcha());
   }
+
+  function zonaDelCaptcha() { return formulario("correo").querySelector("[data-captcha]"); }
 
   function cerrarVentana() {
     if (!ventana || ventana.hidden) return;
@@ -399,8 +417,11 @@
     var revision = LOGICA.revisarCorreoYContrasena(correo, form.password.value);
     if (revision) { mostrarPaso("correo", revision.aviso, revision.campo); return; }
     ocupado(true);
-    peticion("POST", "/login", { email: correo, password: form.password.value }).then(function (r) {
+    var datos = { email: correo, password: form.password.value };
+    peticionConCaptcha("POST", "/login", datos, zonaDelCaptcha()).then(function (r) {
       ocupado(false);
+      var avisoCaptcha = CAPTCHA_LOGICA.avisoDe(r.status, r.cuerpo);
+      if (avisoCaptcha) { mostrarPaso("correo", avisoCaptcha, "email"); return; }
       var siguiente = LOGICA.despuesDelCorreo(r.status, r.cuerpo, correo);
       estado.servidor = r.status !== 0;
       if (siguiente.paso === "codigo") {
