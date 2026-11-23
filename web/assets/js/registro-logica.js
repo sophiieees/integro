@@ -38,6 +38,14 @@
 
   function plural(n, uno, varios) { return n + " " + (n === 1 ? uno : varios); }
 
+  /* La fecha de hoy, AAAA-MM-DD, donde está la persona: la del reloj de su navegador. toISOString da la de UTC, que
+     pasadas las 18:00 en México ya es la de mañana y dejaría escribir un nacimiento en el futuro. */
+  function fechaDeHoy(ahora) {
+    var mes = ahora.getMonth() + 1;
+    var dia = ahora.getDate();
+    return ahora.getFullYear() + "-" + (mes < 10 ? "0" : "") + mes + "-" + (dia < 10 ? "0" : "") + dia;
+  }
+
   /* ---------- Países y teléfono ---------- */
 
   /* La lista de países para elegir, con su nombre en español: México primero y
@@ -312,6 +320,7 @@
   return {
     CAMPOS: CAMPOS,
     SIN_SERVIDOR: SIN_SERVIDOR,
+    fechaDeHoy: fechaDeHoy,
     listaDePaises: listaDePaises,
     paisesConMarcacion: paisesConMarcacion,
     marcacionParaElPais: marcacionParaElPais,

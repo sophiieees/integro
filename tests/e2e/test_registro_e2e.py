@@ -23,6 +23,7 @@ import uuid
 from datetime import date
 from pathlib import Path
 
+import pytest
 from e2e_support import age_codes, browser, make_account, page, sessions_of, site  # noqa: F401
 
 from app.database.transaction import system_transaction
@@ -182,6 +183,20 @@ def test_the_birth_date_cannot_be_in_the_future(page, site):
 
 
 # --- Caso 2 ------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("zone", ["Pacific/Kiritimati", "Pacific/Pago_Pago", "America/Mexico_City", "UTC"])
+def test_the_birth_date_limit_is_today_where_the_person_is_at_any_hour_of_the_day(page, site, zone):
+    """Kiritimati (UTC+14) y Pago Pago (UTC-11) están 25 horas aparte: a cualquier hora una de las dos tiene un día
+    distinto al de UTC, así que esta prueba no depende de la hora en que se corre."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    page.send("Emulation.setTimezoneOverride", timezoneId=zone)
+    go(page, site)
+
+    today = datetime.now(ZoneInfo(zone)).date().isoformat()
+    assert page.js(f"document.querySelector('{FORM} [name=birth_date]').max") == today
 
 
 def test_the_indicator_follows_what_is_typed(page, site):

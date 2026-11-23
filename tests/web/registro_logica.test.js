@@ -421,3 +421,36 @@ test("sin avisos de contraseña, los demás pasan tal cual", () => {
 test("con sesión iniciada la pantalla lo dice con el nombre", () => {
   assert.equal(REGISTRO.avisoDeSesionIniciada("Ana"), "Ya iniciaste sesión como Ana. Para crear otra cuenta, primero cierra sesión.");
 });
+
+/* --- La fecha de hoy, donde está la persona ----------------------------- */
+
+test("la fecha de hoy es la del reloj de la persona, con ceros a la izquierda", () => {
+  assert.equal(REGISTRO.fechaDeHoy(new Date(2026, 10, 22, 23, 59, 59)), "2026-11-22");
+  assert.equal(REGISTRO.fechaDeHoy(new Date(2026, 0, 5, 0, 0, 0)), "2026-01-05");
+  assert.equal(REGISTRO.fechaDeHoy(new Date(2026, 11, 31, 23, 59)), "2026-12-31");
+  assert.equal(REGISTRO.fechaDeHoy(new Date(2028, 1, 29, 12)), "2028-02-29");
+  assert.equal(REGISTRO.fechaDeHoy(new Date(2027, 0, 1, 0, 0)), "2027-01-01");
+});
+
+test("el mismo instante es hoy en un día para unos y en otro para otros, y gana el reloj de cada quien", () => {
+  /* 00:30 UTC del 23 de noviembre: en la Ciudad de México todavía es el 22 (18:30), y en Kiritimati ya es el 23 (14:30). */
+  const instante = new Date(Date.UTC(2026, 10, 23, 0, 30));
+  const antes = process.env.TZ;
+  try {
+    const esperado = {
+      "America/Mexico_City": "2026-11-22",
+      "UTC": "2026-11-23",
+      "Pacific/Kiritimati": "2026-11-23",
+      "Pacific/Pago_Pago": "2026-11-22"
+    };
+    for (const [zona, fecha] of Object.entries(esperado)) {
+      process.env.TZ = zona;
+      assert.equal(REGISTRO.fechaDeHoy(instante), fecha, zona);
+    }
+    /* Lo que se hacía antes daba la de UTC para todas, y por eso fallaba en la tarde de México. */
+    process.env.TZ = "America/Mexico_City";
+    assert.notEqual(instante.toISOString().slice(0, 10), REGISTRO.fechaDeHoy(instante));
+  } finally {
+    if (antes === undefined) delete process.env.TZ; else process.env.TZ = antes;
+  }
+});
