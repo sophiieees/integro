@@ -35,7 +35,7 @@ from app.modules.accounts.codes import CHANNEL_EMAIL, SendLimit, create_code, se
 from app.modules.accounts.login import clean_ip
 from app.modules.accounts.registration import PURPOSE
 from app.modules.accounts.security import verify_password
-from app.notifications.sender import CodeSender
+from app.notifications.sender import CodeSender, DeliveryFailed
 
 
 class CorrectionOutcome(Enum):
@@ -53,6 +53,9 @@ class CorrectionResult:
     outcome: CorrectionOutcome
     # Segundos que le faltan al dispositivo para poder intentar; solo con TRY_LATER.
     retry_after_seconds: int | None = None
+    # Solo con CODE_SENT: si el código salió. Si el proveedor del correo falló, el correo ya cambió y la persona pide
+    # otro código (volver a corregir diría «es el mismo correo»).
+    email_sent: bool = True
 
 
 def correct_unverified_email(
@@ -113,11 +116,14 @@ def correct_unverified_email(
         return CorrectionResult(CorrectionOutcome.EMAIL_TAKEN)
 
     # El código se envía hasta que el cambio quedó guardado.
-    sender.send_code(
-        channel=CHANNEL_EMAIL,
-        destination=new_email,
-        code=code,
-        purpose=PURPOSE,
-        ttl_seconds=settings.code_ttl_seconds,
-    )
+    try:
+        sender.send_code(
+            channel=CHANNEL_EMAIL,
+            destination=new_email,
+            code=code,
+            purpose=PURPOSE,
+            ttl_seconds=settings.code_ttl_seconds,
+        )
+    except DeliveryFailed:
+        return CorrectionResult(CorrectionOutcome.CODE_SENT, email_sent=False)
     return CorrectionResult(CorrectionOutcome.CODE_SENT)

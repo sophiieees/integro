@@ -119,6 +119,29 @@ Decidido el 22 de noviembre de 2026 (ADR 0016): Turnstile, plan gratuito, modo M
 
 **Pendiente con Valeria:** qué decir de Cloudflare en el aviso de privacidad (Turnstile recibe datos del navegador de quien se registra o inicia sesión).
 
+## 5 quinquies. Correo real con Resend
+
+Decidido el 22 de noviembre de 2026 (ADR 0017): Resend, plan gratuito para empezar. Según su página de precios (leída ese día): 3,000 correos al mes y **100 al día**, 3 dominios; el plan de 20 USD al mes sube a 50,000 correos y quita el tope diario. Revísalo en resend.com/pricing antes de contratar. Cada inicio de sesión manda un correo, así que 100 al día alcanzan para unas decenas de personas.
+
+**Lo que hace Sophia, en este orden** (la IA no puede entrar a Resend, a Vercel ni al DNS):
+1. **Un dominio.** Íntegro todavía no tiene, y sin uno propio Resend no envía a nadie. Se puede comprar en Vercel, que además administra su DNS. (El nombre «Íntegro» sigue sujeto al registro de marca, IMPI.)
+2. **Cuenta en Resend** (resend.com) y, en Domains, agregar el dominio. Resend muestra los registros DNS (SPF y DKIM, de tipo TXT, MX o CNAME) que hay que copiar **tal cual** en el DNS del dominio. Suele verificar en unos 15 minutos, a veces tarda hasta 72 horas. Después conviene agregar un registro DMARC; Resend lo recomienda.
+3. **Una llave de API** en Resend (API Keys). **(sin verificar cómo se llaman los permisos en la pantalla)** si hay un permiso de solo envío, elegir ese. La llave se guarda en el gestor de contraseñas y nunca va al chat ni al repositorio.
+4. **Variables en Vercel** (Settings, Environment Variables, Production), y después Redeploy:
+
+   | Variable | Valor |
+   |---|---|
+   | `EMAIL_DELIVERY` | `resend` (cambia el `console` de hoy) |
+   | `EMAIL_API_KEY` | la llave de Resend, como **Sensitive** |
+   | `EMAIL_FROM` | `Íntegro <no-responder@tu-dominio>`, con el dominio verificado |
+
+   Si falta `EMAIL_API_KEY` o `EMAIL_FROM`, la API no arranca y el registro de la función dice cuál.
+5. **Prueba tuya:** crear una cuenta con tu propio correo. Debe llegar el código; si no está en la bandeja, revisar spam. Para ver si SPF y DKIM pasaron, en Gmail: los tres puntos del correo, «Mostrar original»; deben decir `PASS`.
+
+**Cuando falla el proveedor:** el registro de la función de Vercel (Logs) dice `Resend no envió el correo: HTTP <código> <nombre del error>`. Los más comunes: `401` (llave equivocada o borrada), `403` o `422` con `validation_error` (el dominio del remitente no está verificado o el remitente está mal escrito), `429` (se pasó del tope de envíos).
+
+**Mientras `EMAIL_DELIVERY=console`:** los códigos siguen apareciendo en los registros de Vercel. Con personas reales hay que cambiarlo, porque cualquiera con acceso a los registros vería sus códigos.
+
 ## 5 quater. Probar en Vercel, paso a paso
 
 Lo hace Sophia en vercel.com, con el proyecto que ya publica la web. La IA no puede entrar a Vercel.

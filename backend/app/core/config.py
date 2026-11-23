@@ -51,8 +51,14 @@ class Settings(BaseSettings):
     # uso. Sin ella, quien robe la base adivina un código de seis dígitos.
     code_hash_secret: SecretStr = Field(min_length=32)
     # Cómo salen los correos. "console": modo desarrollo, el código se escribe
-    # en la ventana del servidor en lugar de enviarse (ADR 0014).
-    email_delivery: Literal["console"]
+    # en la ventana del servidor en lugar de enviarse (ADR 0014). "resend": correo
+    # real con Resend (ADR 0017); pide EMAIL_API_KEY y EMAIL_FROM, y si falta una
+    # el backend no arranca y dice cuál.
+    email_delivery: Literal["console", "resend"]
+    # La llave de Resend, solo en las variables de entorno del proveedor. SecretStr evita que aparezca al imprimir.
+    email_api_key: SecretStr | None = None
+    # El remitente, por ejemplo «Íntegro <no-responder@tu-dominio>». Su dominio tiene que estar verificado en Resend.
+    email_from: str | None = None
 
     # Límites de los códigos (ADR 0014). Son los valores decididos; se pueden
     # cambiar con una variable de entorno sin tocar el código.

@@ -24,7 +24,7 @@ from app.modules.accounts.codes import (
 )
 from app.modules.accounts.security import hash_password
 from app.modules.accounts.validation import RegistrationData
-from app.notifications.sender import CodeSender
+from app.notifications.sender import CodeSender, DeliveryFailed
 
 PURPOSE = "verify_email"
 CHANNEL = CHANNEL_EMAIL
@@ -77,12 +77,16 @@ class ResendResult:
 
 def register_account(
     pool: ConnectionPool, data: RegistrationData, settings: Settings, sender: CodeSender
-) -> None:
+) -> bool:
     """Crea la cuenta y envía el código para comprobar el correo.
 
     Guarda en una sola operación a la persona, su teléfono principal, su
     contraseña ya convertida y la huella del código. Si el correo o el
     teléfono ya existen no se guarda nada y se lanza AlreadyRegistered.
+
+    Devuelve si el código salió. Si el proveedor del correo falla, la cuenta
+    ya quedó guardada: no se deshace (volver a mandar el formulario diría
+    «ya existe una cuenta»), y la persona pide otro código (ADR 0017).
     """
     password_hash = hash_password(data.password)
     try:
@@ -115,13 +119,17 @@ def register_account(
         raise AlreadyRegistered(field) from None
 
     # El código se envía hasta que la cuenta quedó guardada.
-    sender.send_code(
-        channel=CHANNEL,
-        destination=data.email,
-        code=code,
-        purpose=PURPOSE,
-        ttl_seconds=settings.code_ttl_seconds,
-    )
+    try:
+        sender.send_code(
+            channel=CHANNEL,
+            destination=data.email,
+            code=code,
+            purpose=PURPOSE,
+            ttl_seconds=settings.code_ttl_seconds,
+        )
+    except DeliveryFailed:
+        return False
+    return True
 
 
 def verify_email(pool: ConnectionPool, email: str, code: str, settings: Settings) -> VerifyResult:

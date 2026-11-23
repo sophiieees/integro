@@ -45,6 +45,8 @@ SETTINGS_VARIABLES = (
     "TRUST_PROXY_HEADERS",
     "TURNSTILE_SITE_KEY",
     "TURNSTILE_SECRET_KEY",
+    "EMAIL_API_KEY",
+    "EMAIL_FROM",
 )
 
 # Llave inventada, solo para pruebas que no usan la configuración real.

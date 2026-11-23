@@ -50,7 +50,7 @@ from app.modules.accounts.codes import (
 from app.modules.accounts.login import clean_ip
 from app.modules.accounts.password_strength import password_strength
 from app.modules.accounts.security import hash_password
-from app.notifications.sender import CodeSender
+from app.notifications.sender import CodeSender, DeliveryFailed
 
 PURPOSE = "password_reset"
 # Aviso al dueño de la cuenta: su contraseña se cambió.
@@ -83,7 +83,9 @@ def request_password_reset(pool: ConnectionPool, email: str, settings: Settings,
     """Envía el código si la cuenta existe, tiene el correo comprobado y los límites lo permiten.
 
     Devuelve si se envió algo, solo para las pruebas: a quien lo pidió se le
-    responde lo mismo en todos los casos.
+    responde lo mismo en todos los casos, también si el proveedor del correo
+    falla (si fallara distinto cuando la cuenta existe, la respuesta diría
+    quién tiene cuenta; el motivo queda en el registro del servidor).
     """
     email = email.strip().lower()
     code = None
@@ -102,13 +104,16 @@ def request_password_reset(pool: ConnectionPool, email: str, settings: Settings,
     # El código se envía hasta que quedó guardado.
     if code is None:
         return False
-    sender.send_code(
-        channel=CHANNEL_EMAIL,
-        destination=email,
-        code=code,
-        purpose=PURPOSE,
-        ttl_seconds=settings.password_reset_ttl_seconds,
-    )
+    try:
+        sender.send_code(
+            channel=CHANNEL_EMAIL,
+            destination=email,
+            code=code,
+            purpose=PURPOSE,
+            ttl_seconds=settings.password_reset_ttl_seconds,
+        )
+    except DeliveryFailed:
+        return False
     return True
 
 
