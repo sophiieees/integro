@@ -2332,4 +2332,82 @@ PROMPTS = [
             ("38.2", "Darle al aviso «Iniciaste sesión como…» su propia animación (aviso-entra), solo de opacidad, en lugar de la de la ventana.", "La animación de la ventana mueve la posición y descentraría el aviso al terminar. Campo: qué hace.", "Aceptar", "Está bien la animación.", "Quedó como estaba en la rama web/login-redirects (7cc4d39)."),
         ],
     },
+    # ------------------------------------------------------------------ 39
+    {
+        "n": 39,
+        "titulo": "CAPTCHA con Cloudflare Turnstile: el servidor, las pantallas y la fecha de nacimiento",
+        "fecha": "22 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Para las decisiones de la bitácora 38: la bitácora le parece bastante bien y ya se puede hacer; la "
+                     "decisión 38.1 queda rechazada porque no le gusta nada más que diga «iniciar sesión» y «cambiaste tu "
+                     "contraseña»; la 38.2 está bien. Las cuatro acciones del CAPTCHA le parecen bien y cree que el sistema "
+                     "queda bastante bloqueado. Entiende que el CAPTCHA es para evitar que una máquina sea quien responde y "
+                     "así ingrese al sistema. Sobre qué pasa si Cloudflare no responde: «si cae va a ser un problema, no "
+                     "sé». Borró el widget de Cloudflare y creó otro sin querer, con una Site Key nueva. Después de la "
+                     "recomendación de la IA confirmó las dos, aceptó todas las desviaciones y las sugerencias del servidor, "
+                     "y preguntó si las variables para fusionar se crean en Environment Variables de Vercel o en otro lado."),
+        "tarea": ("1) Decidir las dos decisiones de la bitácora 38: 38.1 rechazada, 38.2 aceptada. 2) Las cuatro acciones del "
+                  "CAPTCHA están bien. 3) Qué recomienda la IA si Cloudflare no responde y si el CAPTCHA debe tener interruptor o "
+                  "estar siempre activo. 4) Confirma las dos recomendaciones: rechazar si Cloudflare no responde, y sin "
+                  "interruptor, siempre activo. 5) /pieza: empezar con el CAPTCHA (el servidor). 6) Aceptar las desviaciones y "
+                  "las sugerencias. 7) Dónde se crean las variables para fusionar. 8) /pieza: seguir con las pantallas del "
+                  "CAPTCHA. 9) Corregir la fecha de nacimiento. 10) Aceptar las desviaciones de las pantallas. 11) /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "22 de noviembre de 2026",
+            "commits": ("Servidor: c8707a7 y 71a5af5 (rama api/captcha-turnstile, fusionados como #82 y #83). Pantallas: e122da0 "
+                        "(rama web/captcha-widget, fusionada como #85). Arreglo del aviso al cerrar sesión: cbfdecd (rama "
+                        "web/aviso-al-cerrar-sesion, fusionada como #84). Fecha de nacimiento: 1047b8c (rama "
+                        "web/fecha-de-nacimiento, sin fusionar). Fuera del repositorio: el widget de Cloudflare Turnstile y su "
+                        "Site Key."),
+            "archivos": [
+                ("backend/app/api/captcha.py (nuevo)", "pregunta a Cloudflare si el resultado del desafío vale, para la acción de cada ruta; rechaza con 400 si no vale y con 503 si no se puede comprobar; las llaves de prueba solo valen en la computadora de Sophia."),
+                ("backend/app/core/config.py, backend/app/main.py y backend/app/modules/accounts/router.py", "las dos variables nuevas, el registro del CAPTCHA en la aplicación, el CAPTCHA en cinco rutas (register, login, password-reset/request, resend-code y correct-unverified-email) y la ruta GET /auth/captcha que entrega la llave pública."),
+                ("web/assets/js/captcha-logica.js y captcha.js (nuevos)", "la lógica sin pantalla (acciones, avisos) y el módulo que dibuja el widget y espera el resultado."),
+                ("web/assets/js/cuenta.js, registro.js, recuperar.js, las 10 páginas y estilos.css", "cada zona del widget declara su acción en el HTML; las cinco acciones esperan el resultado y lo mandan en X-Captcha-Token."),
+                ("web/assets/js/cuenta.js (arreglo del aviso)", "el aviso «Iniciaste sesión como…» se quita al cerrar sesión, para que el nombre no se quede en la página."),
+                ("web/assets/js/registro-logica.js y registro.js (fecha)", "la fecha máxima de nacimiento es la de hoy donde está la persona, no la de UTC."),
+                ("docs/decisiones/0016-captcha-con-cloudflare-turnstile.md, backend/README.md, backend/.env.example, docs/despliegue-vercel-neon.md y tests/e2e/README.md", "dejan escrita la decisión, las variables y cómo se comprueba."),
+                ("tests/backend/test_captcha.py y tests/web, tests/e2e (captcha_logica.test.js, captcha.test.js, test_captcha_page.py, test_captcha_e2e.py, e2e_support.py)", "las pruebas del servidor con un Cloudflare de mentira que es un servidor HTTP local, las de la lógica y del módulo con un navegador simulado, las estáticas de las páginas y las de navegador con un widget de mentira."),
+            ],
+            "sugerencias": [
+                ("Atar el resultado del desafío a la acción de cada ruta.", "un resultado hecho para una acción no sirve en otra (aceptada y hecha)."),
+                ("Aceptar las llaves de prueba de Cloudflare solo en la computadora de Sophia.", "siempre pasan: puestas por error en Vercel dejarían el CAPTCHA apagado sin que nadie lo notara (aceptada y hecha)."),
+                ("Revisar en el widget de Cloudflare que el hostname sea integro-ruby.vercel.app.", "con otro hostname el desafío no carga en el sitio (aceptada; falta que Sophia lo confirme en Cloudflare)."),
+                ("Corregir en otra rama que app.js calcula «hoy» con la fecha en UTC, en dos lugares (líneas 92 y 186).", "es el mismo error de la fecha de nacimiento y pasadas las 18:00 en México \"hoy\" sería mañana. Hallazgo nuevo; no se tocó porque es otra pieza."),
+                ("Investigar en otra rama la prueba intermitente test_an_email_that_already_has_an_account_is_warned_and_offers_to_sign_in.", "a veces la ventana de iniciar sesión no se abre al dar clic en «Inicia sesión» desde el registro; ya fallaba antes de las pantallas del CAPTCHA (4 de 8 veces) y antes de las redirecciones (1 de 8). No se sabe si el defecto está en la prueba o en la página."),
+                ("Revisar con Valeria qué decir del uso de Cloudflare en el aviso de privacidad.", "Turnstile recibe datos del navegador de quien se registra o inicia sesión (sigue pendiente)."),
+            ],
+            "lineas": ("captcha.py: TurnstileVerifier, UnconfiguredVerifier, require_captcha(accion) y captcha_rejected_response. "
+                       "router.py: dependencies=[Depends(require_captcha(...))] en cinco rutas y captcha_config. config.py: "
+                       "turnstile_site_key y turnstile_secret_key. captcha.js: preparar y obtener. cuenta.js: "
+                       "peticionConCaptcha, zonaDelCaptcha y quitarAvisoDeInicio. registro.js y recuperar.js: peticionConCaptcha y la "
+                       "preparación del widget en cada paso. registro-logica.js: fechaDeHoy."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro local; no se probó contra el Cloudflare real ni en "
+                        "Vercel. Servidor: backend completo «1142 passed, 1 warning in 239.69s» con el primer commit y «1163 passed, "
+                        "1 warning in 252.93s» con el segundo (112 son de test_captcha.py); quitando el CAPTCHA a una ruta, fallaron 10. "
+                        "Pantallas: node «pass 190, fail 0» y pytest web «228 passed in 0.95s»; la corrida completa del navegador dio "
+                        "«1 failed, 453 passed, 21 errors in 1871.70s» (los 21 errores fueron de conexión con el navegador, no de "
+                        "aserción; la falla fue la prueba de la fecha de nacimiento, que ya fallaba en main) y, al volver a correr las "
+                        "del CAPTCHA y el registro, «1 failed, 74 passed in 137.97s»; cambiando a propósito la acción del registro en "
+                        "el HTML, fallaron 11 pruebas. Arreglo del aviso: «419 passed in 393.93s». Fecha de nacimiento: «1 failed, 479 passed in 461.81s (0:07:41)», con node «pass 192, fail 0» y pytest web «229 passed». La falla fue una prueba intermitente de registro, test_an_email_that_already_has_an_account_is_warned_and_offers_to_sign_in, que ya fallaba antes de este cambio, y al repetirla pasó y volvió a fallar; las demás pasaron, incluidas las cuatro nuevas de la fecha en el navegador; volviendo al cálculo con UTC, fallaron 4."),
+        },
+        "decisiones": [
+            ("39.1", "Pedir el resultado del CAPTCHA en el encabezado X-Captcha-Token y no como un campo del cuerpo.", "Queda en un solo lugar y no toca los formularios. Campo: qué hace.", "Aceptar", "Todas las desviaciones las acepto.", "Quedó como estaba (#82)."),
+            ("39.2", "Hacer el CAPTCHA en dos piezas apiladas: el servidor primero y las pantallas encima, para fusionarlas juntas.", "Una sola pieza mezclaba servidor y pantallas. Campo: cómo se sabrá que funciona.", "Aceptar", "Todas las desviaciones las acepto.", "Quedó como estaba (#82, #83 y #85)."),
+            ("39.3", "Si faltan las llaves, la API arranca y solo las cinco rutas del CAPTCHA contestan 503.", "Así /health sigue funcionando mientras se cargan las variables. Campo: qué hace.", "Aceptar", "Todas las desviaciones las acepto.", "Quedó como estaba (#82)."),
+            ("39.4", "Revisar el CAPTCHA antes que el formulario: un formulario vacío sin resultado contesta 400 y no 422.", "No ayudar a un programa a probar datos. Campo: qué hace.", "Aceptar", "Todas las desviaciones las acepto.", "Quedó como estaba (#82)."),
+            ("39.5", "Cambiar una prueba existente: test_serve_web.py probaba un POST a /auth/login y ahora usa /auth/verify-email.", "Esa prueba comprueba que las páginas no se tragan las peticiones, no el CAPTCHA. Campo: cómo se sabrá que funciona.", "Aceptar", "Todas las desviaciones las acepto.", "Quedó como estaba (#82)."),
+            ("39.6", "Agregar el ADR 0016 y actualizar la guía de Vercel.", "Un ADR deja constancia de la decisión; no estaba pedido. Campo: qué hace.", "Aceptar", "Todas las desviaciones las acepto.", "Quedó como estaba (#82)."),
+            ("39.7", "Sin interruptor: el CAPTCHA siempre está activo.", "Una variable mal escrita o borrada en Vercel dejaría el sistema sin protección sin que nadie lo notara. Campo: qué hace.", "Aceptar", "Sí, confirmo las dos.", "Se construyó sin interruptor (#82)."),
+            ("39.8", "Si Cloudflare no responde, rechazar la acción (503) en lugar de dejar pasar.", "Dejar pasar abriría la puerta justo cuando no hay filtro; el costo es que mientras Cloudflare cae nadie puede registrarse ni iniciar sesión. Campo: qué hace.", "Aceptar", "Sí, confirmo las dos.", "Se construyó así (#82)."),
+            ("39.9", "Una acción por ruta: el widget de cada pantalla declara la suya y la API la compara.", "Un resultado hecho para el registro no sirve en el inicio de sesión. Sugerencia. Campo: qué hace.", "Aceptar", "Las sugerencias también me gustaron, entonces las acepto.", "Se construyó (#83); con llaves de prueba no se compara porque Cloudflare no devuelve la acción."),
+            ("39.10", "Las llaves de prueba de Cloudflare solo se aceptan en la computadora de Sophia; en la nube se rechazan.", "Siempre pasan: puestas por error en Vercel dejarían el CAPTCHA apagado sin que nadie lo notara. Sugerencia. Campo: qué hace.", "Aceptar", "Las sugerencias también me gustaron, entonces las acepto.", "Se construyó (#83)."),
+            ("39.11", "Revisar en el widget de Cloudflare que el hostname sea integro-ruby.vercel.app.", "Con otro hostname el desafío no carga en el sitio. Sugerencia. Campo: cómo se sabrá que funciona.", "Aceptar", "Las sugerencias también me gustaron, entonces las acepto.", "Falta que Sophia lo confirme en Cloudflare."),
+            ("39.12", "Declarar la acción de cada zona una sola vez, en el HTML (data-captcha=\"register\"), y no también en el código.", "Se pasaba en dos lugares y una se ignoraba en silencio; se encontró cambiándola a propósito y viendo que las pruebas seguían pasando. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (#85)."),
+            ("39.13", "Arreglar en su propia rama el aviso «Iniciaste sesión como…», que dejaba el nombre en la página al cerrar sesión, y apilar la rama del CAPTCHA sobre ella.", "Una prueba de vistas fallaba en main desde la pieza anterior; era otra responsabilidad. Campo: cómo se sabrá que funciona.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (#84 y #85)."),
+            ("39.14", "Corregir en otra rama la fecha máxima de nacimiento, que usaba la fecha en UTC.", "Pasadas las 18:00 en México dejaba escribir un nacimiento en el futuro, y una prueba fallaba a esas horas. Campo: qué hace.", "Aceptar", "Sí, corrige la fecha de nacimiento.", "Se corrigió en la rama web/fecha-de-nacimiento (1047b8c)."),
+            ("39.15", "Poner el CAPTCHA en cinco rutas, aunque se habló de cuatro acciones.", "La cuarta acción, pedir otro código de verificación, incluye la corrección del correo, que es una ruta aparte (correct-unverified-email). No se presentó como desviación. Campo: qué hace.", "Aceptar", "Acepto 39.15.", "Quedó en cinco rutas (#82)."),
+        ],
+    },
 ]
