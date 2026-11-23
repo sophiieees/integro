@@ -248,3 +248,10 @@ def test_the_texts_are_formal_but_of_tu():
     for usted in ("Escriba", "Intente", "Revise", "Vuelva", "tiene una cuenta"):
         assert usted not in LOGIC and usted not in SCREEN and usted not in PAGE, usted
     assert "Te enviamos un código de 6 dígitos a " in LOGIC
+
+
+def test_the_birth_date_limit_is_the_local_date_of_the_person_never_the_utc_one():
+    code = re.sub(r"/\*.*?\*/", "", SCREEN, flags=re.S)
+
+    assert 'campo("birth_date").max = LOGICA.fechaDeHoy(new Date());' in code
+    assert "toISOString" not in code

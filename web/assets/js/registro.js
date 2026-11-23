@@ -166,8 +166,8 @@
     if (codigo) campo("marcacion").value = codigo;
   });
 
-  /* Nadie nace en el futuro. */
-  campo("birth_date").max = new Date().toISOString().slice(0, 10);
+  /* Nadie nace en el futuro: la fecha máxima es la de hoy donde está la persona, no la de UTC. */
+  campo("birth_date").max = LOGICA.fechaDeHoy(new Date());
 
   /* ---------- El indicador de la contraseña ---------- */
 
