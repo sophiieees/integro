@@ -2664,10 +2664,80 @@ PROMPTS = [
         "decisiones": [
             ("43.1", "Incorporar la entrada 40 del otro chat a main, conservando las dos entradas, en lugar de esperar a que el otro chat la confirme.", "Quedó sin confirmar en su carpeta, en una rama local que nunca se subió, y por eso no aparecía en GitHub. Campo: qué hace.", "Aceptar", "«Mejor resuélvelo conservando ambas entradas.»", "Se copió tal cual entre la 39 y la 41 (a94e0f9, PR #91)."),
             ("43.2", "Redactar el contexto de cada prompt en primera persona.", "Sophia corrigió que el contexto del prompt 42 estaba en tercera persona; las entradas 41, 39 y 40 también lo estaban. Campo: qué hace.", "Aceptar", "«El contexto… se redacta en primera persona.» Después pidió pasar la 41, el 39 y el 40.", "La 41 en el PR #91 (f5ef60b); la 39 y la 40 en este registro."),
-            ("43.3", "Dividir el punto 3 en siete subpasos y comenzar por el 3.1: 3.1 perfil de anfitrión; 3.2 Authenticator, activar y comprobar; 3.3 Authenticator al iniciar sesión; 3.4 pantallas del anfitrión; 3.5 verificación de identidad con el proveedor; 3.6 recuperar el acceso; 3.7 huella de identidad.", "Los cuatro primeros no dependen del proveedor ni de Valeria; los tres últimos sí. Campo: qué hace.", "Pendiente", "", "Sin cambios. Sophia lo confirmará al dar la pieza en el chat de programación."),
+            ("43.3", "Dividir el punto 3 en siete subpasos y comenzar por el 3.1: 3.1 perfil de anfitrión; 3.2 Authenticator, activar y comprobar; 3.3 Authenticator al iniciar sesión; 3.4 pantallas del anfitrión; 3.5 verificación de identidad con el proveedor; 3.6 recuperar el acceso; 3.7 huella de identidad.", "Los cuatro primeros no dependen del proveedor ni de Valeria; los tres últimos sí. Campo: qué hace.", "Aceptar", "«Para la decisión 43.7 dala por confirmada en esta pieza.»", "Sophia dijo 43.7, que no existe; la IA había preguntado por la 43.3, los siete subpasos, y así se anota. Dio la pieza 3.1 y nombró la 3.3 y la 3.5 con esa numeración. Al revisar la bitácora lo confirmó: «Sí es correcto, yo me equivoqué.»"),
             ("43.4", "El punto 3 solo lleva las pantallas del anfitrión y la estructura de qué ve cada tipo de persona; el rediseño completo (estilo Airbnb en computadora, estilo Instagram en celular) va con los puntos 4 y 5.", "El rediseño gira en torno a las propiedades y la búsqueda, que son esos puntos. Campo: qué hace.", "Aceptar", "«Sí, me parece bien.»", "Sin cambios en el código."),
             ("43.5", "La identidad del huésped se verifica al reservar, así que va con el punto 6; el copropietario y el coanfitrión verificados van con el punto 4.", "Ocurren al reservar y al registrar una propiedad, que todavía no existen. Campo: qué hace.", "Pendiente", "", "Sin cambios."),
             ("43.6", "Avisar al otro chat que descarte su cambio sin confirmar de la entrada 40, con el texto listo para pegar.", "Si hace commit de esa entrada, quedaría duplicada. Campo: qué hace.", "Aceptar", "«Avisarle al otro chat que descarte el cambio sin confirmar de bitacora_datos.py en su rama local docs/bitacora-40, para que no duplique la 40.»", "La IA no pudo enviarlo; Sophia lo pega en el chat de programación."),
+        ],
+    },
+    # ------------------------------------------------------------------ 44
+    {
+        "n": 44,
+        "titulo": "Pieza 3.1: perfil de anfitrión",
+        "fecha": "24 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("La entrada 40 de la bitácora ya está en main (PR #91). Lo decidido para la pieza: una persona con "
+                     "sesión y correo verificado puede pedir ser anfitriona y queda con un perfil de nivel «nuevo», y puede "
+                     "ver su propio perfil. La tabla host_profiles ya existe (nivel nuevo, verificado o suspendido; la persona "
+                     "lee lo suyo y solo el sistema escribe). Exigir el Authenticator es la pieza 3.3 y la verificación de "
+                     "identidad es la 3.5, así que no van aquí. Sobre la pregunta del administrador: la vista de administrador "
+                     "es la que vamos a tener Shakti, Valeria y yo, para ver el funcionamiento, hacer pruebas de anfitrión, de "
+                     "huésped y de visitante, y revisar registros como los de la base de datos, por ejemplo cuántos usuarios "
+                     "tiene; es una vista diferente y un poco más compleja, porque somos el administrador de la plataforma. "
+                     "Valeria, por ejemplo, tiene una cuenta en Airbnb. Ya tengo la aplicación de Authenticator."),
+        "tarea": ("1) Descarta tu cambio sin confirmar de herramientas/bitacora/bitacora_datos.py con git restore, haz git "
+                  "switch main y git pull, y borra la rama local con git branch -d docs/bitacora-40; no hagas commit de esa "
+                  "entrada, porque quedaría duplicada. 2) /pieza 3.1, perfil de anfitrión (punto 3): antes lee CLAUDE.md, "
+                  "docs/database/data-model.md y las entradas 41, 42 y 43 de la bitácora. 3) Escribe la especificación en "
+                  "los tres campos y confírmala conmigo antes de programar; pregúntame lo que no esté claro. 4) Respondo las "
+                  "preguntas: la 1, la 2 y la 3 las acepto; la 4, lo ideal es aceptar términos del anfitrión o declarar que "
+                  "es dueña o copropietaria, pero lo tenemos que revisar con Valeria porque es más parte legal, así que "
+                  "déjalo pendiente; la 5, nosotros sí podemos ser anfitriones; la 6, sí estoy de acuerdo; la 7, lo dejamos "
+                  "así, que se corte de 30 a 7 días sin uso; y la decisión 43.7 dala por confirmada en esta pieza. "
+                  "5) Acepto las desviaciones. 6) /bitacora."),
+        "salida": ("La especificación en tres campos (qué hace, qué datos necesita, cómo se sabrá que funciona), "
+                   "confirmada antes de programar; después, el desglose de cierre de CLAUDE.md."),
+        "respuesta": {
+            "fecha": "24 de noviembre de 2026",
+            "commits": ("5fe7daa (rama api/host-profile, desde main). Sophia la fusionó (#93, 54525ad). La limpieza de la "
+                        "entrada 40 no dejó commits: se descartó el cambio sin confirmar y se borró la rama local "
+                        "docs/bitacora-40."),
+            "archivos": [
+                ("backend/app/modules/hosts/profile.py (nuevo)", "la lógica: crear el perfil con nivel new como el sistema, entregar el que ya existe sin cambiarlo y leerlo con el papel de la persona, para que la base solo le dé su fila."),
+                ("backend/app/modules/hosts/router.py y __init__.py (nuevos)", "las rutas POST y GET /api/v1/host-profile y sus respuestas."),
+                ("backend/app/api/v1/router.py", "registra las rutas del módulo nuevo."),
+                ("tests/backend/test_host_profile.py (nuevo)", "las pruebas de la pieza, contra la base integro local."),
+                ("backend/README.md, docs/database/data-model.md y docs/diseno/vistas.md", "las dos rutas, qué significa cada nivel y quién crea la fila, y que el perfil ya no lo crea Verificación sino la persona al pedirlo."),
+            ],
+            "sugerencias": [
+                ("Decidir qué puede hacer un perfil suspended antes de que existan rutas de anfitrión con datos.", "hoy cualquier perfil pasa las rutas de anfitrión, también uno suspendido."),
+                ("Antes de la pieza 3.2, crear la llave de cifrado, guardarla en KeePass y en las variables de entorno, e instalar una aplicación Authenticator.", "el Authenticator guarda su clave cifrada y ningún secreto va en el repositorio. Sophia respondió que ya tiene la aplicación; la llave de cifrado sigue pendiente."),
+            ],
+            "lineas": ("profile.py: HostProfile, RequestOutcome, request_host_profile y read_host_profile. router.py: "
+                       "request_profile y my_profile. v1/router.py: dos líneas. README.md: una fila en Estructura y dos en Rutas. "
+                       "data-model.md: dos líneas bajo host_profiles. vistas.md: dos líneas."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro local, con backend/.venv; no se probó en Vercel. "
+                        "Backend completo: «1268 passed, 1 warning in 273.74s», 33 de ellas nuevas en test_host_profile.py. "
+                        "En la primera corrida del archivo nuevo: «1 failed, 32 passed»; la falla era de la prueba, que contaba "
+                        "las consultas al CAPTCHA del registro y del inicio de sesión que preparaban el caso, y se corrigió la "
+                        "prueba, no el código. Quitando la revisión del correo, haciendo que volver a pedirlo reiniciara el "
+                        "nivel y leyendo el perfil sin los permisos de la persona, fallaron 6 pruebas; el archivo se restauró. "
+                        "Dos peticiones al mismo tiempo no se probaron con concurrencia real, porque las pruebas usan una sola "
+                        "conexión que se deshace: se probó que la base rechaza una segunda fila para la misma persona y que la "
+                        "función entrega la existente. No se corrieron las pruebas de navegador ni las de web: no se tocó "
+                        "ninguna pantalla, y backend/.venv no tiene websocket-client."),
+        },
+        "decisiones": [
+            ("44.1", "La pieza 3.1 es solo la API; el botón «Conviértete en anfitrión» va con las pantallas del anfitrión (3.4).", "Las pantallas son otro subpaso. Campo: qué hace.", "Aceptar", "«La 1, la 2, 3. Las acepto.»", "Se construyó solo la API."),
+            ("44.2", "Si ya es anfitriona y lo vuelve a pedir, responde 200 con su perfil y no un error 409.", "Un doble clic o un reintento no debe dar error. Campo: qué hace.", "Aceptar", "«La 1, la 2, 3. Las acepto.»", "Así quedó (5fe7daa)."),
+            ("44.3", "Ver su perfil muestra solo el nivel y la fecha en que se creó.", "Los últimos 4 dígitos de la CLABE estarían vacíos hasta que existan los pagos, y la cuenta de Stripe no debe salir. Campo: qué datos necesita.", "Aceptar", "«La 1, la 2, 3. Las acepto.»", "Así quedó (5fe7daa)."),
+            ("44.4", "No pedir nada al solicitar el perfil: ni aceptar términos de anfitrión ni declarar que es dueña o copropietaria.", "La propiedad se comprueba por cada propiedad, en el punto 4; si Valeria quiere una aceptación, cambia la pieza. Campo: qué datos necesita.", "Revisar", "«Lo ideal es sí aceptar términos del anfitrión o declarar que es dueña o copropietaria. Sin embargo, lo tenemos que revisar con Valeria porque es más parte legal… Entonces déjalo pendiente.» Al revisar la bitácora: «Sí es Revisar.»", "La pieza se construyó sin pedir nada; la revisa Valeria."),
+            ("44.5", "Un administrador puede pedir ser anfitrión, sin caso especial.", "docs/diseno/vistas.md dice que son dos permisos distintos. Campo: qué hace.", "Aceptar", "«¿Y nosotros podemos ser anfitriones? Sí, sí podemos.»", "Así quedó, con su prueba (5fe7daa)."),
+            ("44.6", "La ruta es /api/v1/host-profile, en un módulo nuevo llamado hosts.", "La arquitectura no tenía un módulo para el perfil de anfitrión. Campo: qué hace.", "Aceptar", "«El punto 6 sí estoy de acuerdo.»", "Así quedó (5fe7daa)."),
+            ("44.7", "Dejar que la sesión abierta se acorte de 30 a 7 días sin uso al volverse anfitriona, como ya lo hace el código.", "Es la regla del ADR 0014 y se activa sola al tener perfil; la alternativa era no cambiarla hasta que tenga propiedades. Campo: qué hace.", "Aceptar", "«Lo dejamos así. De que se corta de 30 a 7 días sin uso.»", "Sin cambios en el código; se agregó una prueba."),
+            ("44.8", "Corregir docs/diseno/vistas.md, que decía que el perfil de anfitrión se crea después, en Verificación.", "Con esta pieza lo crea la persona al pedirlo (42.2). La IA lo avisó antes de construir y Sophia no respondió ese punto. Campo: qué hace.", "Aceptar", "«Acepto las desviaciones.»", "Quedó como estaba (5fe7daa)."),
+            ("44.9", "Agregar dos líneas a docs/database/data-model.md: qué significa cada nivel y quién crea la fila.", "El modelo no cambió; faltaba decirlo. Campo: qué datos necesita.", "Aceptar", "«Acepto las desviaciones.»", "Quedó como estaba (5fe7daa)."),
+            ("44.10", "Tres pruebas fuera de la lista: el perfil no se puede modificar ni borrar por la API (405), la dirección no acepta el id de otra persona, y pedirlo no pasa por el CAPTCHA.", "Son límites de la misma pieza. Campo: cómo se sabrá que funciona.", "Aceptar", "«Acepto las desviaciones.»", "Quedaron como estaban (5fe7daa)."),
         ],
     },
 ]
