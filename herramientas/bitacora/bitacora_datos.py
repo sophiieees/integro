@@ -2489,8 +2489,8 @@ PROMPTS = [
             ("41.9", "Guardar el documento de la propiedad, cifrado, y no la identificación; acceso solo del administrador con registro de quién lo abrió y borrado al plazo que indique Valeria.", "Sophia quiere respaldo legal; la regla de CLAUDE.md solo cubre identificaciones y la ley pide tratar lo estrictamente necesario. Campo: qué datos necesita.", "Aceptar", "«Guardar el documento de la propiedad cifrado, sí.»", "Falta decidir dónde se guarda y el plazo de borrado."),
             ("41.10", "Verificar la propiedad por capas, como lo dice la arquitectura: documento cruzado con la identidad, dirección contra el pin, padrón local donde aplique y Registro Público solo por excepción.", "Google Maps comprueba la ubicación pero no que sea dueño. Campo: cómo se sabrá que funciona.", "Aceptar", "«Verificación de propiedad por capas, sí. Eso sí se va a hacer tal como lo menciona la arquitectura.»", "Sin cambios en la arquitectura."),
             ("41.11", "Segundo factor con una aplicación Authenticator para los anfitriones.", "Reciben ingresos y administran propiedades; la arquitectura ya pide un segundo factor para anfitriones. Campo: qué hace.", "Aceptar", "«Vamos a usar Authenticator para el anfitrión.»", "Va en el punto 3."),
-            ("41.12", "El anfitrión entra con contraseña y Authenticator, en lugar del código por correo.", "Es más seguro, no depende de que llegue un correo y quita un paso; cambia el ADR 0014. Campo: qué hace.", "Pendiente", "", "Sin cambios. Sophia: «está bien cómo lo pusiste. O sea, déjalo pendiente»."),
-            ("41.13", "Si el anfitrión pierde el celular: diez códigos de recuperación de un solo uso y, si pierde también esos, ayuda de una persona con reverificación por prueba de vida, no por correo.", "Sin la aplicación no puede entrar a una cuenta con ingresos. Campo: qué hace.", "Pendiente", "", "Sin cambios."),
+            ("41.12", "El anfitrión entra con contraseña y Authenticator, en lugar del código por correo.", "Es más seguro, no depende de que llegue un correo y quita un paso; cambia el ADR 0014. Campo: qué hace.", "Revisar", "«El código de la aplicación para la vista de anfitrión se le debe sumar… necesito que tenga algo más fuerte que el código del correo.»", "Se suma al código del correo en lugar de reemplazarlo: el anfitrión entra con contraseña, código del correo y Authenticator."),
+            ("41.13", "Si el anfitrión pierde el celular: diez códigos de recuperación de un solo uso y, si pierde también esos, ayuda de una persona con reverificación por prueba de vida, no por correo.", "Sin la aplicación no puede entrar a una cuenta con ingresos. Campo: qué hace.", "Aceptar", "«Sí, me sirve tu propuesta.»", "Con el ajuste de Sophia y de la IA: acceso a las 2 horas de la reverificación y dinero congelado 24 horas, ambos en configuración."),
             ("41.14", "Probar los pagos con el modo de prueba de Stripe, que no mueve dinero real, en lugar de pesos reales.", "Sophia propuso pruebas de 10 pesos; los pesos reales solo existen en modo real. Campo: cómo se sabrá que funciona.", "Aceptar", "«Sí se puede probar en el modo prueba de Stripe.»", "Sin cambios en el código."),
             ("41.15", "Frontend: en el celular, desplazamiento tipo Instagram y no TikTok; en la computadora, estilo Airbnb, con barra de navegación, buscador, imagen y sugeridos, y al señalar una propiedad se amplía y sus fotos pasan solas.", "Sophia lo describió así; en el celular no hay cursor, así que las fotos se animan cuando la propiedad queda a la vista. Campo: qué hace.", "Aceptar", "«En el celular va a ser tipo Instagram y en [la computadora] estilo Airbnb.» Confirmó que fue un error de pronunciación.", "Para la pieza de frontend; la vista del administrador es distinta y no necesita tanto desplazamiento."),
             ("41.16", "Recomendados con reglas simples (más reservadas, mejor calificadas, cercanas), sin inteligencia artificial en la primera versión.", "La tabla de eventos de uso todavía no existe y una IA agrega costo y complejidad. Campo: qué hace.", "Aceptar", "«En la primera revisión, sí, aún no vamos a meter [IA]. Yo creo que muchos de los procesos que estamos viendo se pueden hacer con IA, pero de momento vamos a dejarlas sin IA.»", "Sin IA por ahora; queda abierta para más adelante."),
@@ -2499,6 +2499,63 @@ PROMPTS = [
             ("41.19", "Calcular el total del cotizador en el servidor y dejar el del navegador solo como vista previa.", "La arquitectura y las reglas de seguridad piden que el total lo calcule el servidor. Campo: qué hace.", "Pendiente", "", "Sin cambios."),
             ("41.20", "Fotos con movimiento de 3 a 5 segundos, como las fotos en vivo del teléfono, y una columna en property_photos que diga si es foto, foto con movimiento o video.", "Pesan mucho menos que un video y cuesta una columna agregarla al diseñar el grupo 2. Campo: qué datos necesita.", "Pendiente", "", "Sophia preguntó por este tipo de animación; todavía no decide."),
             ("41.21", "Repartir el dinero entre propietarios por porcentaje, por ejemplo 60 % y 40 %, cada uno con su cuenta, todo firmado.", "Idea de Sophia para el futuro; hoy el dinero va a un solo titular. Campo: qué hace.", "Pendiente", "", "Sophia: «es más legal que de programación, entonces queda como pendiente»; la revisa Valeria."),
+        ],
+    },
+    # ------------------------------------------------------------------ 42
+    {
+        "n": 42,
+        "titulo": "Authenticator para anfitriones, recuperar el acceso y pagar para salir primero",
+        "fecha": "24 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Leí la bitácora 41 y la fusioné. Sobre pagar para salir primero en los recomendados, en cuanto a "
+                     "monetización nos conviene más hacerlo como Instagram, TikTok o YouTube: el anfitrión paga para salir en "
+                     "recomendados y es más probable que el algoritmo lo recomiende; si no paga, sucede menos. Del "
+                     "Authenticator: lo uso en la universidad, donde tengo información de pagos sensibles. Entro con mi correo "
+                     "institucional con matrícula, mi contraseña, la verificación y aparte el Authenticator, que me piden "
+                     "cuando se cumple el periodo de inactividad y también cada cierto número de días aunque tenga actividad. "
+                     "Necesito verificar que el correo que pone el anfitrión es de él, y por eso va el código del correo, pero "
+                     "además necesito algo más fuerte que ese código. Sobre perder el celular: WhatsApp y Authenticator no se "
+                     "recuperan sin el celular, pero el correo sí, y por eso verificar que el correo es suyo es muy importante. "
+                     "Si pierde también el celular, tendría que contactarnos, revisaríamos el caso, eliminaríamos su teléfono y "
+                     "su correo, se le cancelaría el servicio temporalmente y tendría que hacer otra cuenta."),
+        "tarea": ("1) Responder si un anfitrión puede pagar para salir primero en los recomendados: sí. 2) Aceptar dejarlo en "
+                  "el punto 7 como producto aparte de la membresía. 3) ¿Qué del Authenticator y del perfil del anfitrión no "
+                  "depende de mí ni de Valeria? 4) El código de la aplicación se suma al código del correo para la vista de "
+                  "anfitrión; no lo reemplaza. 5) ¿Qué propones si el anfitrión pierde el celular y cómo ves mi idea? "
+                  "6) El perfil del anfitrión: una persona con sesión y correo verificado lo crea, lo ve, y el sistema le exige "
+                  "activar el Authenticator; me gusta esa arquitectura. 7) Acepto tu propuesta de recuperación; 30 días para "
+                  "que vuelva a pedir el Authenticator; dos horas de espera, ¿estaría bien? 8) Sí, déjalo así (acceso a las 2 "
+                  "horas y dinero congelado 24 horas). 9) /bitacora."),
+        "salida": ("Que la IA explique qué depende de quién, evalúe mi idea y proponga; después, registrar las decisiones, "
+                   "con el desglose de cierre de CLAUDE.md."),
+        "respuesta": {
+            "fecha": "24 de noviembre de 2026",
+            "commits": ("El commit de este registro, en la rama docs/bitacora-42. El número 40 sigue sin aparecer en GitHub: "
+                        "lo tiene el otro chat en la rama docs/bitacora-40 de la carpeta de trabajo."),
+            "archivos": [
+                ("herramientas/bitacora/bitacora_datos.py", "esta entrada con cinco decisiones, y las filas 41.12 y 41.13, que pasan de Pendiente a Revisar y a Aceptar."),
+            ],
+            "sugerencias": [
+                ("Guardar los 30 días, las 2 horas de espera y las 24 horas del dinero en una configuración, no en el código.",
+                 "así se cambian sin reprogramar, como los días de la membresía."),
+                ("Revisar con Valeria la etiqueta «patrocinado» y el uso de la huella de identidad en la recuperación del acceso.",
+                 "la huella sigue sujeta a revisión legal y, sin ella, la recuperación pasa por una persona del equipo con espera de 24 horas."),
+                ("Empezar el chat de programación por el Authenticator y el perfil de anfitrión.",
+                 "no dependen del proveedor de identidad ni de la revisión de Valeria, y las filas 41.12 y 41.13 ya están decididas."),
+            ],
+            "lineas": ("bitacora_datos.py: la entrada 42 con cinco filas de decisiones, y las filas 41.12 y 41.13 con su "
+                       "veredicto, razón y cambio."),
+            "pruebas": ("No hay pruebas automáticas: no cambió código de la aplicación. Se leyó origin/main con git: el PR #89 "
+                        "(bitácora 41) está fusionado, el archivo de la bitácora carga con 40 entradas y las últimas son la 39 "
+                        "y la 41. De la arquitectura se leyó que el TOTP es obligatorio para anfitriones y panel, y del modelo "
+                        "de datos que host_profiles ya existe con nivel, cuenta de Stripe y últimos 4 dígitos de la CLABE."),
+        },
+        "decisiones": [
+            ("42.1", "Pagar para salir primero en los recomendados como producto aparte de la membresía, después del punto 7, con una etiqueta «patrocinado» que revise Valeria.", "Necesita pagos y una regla nueva en los recomendados; sin comisión por reserva es otra forma de ingreso y el plan de precios sigue pendiente en 0.8. Campo: qué hace.", "Aceptar", "«Se queda y acepto la propuesta de dejarlo del punto 7 como producto aparte de la membresía.» Antes: en monetización «nos conviene más».", "Sin cambios en el código; queda para después del punto 7."),
+            ("42.2", "Perfil de anfitrión: lo crea una persona con sesión y correo verificado, lo ve, y el sistema le exige activar el Authenticator.", "La tabla host_profiles ya existe y no depende del proveedor de identidad ni de Valeria. Campo: qué hace.", "Aceptar", "«Es arquitectura del perfil del anfitrión, me gusta.»", "Es la primera pieza que la IA sugiere para el chat de programación."),
+            ("42.3", "Si el anfitrión pierde el celular, recuperar la misma cuenta: diez códigos de recuperación; si no los tiene, reverificación con prueba de vida iniciada desde el correo; y si perdió también el correo, ayuda del equipo. Sin cancelar el servicio ni pedir una cuenta nueva.", "Si el correo solo basta, el Authenticator deja de ser más fuerte que el correo; y una cuenta nueva pierde propiedades, reseñas y membresía, y la huella de identidad la marcaría como duplicada. Campo: qué hace.", "Aceptar", "«Sí, me sirve tu propuesta.»", "Sustituye la idea de Sophia de cancelar el servicio y hacer otra cuenta; se conserva la cuenta y, si sospechan un robo, se cierran las sesiones."),
+            ("42.4", "El Authenticator vuelve a pedirse cada 30 días de sesión con actividad, en una configuración.", "Sophia describió que en la universidad se pide tras inactividad y cada cierto número de días con actividad; en anfitriones ese tope no existe. Campo: qué hace.", "Aceptar", "«30 días para que vuelva a pedir el Authenticator, está bien.»", "El número vive en una configuración."),
+            ("42.5", "Tras la reverificación con prueba de vida y huella coincidente, dar acceso a las 2 horas y mantener congelados los cobros y el cambio de cuenta bancaria 24 horas.", "Dos horas solas son pocas si alguien tiene el correo y borra el aviso; la barrera fuerte es la prueba de vida, y lo que más daño haría es mover dinero. Campo: cómo se sabrá que funciona.", "Aceptar", "«Sí, déjalo así.»", "Las dos horas las propuso Sophia; las 24 horas del dinero y la separación son de la IA. Ambas cifras en configuración."),
         ],
     },
 ]
