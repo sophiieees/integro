@@ -18,7 +18,7 @@ El diseño de las pantallas es de Sophia (ADR 0008). Aquí se define qué hay en
 | Administrador | Solo tres personas: Shakti, Valeria y Sophia | `/auth/me` con `is_admin: true`, que sale de la tabla `admins` |
 
 Reglas que ya están decididas y se mantienen:
-- Un solo registro sirve para huésped y para anfitrión; el perfil de anfitrión se crea después, en Verificación.
+- Un solo registro sirve para huésped y para anfitrión; el perfil de anfitrión se crea después, cuando la persona lo pide (`POST /api/v1/host-profile`, pieza 3.1, decisión del 24 de noviembre de 2026). Queda con nivel `new`; la verificación de identidad lo pasa a `verified` (pieza 3.5).
 - Los administradores se dan de alta solo a mano, en pgAdmin; la API nunca escribe en `admins`.
 - Un administrador no es anfitrión por serlo, ni al revés: son dos permisos distintos y la API los revisa por separado.
 - La sesión del anfitrión dura 7 días sin uso; la del administrador, 30 minutos sin uso y 12 horas como tope, en todo el sitio (ADR 0014; el tope ya existe desde el 21 de noviembre de 2026). El segundo factor es obligatorio para anfitriones y panel (arquitectura, sección 7). **El segundo factor todavía no existe**: una ruta de administrador con datos no se publica hasta tenerlos.
@@ -63,7 +63,7 @@ Lo que Sophia pidió, tal cual, para la vista principal: una cabecera con «Todo
 - **Reseñas:** el anfitrión ve las reseñas que le dejan los clientes y puede responder con un agradecimiento o una disculpa. Más adelante, una inteligencia artificial le resumirá las reseñas y le dará sugerencias. Las reseñas también aparecen en la ventana del cliente.
 - Sigue pudiendo reservar como cliente: una sola cuenta puede ser huésped y anfitrión (decisión del modelo de datos). Por eso su menú trae «Mis reservas» y «Buscar hospedaje».
 - Sus cobros y su membresía viven en su vista, no en la del cliente.
-- Nadie tiene todavía la vista de anfitrión de verdad: el perfil de anfitrión lo crea Verificación, que todavía no existe.
+- El perfil de anfitrión lo crea la persona al pedirlo, con sesión y correo comprobado (pieza 3.1). La API ya lo permite; el botón de la web que lo pide va con las pantallas del anfitrión (pieza 3.4), así que desde la web todavía nadie llega a esta vista.
 
 ### Administrador
 - Es la vista de mantenimiento de las páginas y de la plataforma: cola de verificaciones, casos, suspender y reactivar, cargos con cuatro ojos, bitácora (módulo Admin de la arquitectura). Su página es `administracion.html`, con una sección por cada una; todas dicen «Próximamente».
