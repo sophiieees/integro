@@ -162,8 +162,9 @@ Lo hace Sophia en vercel.com, con el proyecto que ya publica la web. La IA no pu
    | `TRUST_PROXY_HEADERS` | `true` |
    | `TURNSTILE_SITE_KEY` | la llave pública del widget (desde la pieza del CAPTCHA; ver 5 bis) |
    | `TURNSTILE_SECRET_KEY` | la llave secreta del widget, como Secret (ver 5 bis) |
+   | `DATA_ENCRYPTION_KEY` | la llave maestra de cifrado, de al menos 43 caracteres, como Secret. Distinta a la de tu computadora (desde la pieza 3.2, ADR 0018) |
 
-   Para las que son secretas (`DATABASE_PASSWORD`, `CODE_HASH_SECRET` y `TURNSTILE_SECRET_KEY`), activar la opción **Sensitive** si Vercel la ofrece.
+   Para las que son secretas (`DATABASE_PASSWORD`, `CODE_HASH_SECRET`, `TURNSTILE_SECRET_KEY` y `DATA_ENCRYPTION_KEY`), activar la opción **Sensitive** si Vercel la ofrece.
 2. **Protección.** Settings, Deployment Protection: **Vercel Authentication** encendida. Si Vercel da a elegir qué cubre, elegir que cubra todos los despliegues, producción incluida. **(sin verificar cómo se llama cada opción en la pantalla)**
 3. **Conectar la rama.** Cuando la rama `api/vercel-ready` esté en GitHub, Vercel crea una previsualización sola. Se abre desde la pestaña Deployments; hay que iniciar sesión en Vercel para verla.
 4. **Lista de pruebas a mano en la previsualización:**

@@ -174,7 +174,7 @@ def test_the_time_a_code_lasts_is_said_in_minutes_rounded_up(seconds, text):
 
 def test_the_texts_are_in_formal_tu_never_usted():
     messages = [code_message(p, "123456", 300) for p in ("verify_email", "login", "password_reset")]
-    messages += [notice_message("failed_logins", NOTICE_DETAILS), notice_message("password_changed", NOTICE_DETAILS)]
+    messages += [notice_message(kind, NOTICE_DETAILS) for kind in ("failed_logins", "password_changed", "two_factor_enabled")]
 
     for message in messages:
         assert not re.search(r"\busted(es)?\b", message.text + message.subject, re.I)
@@ -203,6 +203,17 @@ def test_the_password_changed_notice_says_everything_was_closed_and_how_to_recov
     assert "¿Olvidaste tu contraseña?" in message.text
 
 
+def test_the_authenticator_notice_says_when_and_from_where_and_carries_no_key_or_code():
+    message = notice_message("two_factor_enabled", NOTICE_DETAILS)
+
+    assert message.subject == "Activaste el Authenticator en tu cuenta de Íntegro"
+    for text in (message.text, message.html):
+        assert "El Authenticator de tu cuenta de Íntegro se activó el 2026-11-22 18:30:05 UTC." in text
+        assert "Navegador: Firefox/140." in text and "Dirección: 203.0.113.7." in text
+        assert "Si no fuiste tú, cambia tu contraseña de inmediato." in text
+    assert "secret" not in message.text.lower() and "otpauth" not in message.text.lower()
+
+
 def test_what_is_unknown_is_said_so():
     message = notice_message("password_changed", {"at": NOTICE_DETAILS["at"]})
 
@@ -212,7 +223,7 @@ def test_what_is_unknown_is_said_so():
 def test_what_comes_from_outside_is_escaped_in_the_html_and_left_alone_in_the_text():
     hostile = {**NOTICE_DETAILS, "user_agent": '<script>alert("hola")</script>', "ip_address": "<img src=x onerror=1>"}
 
-    for kind in ("failed_logins", "password_changed"):
+    for kind in ("failed_logins", "password_changed", "two_factor_enabled"):
         message = notice_message(kind, hostile)
         assert "<script>" not in message.html and "<img" not in message.html
         assert "&lt;script&gt;" in message.html and "&lt;img" in message.html
@@ -237,7 +248,7 @@ def test_the_development_console_says_the_same_notices_as_the_email():
     from app.notifications.console import KIND_TEXTS, failed_logins_text
 
     assert failed_logins_text(NOTICE_DETAILS) in notice_message("failed_logins", NOTICE_DETAILS).text
-    assert set(KIND_TEXTS) == {"failed_logins", "password_changed"}
+    assert set(KIND_TEXTS) == {"failed_logins", "password_changed", "two_factor_enabled"}
     assert isinstance(ConsoleCodeSender(), ConsoleCodeSender)
 
 

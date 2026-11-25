@@ -114,6 +114,15 @@ class Settings(BaseSettings):
     turnstile_site_key: str | None = None
     turnstile_secret_key: SecretStr | None = None
 
+    # Llave maestra para cifrar datos sensibles con AES-256-GCM (app/core/encryption.py); hoy, la clave del
+    # Authenticator. Al menos 43 caracteres al azar. Vive solo en las variables de entorno, nunca en el repositorio ni
+    # en la base, y cada ambiente tiene la suya. Si falta, la API arranca y lo que necesita cifrar contesta 503; si
+    # viene pero es más corta, el backend no arranca y lo dice.
+    data_encryption_key: SecretStr | None = Field(default=None, min_length=43)
+    # Authenticator (bitácora 41.11 y la pieza 3.2): a tantos códigos incorrectos seguidos, la persona espera esos minutos.
+    two_factor_max_attempts: int = Field(default=5, ge=1)
+    two_factor_wait_minutes: int = Field(default=15, ge=1)
+
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:
     """Lee y valida la configuración.

@@ -21,6 +21,9 @@ argon2-cffi==25.1.0
 # Husos horarios de cada país, para contar la edad con la fecha del país de la
 # persona. Publicada el 28 de octubre de 2026.
 tzdata==2026.6
+# Cifrado AES-256-GCM de los datos sensibles (la clave del Authenticator): la biblioteca estándar de Python no lo
+# trae. Publicada el 30 de septiembre de 2026, comprobada en PyPI el 25 de noviembre de 2026.
+cryptography==50.0.2
 # Esquemas de entrada y de respuesta. FastAPI la instala sola, pero tomaría la
 # 2.14.3, que tiene 11 días. Se fija la anterior, publicada el 29 de octubre de 2026.
 pydantic==2.14.2

@@ -47,6 +47,9 @@ SETTINGS_VARIABLES = (
     "TURNSTILE_SECRET_KEY",
     "EMAIL_API_KEY",
     "EMAIL_FROM",
+    "DATA_ENCRYPTION_KEY",
+    "TWO_FACTOR_MAX_ATTEMPTS",
+    "TWO_FACTOR_WAIT_MINUTES",
 )
 
 # Llave inventada, solo para pruebas que no usan la configuración real.
