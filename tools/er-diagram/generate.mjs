@@ -25,6 +25,7 @@ const a = (n, o = {}) => ({ n, ...o });
 const ENTIDADES = {
   User: { attrs: [a("id", { k: 1 }), a("name", { c: ["first_name", "last_name"] }), a("email"), a("email_verified_at"), a("phone", { m: 1 }), a("country"), a("birth_date"), a("age", { d: 1 }), a("preferred_language"), a("identity_status"), a("identity_fingerprint")] },
   UserCredential: { debil: 1, attrs: [a("password_hash")] },
+  UserTotp: { debil: 1, attrs: [a("secret_ciphertext"), a("key_version"), a("confirmed_at"), a("last_used_step"), a("failed_attempts"), a("locked_until")] },
   Session: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("revoked_at"), a("last_used_at"), a("ip_address"), a("user_agent")] },
   PasswordReset: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("used_at")] },
   OneTimeCode: { attrs: [a("id", { k: 1 }), a("purpose"), a("channel"), a("destination"), a("code_hash"), a("expires_at"), a("attempts"), a("used_at")] },
@@ -52,6 +53,7 @@ const ENTIDADES = {
 const r = (id, verbo, l1, l2, o = {}) => ({ id, verbo, lados: [l1, l2], ...o });
 const RELACIONES = [
   r("has_credential", "has", ["User", "1", 0], ["UserCredential", "1", 1], { ident: 1 }),
+  r("has_totp", "protects with", ["User", "1", 0], ["UserTotp", "1", 1], { ident: 1 }),
   r("opens", "opens", ["User", "1", 0], ["Session", "N", 1]),
   r("requests", "requests", ["User", "1", 0], ["PasswordReset", "N", 1]),
   r("is_sent", "is sent", ["User", "1", 0], ["OneTimeCode", "N", 1]),
@@ -90,10 +92,10 @@ const RELACIONES = [
 const DIAGRAMAS = [
   { archivo: "chen-people-access",
     pos: { User: [0, 0], Session: [-9.4, 7.0], OneTimeCode: [-9.4, 2.2], AuditLog: [-9.4, -2.4], PasswordReset: [-9.4, -6.8],
-           UserCredential: [9.4, 6.3], Admin: [9.4, 2.1], HostProfile: [9.4, -2.1], Verification: [9.4, -6.3], Property: [15.2, -6.3] },
+           UserCredential: [9.4, 8.8], UserTotp: [9.4, 4.6], Admin: [9.4, 0.6], HostProfile: [9.4, -3.2], Verification: [9.4, -7.4], Property: [15.2, -7.4] },
     escala: { User: 1.4 }, rel: { opens: [-6.6, 4.91] },
-    detalle: ["User", "UserCredential", "Session", "PasswordReset", "OneTimeCode", "Admin", "HostProfile", "Verification", "AuditLog"],
-    relaciones: ["has_credential", "opens", "requests", "is_sent", "is_admin", "acts_as", "undergoes", "covers", "performs"] },
+    detalle: ["User", "UserCredential", "UserTotp", "Session", "PasswordReset", "OneTimeCode", "Admin", "HostProfile", "Verification", "AuditLog"],
+    relaciones: ["has_credential", "has_totp", "opens", "requests", "is_sent", "is_admin", "acts_as", "undergoes", "covers", "performs"] },
   { archivo: "chen-properties",
     pos: { Property: [0, 0], HostProfile: [-10.4, 0], PropertyPhoto: [11.6, 5.4], Rate: [11.6, 1.8], SeasonalRate: [11.6, -1.8], Amenity: [11.6, -5.6] },
     rel: { owns: [-5.6, 1.2], co_hosts: [-5.6, -1.2] }, lado: { co_hosts: [0, -1.1] },
