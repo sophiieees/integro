@@ -180,9 +180,10 @@ Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verificati
 - **user_phones**(<ins>id</ins>, user_id FK → users(id), phone UK, is_primary, verified_at?)
   - Cada persona tiene exactamente un teléfono principal. Un teléfono no se repite en toda la plataforma.
 - **user_credentials**(<ins>id</ins>, user_id FK UK → users(id), password_hash)
-- **sessions**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, revoked_at?, last_used_at, ip_address?, user_agent?)
+- **sessions**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, revoked_at?, last_used_at, ip_address?, user_agent?, second_factor_at?)
   - Una sesión sirve mientras no haya vencido y `revoked_at` siga vacía. La persona lee sus propias sesiones, sin `token_hash`; las escribe solo el sistema.
   - `ip_address` y `user_agent` dicen desde dónde se abrió la sesión. Son datos personales y van en el aviso de privacidad.
+  - `second_factor_at` es la fecha en que esa sesión pasó el Authenticator por última vez. Vacía si nunca lo ha pasado. Quien tiene el Authenticator activo abre la sesión con el código del correo, pero la sesión queda en espera hasta que escribe el código de su aplicación, y vuelve a quedar en espera cada 30 días (el número vive en la configuración de la API). La persona no lee esta columna.
 - **password_resets**(<ins>id</ins>, user_id FK → users(id), token_hash UK, expires_at, used_at?)
   - Solo la lee y la escribe el sistema.
 - **one_time_codes**(<ins>id</ins>, user_id FK → users(id), purpose, channel, destination, code_hash, expires_at, attempts, used_at?)
@@ -291,8 +292,9 @@ Aceptadas por Sophia el 17 de noviembre de 2026.
 | 22 | Los administradores se dan de alta solo a mano, por el dueño de la base | La API no tiene permiso de escribir en `admins`, ni siquiera actuando como el sistema: quien tome el control de la API no puede hacerse administrador. |
 | 23 | La clave del Authenticator va en su propia tabla, `user_totp`, cifrada, y la persona no puede leer ni su propia fila | El ADR 0014 pedía guardarla cifrada con AES-256-GCM en una tabla aparte. Si la persona pudiera leerla, quien tomara su sesión podría copiar la clave. |
 | 24 | `user_totp` guarda el último periodo aceptado, los intentos fallidos y hasta cuándo espera | Un código no debe servir dos veces, y adivinar un código de seis dígitos tiene que costar una espera. |
+| 25 | Cuándo pasó una sesión el Authenticator se anota en la propia sesión, en `sessions.second_factor_at` | Así una sesión puede existir y estar en espera, y la misma fecha sirve para volver a pedirlo cada 30 días. |
 
-Las decisiones 15 a 19 son del 17 de noviembre de 2026, al construir las tablas de acceso a la cuenta. Las decisiones 20 a 22 son del 18 de noviembre de 2026. Las decisiones 23 y 24 son del 24 de noviembre de 2026 (pieza 3.2).
+Las decisiones 15 a 19 son del 17 de noviembre de 2026, al construir las tablas de acceso a la cuenta. Las decisiones 20 a 22 son del 18 de noviembre de 2026. Las decisiones 23 y 24 son del 24 de noviembre de 2026 (pieza 3.2). La decisión 25 es del 25 de noviembre de 2026 (pieza 3.3).
 
 ## 6. Tablas de estados
 

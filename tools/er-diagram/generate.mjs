@@ -26,7 +26,7 @@ const ENTIDADES = {
   User: { attrs: [a("id", { k: 1 }), a("name", { c: ["first_name", "last_name"] }), a("email"), a("email_verified_at"), a("phone", { m: 1 }), a("country"), a("birth_date"), a("age", { d: 1 }), a("preferred_language"), a("identity_status"), a("identity_fingerprint")] },
   UserCredential: { debil: 1, attrs: [a("password_hash")] },
   UserTotp: { debil: 1, attrs: [a("secret_ciphertext"), a("key_version"), a("confirmed_at"), a("last_used_step"), a("failed_attempts"), a("locked_until")] },
-  Session: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("revoked_at"), a("last_used_at"), a("ip_address"), a("user_agent")] },
+  Session: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("revoked_at"), a("last_used_at"), a("ip_address"), a("user_agent"), a("second_factor_at")] },
   PasswordReset: { attrs: [a("id", { k: 1 }), a("token_hash"), a("expires_at"), a("used_at")] },
   OneTimeCode: { attrs: [a("id", { k: 1 }), a("purpose"), a("channel"), a("destination"), a("code_hash"), a("expires_at"), a("attempts"), a("used_at")] },
   Admin: { debil: 1, attrs: [a("created_at")] },
