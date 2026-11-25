@@ -2823,4 +2823,93 @@ PROMPTS = [
             ("45.22", "Cambiar una prueba existente que fijaba que solo había dos tipos de aviso por correo.", "Ahora hay tres, con el de que se activó el Authenticator. Campo: cómo se sabrá que funciona.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
         ],
     },
+    # ------------------------------------------------------------------ 46
+    {
+        "n": 46,
+        "titulo": "Pieza 3.3: pedir el Authenticator al iniciar sesión (la columna, las rutas y la ventana)",
+        "fecha": "25 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Ya fusioné el PR de la bitácora 45. Para lo de Neon, corrí el script de la tabla user_totp y el "
+                     "select, y sale: «ERROR: transacción abortada, las órdenes serán ignoradas hasta el fin de bloque de "
+                     "transacción. SQL state: 25P02». Ya está la variable en Vercel. Después: sí muestra 0 Neon. Luego: "
+                     "listo, la migración de la columna. Y al final: sí corrí lo de Neon, en la local y en la de Neon; ya "
+                     "fusioné el PR."),
+        "tarea": ("1) ¿Qué hago con el error de Neon? 2) /pieza 3.3. 3) Acepto todas las recomendaciones; construye la "
+                  "3.3 ahora. 4) Listo (corrí la migración). 5) Acepto las desviaciones; sigue con la ventana. "
+                  "6) /bitacora."),
+        "salida": ("La especificación en tres campos, confirmada antes de programar; después, el desglose de cierre de "
+                   "CLAUDE.md por cada parte."),
+        "respuesta": {
+            "fecha": "25 de noviembre de 2026",
+            "commits": ("fb15af4 (rama datos/session-second-factor) y 588a2c0 (rama api/second-factor-login, apilada sobre "
+                        "la anterior), fusionados juntos por Sophia como #98 (a2a2c07). 15c318e (rama "
+                        "web/login-authenticator-step), fusionado por Sophia como #99 (76174b8). Fuera del repositorio: "
+                        "Sophia corrió la migración en pgAdmin, en su base local y en Neon."),
+            "archivos": [
+                ("database/migrations/20261125000007_session_second_factor.sql (nuevo)", "la columna sessions.second_factor_at: la fecha en que esa sesión pasó el Authenticator por última vez."),
+                ("tests/database/group1_session_second_factor.test.js (nuevo) y tests/database/README.md", "las pruebas de la columna sobre un PostgreSQL en memoria."),
+                ("docs/database/data-model.md, tools/er-diagram/generate.mjs, el diagrama chen-people-access de docs/database/img y docs/despliegue-vercel-neon.md", "la columna nueva en el modelo y en el diagrama entidad-relación, y la migración en la lista de Neon."),
+                ("backend/app/modules/accounts/sessions.py y login.py", "la sesión sabe si tiene el Authenticator activo y si está en espera; el inicio de sesión avisa con second_factor_required."),
+                ("backend/app/api/auth.py, protection.py y roles.py", "toda ruta con sesión responde 403 mientras la sesión está en espera, salvo las que se permiten; las rutas de anfitrión y de administrador exigen el Authenticator activo."),
+                ("backend/app/modules/accounts/two_factor.py, two_factor_router.py y router.py", "la ruta POST /api/v1/auth/2fa/verify; /auth/me responde 403 sin datos en espera; cerrar sesión funciona en espera."),
+                ("backend/app/core/config.py, backend/app/main.py, backend/app/notifications/messages.py y sender.py, backend/.env.example y backend/README.md", "la variable TWO_FACTOR_REVERIFY_DAYS, la respuesta 403 y el aviso por correo de la espera de 15 minutos."),
+                ("tests/backend/test_second_factor_login.py (nuevo), test_view_roles.py, test_email_delivery.py y conftest.py", "las pruebas de la sesión en espera y de anfitrión o administrador sin Authenticator."),
+                ("web/assets/js/cuenta-logica.js y cuenta.js", "el tercer paso de la ventana de iniciar sesión, «Código de Authenticator»: qué decir con cada respuesta de la API y la pantalla."),
+                ("tests/web/cuenta_logica.test.js, tests/web/test_login_modal.py, tests/e2e/test_authenticator_e2e.py (nuevo), tests/e2e/e2e_support.py y tests/e2e/README.md", "las pruebas de la lógica con node, las de la página sin navegador y las de navegador."),
+                ("docs/decisiones/0018-authenticator-totp-con-clave-cifrada.md y docs/diseno/vistas.md", "dejan escrito el inicio de sesión con el Authenticator y el paso nuevo de la ventana."),
+            ],
+            "sugerencias": [
+                ("Acortar la vida de una sesión en espera, por ejemplo a 10 minutos.", "una sesión en espera sigue viva hasta que vence, y quien tenga la contraseña y el correo de alguien puede probar 5 códigos cada 15 minutos; el dueño recibe un aviso cada vez. No se hizo porque no estaba pedido."),
+                ("Correr la migración en Neon antes de fusionar las rutas.", "si la API se publica sin la columna, toda petición con sesión falla."),
+                ("Probar en Vercel con la aplicación real: activar el Authenticator desde /docs, cerrar sesión e iniciar sesión por la web.", "las pruebas calculan el código con la fórmula del estándar, no con una aplicación."),
+                ("Seguir con la 3.4 (pantallas del anfitrión, con la de activar el Authenticator y su código QR) y la 3.6 (recuperar el acceso).", "la 3.6 hace falta antes de abrir el sitio a personas de fuera."),
+            ],
+            "lineas": ("session_second_factor.sql: la columna y su regla. sessions.py: authenticate. auth.py: "
+                       "SecondFactorRequired y require_session_even_pending. protection.py: "
+                       "require_session_for_change_even_pending. roles.py: two_factor_setup_required. two_factor.py: "
+                       "verify_session y confirm_setup. two_factor_router.py: verify. router.py: /auth/me y logout. "
+                       "config.py: two_factor_reverify_days. messages.py: el aviso two_factor_locked. cuenta-logica.js: "
+                       "despuesDelCodigo, despuesDelAuthenticator, revisarCodigoDeAuthenticator, "
+                       "limpiarCodigoDeAuthenticator y estadoDeCabecera. cuenta.js: el formulario del paso authenticator, "
+                       "enviarAuthenticator y salirDeEspera."),
+            "pruebas": ("El error 25P02 de Neon era una transacción que quedó a medias en esa pestaña: con «rollback;» y "
+                        "después «select count(*) from public.user_totp;» Sophia vio 0, así que la tabla ya existía ahí. La "
+                        "columna, en un PostgreSQL en memoria (PGlite), no en la base de Sophia: «Total: 20 casos, 20 "
+                        "coinciden, 0 no coinciden.»; las otras dos de base, con la migración incluida, 86 de 86 y 39 de 39. "
+                        "Las rutas, en la computadora de Sophia contra la base integro local: backend completo «1435 passed, "
+                        "1 warning in 406.06s», con 41 pruebas nuevas de la sesión en espera y 7 de anfitrión y "
+                        "administrador sin Authenticator; con cinco cambios hechos a propósito fallaron 22 pruebas y los "
+                        "archivos se restauraron. Dos errores de la IA en las pruebas, corregidos en la prueba y no en el "
+                        "código: dos direcciones que no existían, y una comprobación de la columna que dependía de permisos "
+                        "y omitía las 41. La ventana: node «tests 206, pass 206, fail 0»; web y navegador, corrida completa, "
+                        "«1 failed, 498 passed in 318.69s». La que falló es "
+                        "test_an_email_that_already_has_an_account_is_warned_and_offers_to_sign_in, la intermitente del "
+                        "registro anotada en la entrada 39; repetida sola tres veces pasó, falló y pasó. Las 14 nuevas de "
+                        "navegador pasan. Con dos cambios hechos a propósito fallaron 6 pruebas; los archivos se "
+                        "restauraron. La IA comprobó la columna en la base local; que la migración corrió en Neon lo dijo "
+                        "Sophia y la IA no lo pudo comprobar. No se probó en Vercel ni con una aplicación Authenticator "
+                        "real."),
+        },
+        "decisiones": [
+            ("46.1", "Construir la 3.3 antes que la 3.6; mientras solo el equipo use el sitio, quien pierda el celular se recupera a mano en pgAdmin.", "La IA preguntó el orden por el riesgo de quedar sin entrar. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, construye la 3.3 ahora.»", "Cambia lo dicho en 45.7: la 3.3 quedó publicada antes que la 3.6."),
+            ("46.2", "Con el Authenticator activo, la sesión se abre «en espera» tras el código del correo; toda ruta con sesión responde 403 hasta escribir el código en POST /api/v1/auth/2fa/verify, salvo cerrar sesión y esa ruta.", "Es la forma de pedirlo al iniciar sesión sin entregar nada antes. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, construye la 3.3 ahora.»", "Así quedó (588a2c0)."),
+            ("46.3", "Incluir en esta pieza el paso mínimo en la ventana de iniciar sesión, como rama apilada, en lugar de dejarlo para la 3.4.", "Sin ese paso, quien active el Authenticator no puede usar la web, solo /docs. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, construye la 3.3 ahora.»", "Rama web/login-authenticator-step (15c318e)."),
+            ("46.4", "Un anfitrión o administrador sin el Authenticator activo entra y usa lo de cliente; las rutas de anfitrión y de administrador le responden 403 hasta que lo active.", "42.2 dice que el sistema se lo exige; así no queda bloqueado antes de poder activarlo. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, construye la 3.3 ahora.»", "Así quedó (588a2c0)."),
+            ("46.5", "Los 30 días de 42.4 se cuentan desde la última vez que esa sesión pasó el Authenticator, y cada inicio de sesión nuevo lo pide siempre; el número va en configuración.", "Había que decir desde cuándo se cuentan. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, construye la 3.3 ahora.»", "Así quedó: TWO_FACTOR_REVERIFY_DAYS=30 (588a2c0)."),
+            ("46.6", "Avisar por correo al dueño cuando se llega a la espera de 15 minutos al iniciar sesión.", "Quien llegó ahí ya pasó la contraseña y el código del correo. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, construye la 3.3 ahora.»", "Así quedó (588a2c0)."),
+            ("46.7", "Mientras la sesión está en espera, /auth/me responde 403 y no entrega nombre ni correo.", "Nada de la cuenta debe verse antes del código. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, construye la 3.3 ahora.»", "Así quedó; solo agrega la clave que la página necesita para mandar el código (588a2c0)."),
+            ("46.8", "Una regla en la base que la especificación no decía: la fecha del Authenticator no puede ser anterior a la creación de la sesión.", "Una sesión no puede pasar el Authenticator antes de existir. Campo: qué datos necesita.", "Aceptar", "«Acepto las seis.»", "La IA no la presentó como desviación al entregar la migración; Sophia corrió la migración, fusionó el PR #98 (a2a2c07) y dio su veredicto al revisar la bitácora. Quedó como estaba (fb15af4)."),
+            ("46.9", "Regenerar el diagrama entidad-relación de personas y agregar la migración a la lista de Neon en la guía de despliegue.", "El modelo cambió, y la base de Neon y la de la computadora son independientes. Campo: qué hace.", "Aceptar", "«Acepto las seis.»", "La IA no la presentó como desviación al entregar la migración; Sophia corrió la migración, fusionó el PR #98 (a2a2c07) y dio su veredicto al revisar la bitácora. Quedó como estaba (fb15af4)."),
+            ("46.10", "Al activar el Authenticator, esa sesión ya cuenta como pasada; las otras sesiones abiertas de la persona quedan en espera.", "Si no, se lo pediría un segundo después de activarlo. Campo: qué hace.", "Aceptar", "«Acepto las desviaciones, sigue con la ventana.»", "Quedó como estaba (588a2c0)."),
+            ("46.11", "Los intentos son de la persona, no de la sesión.", "Abrir otra sesión no debe devolver intentos. Campo: qué hace.", "Aceptar", "«Acepto las desviaciones, sigue con la ventana.»", "Quedó como estaba (588a2c0)."),
+            ("46.12", "Volver a escribir el código en una sesión que ya pasó actualiza la fecha, en lugar de dar error.", "No estaba en la especificación qué pasaba en ese caso. Campo: qué hace.", "Aceptar", "«Acepto las desviaciones, sigue con la ventana.»", "Quedó como estaba (588a2c0)."),
+            ("46.13", "Cambiar seis pruebas existentes de anfitrión y administrador: ahora esas personas de prueba tienen el Authenticator activo.", "Las rutas ahora lo exigen. Campo: cómo se sabrá que funciona.", "Aceptar", "«Acepto las desviaciones, sigue con la ventana.»", "Quedó como estaba (588a2c0)."),
+            ("46.14", "Ampliar el ADR 0018 con la sección del inicio de sesión.", "Deja escrita la decisión; no estaba pedido. Campo: qué hace.", "Aceptar", "«Acepto las desviaciones, sigue con la ventana.»", "Quedó como estaba (588a2c0)."),
+            ("46.15", "Instalar websocket-client en backend/.venv para correr las pruebas de navegador.", "Ya está en la lista de dependencias de desarrollo del proyecto, y sin él esas pruebas no corren. Campo: cómo se sabrá que funciona.", "Aceptar", "«Acepto las desviaciones, sigue con la ventana.»", "La IA lo avisó al entregar las rutas y preguntó si seguía. Se instaló en la computadora de Sophia; el repositorio no cambió."),
+            ("46.16", "Al recargar con la sesión en espera, la ventana no se abre sola: la cabecera queda como la del visitante y el paso aparece al dar clic en «Iniciar sesión».", "A la IA le pareció menos invasivo que abrir una ventana en cada página. Campo: qué hace.", "Aceptar", "«Acepto las seis.»", "Sophia fusionó el PR #99 (76174b8) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (15c318e)."),
+            ("46.17", "En el paso del Authenticator se oculta «¿Aún no tienes una cuenta? Regístrate».", "Quien llegó ahí ya tiene cuenta. Campo: qué hace.", "Aceptar", "«Acepto las seis.»", "Sophia fusionó el PR #99 (76174b8) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (15c318e)."),
+            ("46.18", "Un botón «Cerrar sesión» dentro del paso.", "Sin él no habría forma de abandonar una sesión en espera desde la web. Campo: qué hace.", "Aceptar", "«Acepto las seis.»", "Sophia fusionó el PR #99 (76174b8) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (15c318e)."),
+            ("46.19", "Cambiar tres pruebas existentes de la ventana: dos comparaban el estado completo de la cabecera, que ahora lleva un dato más, y una contaba dos formularios al cerrar la ventana y ahora son tres.", "El paso nuevo cambió lo que esas pruebas fijaban. Campo: cómo se sabrá que funciona.", "Aceptar", "«Acepto las seis.»", "Sophia fusionó el PR #99 (76174b8) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (15c318e)."),
+        ],
+    },
 ]
