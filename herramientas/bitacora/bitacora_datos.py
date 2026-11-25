@@ -2410,6 +2410,62 @@ PROMPTS = [
             ("39.15", "Poner el CAPTCHA en cinco rutas, aunque se habló de cuatro acciones.", "La cuarta acción, pedir otro código de verificación, incluye la corrección del correo, que es una ruta aparte (correct-unverified-email). No se presentó como desviación. Campo: qué hace.", "Aceptar", "Acepto 39.15.", "Quedó en cinco rutas (#82)."),
         ],
     },
+    # ------------------------------------------------------------------ 40
+    {
+        "n": 40,
+        "titulo": "Correo real con Resend",
+        "fecha": "22 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Fusionó el PR de la fecha de nacimiento, cargó las variables del CAPTCHA en Vercel, hizo el redeploy y "
+                     "todo salió bien. El hostname del widget de Cloudflare es el que aparece. Pidió comenzar con el correo "
+                     "real y el segundo factor; después de ver la propuesta de la IA dijo que comenzaban con el correo real "
+                     "y que lo harían con Resend. Preguntó si con eso terminan el punto 2, para pasar al 3, y que en el 3 "
+                     "ya se despliega lo del segundo factor."),
+        "tarea": ("1) /pieza: comenzar con el correo real y el segundo factor. 2) Comenzar con el correo real, con Resend. "
+                  "3) ¿Con el correo real se termina el punto 2? Pasar al 3, donde se despliega lo del segundo factor. "
+                  "4) Aceptar las desviaciones. 5) /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "22 de noviembre de 2026",
+            "commits": ("c78aaf6 (rama api/correo-real, desde main; sin fusionar). Fuera del repositorio: falta que Sophia "
+                        "compre un dominio, cree la cuenta de Resend, verifique el dominio y cargue las variables en Vercel."),
+            "archivos": [
+                ("backend/app/notifications/resend.py (nuevo)", "envía cada código y cada aviso con una llamada HTTPS a Resend; reintenta una vez con la misma Idempotency-Key; un código que no sale levanta DeliveryFailed y un aviso nunca levanta error; en el registro del servidor solo van el código HTTP y el nombre del error."),
+                ("backend/app/notifications/messages.py (nuevo)", "el asunto y el texto de cada código y de cada aviso, en español y de tú, en texto y en HTML con los colores de la web, escapando lo que viene de fuera."),
+                ("backend/app/api/delivery.py (nuevo) y backend/app/main.py", "el 503 con el código email_unavailable cuando un código no se pudo enviar."),
+                ("backend/app/core/config.py, backend/app/notifications/__init__.py y backend/app/notifications/sender.py", "la opción EMAIL_DELIVERY=resend con EMAIL_API_KEY y EMAIL_FROM (sin ellas la API no arranca y dice cuál) y el aviso de falla del envío."),
+                ("backend/app/modules/accounts/registration.py, email_correction.py, password_reset.py y router.py", "qué hace cada ruta si el correo no sale."),
+                ("backend/app/notifications/console.py", "el modo desarrollo usa los mismos textos de los avisos."),
+                ("docs/decisiones/0017-correo-real-con-resend.md, backend/README.md, backend/.env.example, docs/despliegue-vercel-neon.md y docs/decisiones/README.md", "dejan escrita la decisión, las variables y el paso a paso para configurar Resend."),
+                ("tests/backend/test_email_delivery.py (nuevo) y tests/backend/conftest.py", "las pruebas con un servidor HTTP local que hace de Resend."),
+            ],
+            "sugerencias": [
+                ("Comprar un dominio y decidir el remitente, por ejemplo no-responder@tu-dominio.", "sin dominio propio Resend no envía a nadie (pendiente: Sophia)."),
+                ("Una pieza de pantallas que muestre que el correo no salió.", "hoy, si falla al registrarse la persona ve el paso del código sin aviso, y ante un 503 ve el aviso genérico de respuesta inesperada (pendiente)."),
+                ("Revisar con Valeria el aviso de privacidad, ahora también por el uso de Resend.", "Resend recibe el correo de quien se registra o inicia sesión (pendiente)."),
+                ("Definir qué contiene el punto 3 antes de mover el segundo factor.", "no hay una definición escrita del punto 3 en el repositorio, y el segundo factor figura en la lista del punto 2 de Sophia del 21 de noviembre y en docs/arquitectura.md, sección 4, como pieza del módulo de Cuentas (pendiente: Sophia)."),
+            ],
+            "lineas": ("resend.py: ResendCodeSender (send_code, send_notice, _deliver, _post) y error_name. messages.py: code_message, "
+                       "notice_message, minutes_text. delivery.py: delivery_failed_response. config.py: email_delivery con la opción "
+                       "resend, email_api_key y email_from. __init__.py: create_code_sender para resend. router.py: email_sent en "
+                       "RegisterResponse. registration.py, email_correction.py y password_reset.py: el manejo de DeliveryFailed."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro local; no se probó contra el Resend real. Backend "
+                        "completo: «1235 passed, 1 warning in 264.52s», 72 de ellas nuevas en test_email_delivery.py. Rompiendo a "
+                        "propósito el reintento, el registro y la recuperación de contraseña, fallaron 7 pruebas; los archivos se "
+                        "restauraron. No se corrieron las pruebas de navegador: no se tocó ninguna pantalla."),
+        },
+        "decisiones": [
+            ("40.1", "Proveedor de correo: Resend, y no Amazon SES.", "El plan gratuito alcanza para el piloto y no pide la aprobación a producción que SES exigiría con un sitio público; el envío queda detrás de CodeSender para poder cambiar. Campo: qué datos necesita.", "Aceptar", "Lo vamos a hacer con resend.", "Se construyó con Resend."),
+            ("40.2", "Comenzar con el correo real y dejar el segundo factor para después.", "Es lo que deja entrar a personas de fuera del equipo; el segundo factor se pide para anfitriones y panel, cuyas pantallas todavía no existen. Campo: qué hace.", "Aceptar", "No, comenzamos con el correo real.", "Se construyó el correo real."),
+            ("40.3", "Reintentar una vez el envío que falla, con la misma Idempotency-Key.", "Si el primer intento sí llegó, el segundo no manda un correo repetido; la especificación hablaba de la llave de idempotencia, no del reintento. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.4", "password-reset/request contesta siempre 200, aunque el correo no salga; la especificación decía 503 para todas las rutas.", "Con un 503 solo cuando la cuenta existe, la respuesta diría quién tiene cuenta. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.5", "register y correct-unverified-email contestan lo de siempre con email_sent en false, en vez de 503.", "Lo guardado queda guardado: volver a mandar el formulario diría «ya existe una cuenta» o «es el mismo correo». Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.6", "Con EMAIL_DELIVERY=resend y sin EMAIL_API_KEY o EMAIL_FROM, la API no arranca y dice cuál falta.", "El modo se elige a propósito y fingir que se envía sería peor. Para el CAPTCHA se hizo lo contrario: arranca y rechaza las acciones. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.7", "El texto del 503 dice «Espera un minuto e inténtalo de nuevo», en vez de solo «Inténtalo de nuevo».", "Un código que no salió cuenta para la espera normal de un minuto entre códigos. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.8", "Mover los textos de los avisos de console.py a messages.py, que console.py ahora importa.", "Un solo texto para el modo desarrollo y para el correo; su contenido no cambió. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.9", "Pasar el segundo factor del punto 2 al punto 3.", "Propuesta de Sophia, como pregunta: «con eso terminamos el punto 2, ¿no? Para pasar al 3, y en el 3 ya se despliega lo del segundo factor». La IA respondió que el segundo factor estaba en su lista del punto 2 y en docs/arquitectura.md como pieza de Cuentas, y que no encuentra escrito qué contiene el punto 3. Campo: qué hace.", "Pendiente", "", "Falta que Sophia diga qué contiene el punto 3."),
+        ],
+    },
     # ------------------------------------------------------------------ 41
     {
         "n": 41,
