@@ -122,6 +122,8 @@ class Settings(BaseSettings):
     # Authenticator (bitácora 41.11 y la pieza 3.2): a tantos códigos incorrectos seguidos, la persona espera esos minutos.
     two_factor_max_attempts: int = Field(default=5, ge=1)
     two_factor_wait_minutes: int = Field(default=15, ge=1)
+    # Cada cuántos días una sesión abierta vuelve a pedir el Authenticator, aunque se use a diario (bitácora 42.4).
+    two_factor_reverify_days: int = Field(default=30, ge=1)
 
 
 def load_settings(env_file: Path | None = ENV_FILE) -> Settings:

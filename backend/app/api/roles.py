@@ -16,9 +16,10 @@ Las variantes _for_change son para las rutas que cambian algo: además piden las
 tres defensas contra peticiones hechas desde páginas ajenas (protection.py).
 
 Anfitrión es quien tiene perfil de anfitrión. Administrador es quien está en la
-tabla admins, que solo se llena a mano en pgAdmin. Todavía falta, para las rutas
-del panel, el tope de 30 minutos sin uso y de 12 horas de sesión, y el segundo
-factor (ADR 0014): una ruta de administrador no debe publicarse hasta tenerlos.
+tabla admins, que solo se llena a mano en pgAdmin. Los dos necesitan tener el
+Authenticator activo (ADR 0018): sin él responden 403 con el código
+two_factor_setup_required. Y una sesión en espera del Authenticator ni siquiera
+llega aquí: require_session la corta antes con second_factor_required.
 """
 
 from fastapi import Depends
@@ -29,17 +30,24 @@ from app.modules.accounts.sessions import CurrentSession
 
 HOST_ONLY = ("host_only", "Esta función es solo para anfitriones.")
 ADMIN_ONLY = ("admin_only", "Esta función es solo para el equipo de Íntegro.")
+# Decisión de Sophia del 25 de noviembre de 2026 (bitácora 42.2 y la pieza 3.3): un anfitrión o un administrador que
+# todavía no activa su Authenticator entra y usa lo de cliente, pero no las funciones de anfitrión ni las del equipo.
+SETUP_REQUIRED = ("two_factor_setup_required", "Activa tu Authenticator para usar esta función.")
 
 
 def _host(session: CurrentSession) -> CurrentSession:
     if not session.is_host:
         raise Forbidden(*HOST_ONLY)
+    if not session.has_second_factor:
+        raise Forbidden(*SETUP_REQUIRED)
     return session
 
 
 def _admin(session: CurrentSession) -> CurrentSession:
     if not session.is_admin:
         raise Forbidden(*ADMIN_ONLY)
+    if not session.has_second_factor:
+        raise Forbidden(*SETUP_REQUIRED)
     return session
 
 

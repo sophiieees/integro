@@ -18,9 +18,19 @@
 - **Tabla:** `user_totp`, una fila por persona; solo el sistema la lee y la escribe, y la persona no lee ni su propia fila.
 - **Dependencia nueva:** `cryptography`, porque la biblioteca estándar de Python no trae AES-256-GCM. Los códigos TOTP sí se calculan con la biblioteca estándar.
 
+### Al iniciar sesión (pieza 3.3, 25 de noviembre de 2026)
+- Quien tiene el Authenticator activo inicia sesión con su contraseña, el código del correo y el código de su aplicación. La sesión se abre con el código del correo, pero **queda en espera** hasta que escribe el de la aplicación en `POST /auth/2fa/verify`. La fecha en que lo pasó se anota en `sessions.second_factor_at`.
+- Mientras la sesión está en espera, toda ruta con sesión responde `403` con `second_factor_required` y ningún dato. Solo aceptan una sesión en espera la ruta del código, cerrar sesión y `/auth/me`, que contesta el mismo `403` más la clave anti-falsificación que la página necesita.
+- Cada 30 días (`TWO_FACTOR_REVERIFY_DAYS`) la misma sesión vuelve a quedar en espera, aunque se use a diario. Cada inicio de sesión nuevo lo pide siempre.
+- Los mismos límites: un código no sirve dos veces; a los 5 incorrectos seguidos, 15 minutos de espera y un aviso por correo al dueño, porque quien llegó ahí ya escribió la contraseña y el código del correo. La cuenta de intentos es de la persona, no de la sesión.
+- Al activar el Authenticator, la sesión con la que se activó ya lo pasó; las demás sesiones abiertas de la persona quedan en espera.
+- Un anfitrión o un administrador que todavía no lo activa entra y usa lo de cliente, pero las rutas de anfitrión y de administrador le responden `403` con `two_factor_setup_required` (bitácora 42.2).
+- Se construyó antes que la recuperación del acceso (3.6) por decisión de Sophia: mientras solo el equipo use el sitio, quien pierda el celular se recupera a mano, en pgAdmin.
+
 ## Consecuencias
-- Todavía no se pide al iniciar sesión (pieza 3.3) ni tiene pantallas (3.4): hoy solo se puede activar desde la API.
-- Con el Authenticator activo no se puede volver a activar aquí. Cambiar de celular, los diez códigos de recuperación y la ayuda del equipo son la pieza 3.6 (bitácora 41.13 y 42.3). **La pieza 3.3 no debe publicarse antes que la 3.6:** quien pierda el celular quedaría sin poder entrar.
+- Las pantallas del anfitrión son la pieza 3.4; la ventana de iniciar sesión recibe aparte su paso para el código.
+- Con el Authenticator activo no se puede volver a activar aquí. Cambiar de celular, los diez códigos de recuperación y la ayuda del equipo son la pieza 3.6 (bitácora 41.13 y 42.3). **Antes de abrir el sitio a personas de fuera hace falta la 3.6:** quien pierda el celular quedaría sin poder entrar.
+- Una sesión en espera sigue existiendo hasta que vence o se cierra. Quien tenga la contraseña y el correo de alguien puede intentar 5 códigos cada 15 minutos; el dueño recibe un aviso cada vez que empieza la espera.
 - Si se pierde `DATA_ENCRYPTION_KEY`, o se cambia sin más, las claves guardadas ya no se pueden descifrar y cada persona tiene que activar su Authenticator de nuevo. Cambiar la llave con orden (cifrar de nuevo lo guardado, con `key_version`) queda por construir.
 - El código QR lo dibuja la pantalla, en la pieza 3.4, a partir de la dirección `otpauth://`.
 - SHA-1 se usa aquí solo para mezclar la clave con la hora, como manda el estándar; no firma ni resume contraseñas.

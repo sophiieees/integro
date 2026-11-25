@@ -11,7 +11,12 @@ from fastapi import FastAPI
 from app.api.v1.router import router as api_v1_router
 from app.core.config import WEB_DIRECTORY, Settings, load_settings
 from app.database.connection import create_pool
-from app.api.auth import NotAuthenticated, not_authenticated_response
+from app.api.auth import (
+    NotAuthenticated,
+    SecondFactorRequired,
+    not_authenticated_response,
+    second_factor_required_response,
+)
 from app.api.captcha import CaptchaRejected, captcha_rejected_response, create_captcha_verifier
 from app.api.delivery import delivery_failed_response
 from app.api.protection import Forbidden, forbidden_response
@@ -59,6 +64,8 @@ def create_app(settings: Settings | None = None, web_directory: Path | None = WE
     application.include_router(api_v1_router)
     # Toda ruta que pida sesión responde igual cuando no la hay: 401.
     application.add_exception_handler(NotAuthenticated, not_authenticated_response)
+    # Y cuando la sesión está en espera del Authenticator: 403, sin ningún dato (pieza 3.3).
+    application.add_exception_handler(SecondFactorRequired, second_factor_required_response)
     # Y toda ruta que cambia algo responde igual cuando la petición no pasa
     # las defensas contra páginas ajenas: 403.
     application.add_exception_handler(Forbidden, forbidden_response)

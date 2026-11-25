@@ -78,13 +78,35 @@ def remove_admin(api, email: str) -> None:
     run(api, "delete from admins where user_id = (select id from users where email = %s)", email)
 
 
-def person(api, *, host=False, admin=False, first_name="Ana"):
+# Una clave cifrada con la forma que pide user_totp (valor ficticio: estas pruebas no comprueban códigos).
+FAKE_CIPHERTEXT = "A" * 64
+
+
+def activate_authenticator(api, email: str) -> None:
+    """Deja activo el Authenticator de esa persona y da por pasadas sus sesiones abiertas, sin pasar por las rutas.
+
+    Desde la pieza 3.3 las rutas de anfitrión y de administrador piden tenerlo activo."""
+    run(
+        api,
+        "insert into user_totp (user_id, secret_ciphertext, confirmed_at, last_used_step) "
+        "select id, %s, now(), 0 from users where email = %s "
+        "on conflict (user_id) do update set confirmed_at = now(), last_used_step = 0",
+        FAKE_CIPHERTEXT, email,
+    )
+    run(api, "update sessions set second_factor_at = now() where user_id = (select id from users where email = %s)", email)
+
+
+def person(api, *, host=False, admin=False, first_name="Ana", authenticator=True):
+    """Una persona con sesión. Si es anfitriona o administradora tiene su Authenticator activo, salvo que se pida que no."""
     form = register(api, first_name)
     if host:
         make_host(api, form["email"])
     if admin:
         make_admin(api, form["email"])
-    return form, login(api, form)
+    token = login(api, form)
+    if (host or admin) and authenticator:
+        activate_authenticator(api, form["email"])
+    return form, token
 
 
 # --- Casos 1 a 3: /auth/me -------------------------------------------------------------------
@@ -291,3 +313,61 @@ def test_without_the_temporary_table_the_code_reads_the_real_admins_table(api):
     token = login(api, form)
 
     assert api.client.get(ME, headers=with_session(token)).json()["is_admin"] is False
+
+
+# --- Pieza 3.3: sin el Authenticator activo no se entra a las funciones de anfitrión ni a las del equipo ----------
+
+
+@pytest.mark.parametrize("role,route", [("host", "/api/v1/probe/host"), ("admin", "/api/v1/probe/admin")])
+def test_a_host_or_an_admin_without_the_authenticator_is_told_to_activate_it(roles_api, role, route):
+    form, token = person(roles_api, host=role == "host", admin=role == "admin", authenticator=False)
+
+    response = roles_api.client.get(route, headers=with_session(token))
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "errors": [{"field": "request", "code": "two_factor_setup_required", "message": "Activa tu Authenticator para usar esta función."}]
+    }
+    # Sigue pudiendo usar lo de cliente: su sesión sirve.
+    assert roles_api.client.get(ME, headers=with_session(token)).status_code == 200
+
+
+@pytest.mark.parametrize("role,route", [("host", "/api/v1/probe/host"), ("admin", "/api/v1/probe/admin")])
+def test_without_the_authenticator_the_change_routes_change_nothing(roles_api, role, route):
+    form, token = person(roles_api, host=role == "host", admin=role == "admin", authenticator=False)
+
+    response = roles_api.client.post(route, headers=change(roles_api, token))
+
+    assert response.status_code == 403
+    assert errors_of(response) == [("request", "two_factor_setup_required")]
+    assert CHANGES == []
+
+
+def test_an_authenticator_that_is_only_pending_does_not_count(roles_api):
+    form, token = person(roles_api, host=True, authenticator=False)
+    run(
+        roles_api,
+        "insert into user_totp (user_id, secret_ciphertext) select id, %s from users where email = %s",
+        FAKE_CIPHERTEXT, form["email"],
+    )
+
+    response = roles_api.client.get("/api/v1/probe/host", headers=with_session(token))
+
+    assert errors_of(response) == [("request", "two_factor_setup_required")]
+
+
+def test_once_the_authenticator_is_active_the_host_gets_in(roles_api):
+    form, token = person(roles_api, host=True, authenticator=False)
+    assert roles_api.client.get("/api/v1/probe/host", headers=with_session(token)).status_code == 403
+
+    activate_authenticator(roles_api, form["email"])
+
+    assert roles_api.client.get("/api/v1/probe/host", headers=with_session(token)).status_code == 200
+
+
+def test_someone_who_is_not_a_host_is_told_host_only_not_to_activate_anything(roles_api):
+    _, token = person(roles_api)
+
+    response = roles_api.client.get("/api/v1/probe/host", headers=with_session(token))
+
+    assert errors_of(response) == [("request", "host_only")]

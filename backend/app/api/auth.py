@@ -66,6 +66,24 @@ def clear_session_cookie(response: Response, settings: Settings) -> None:
     )
 
 
+class SecondFactorRequired(Exception):
+    """La sesión existe, pero está en espera: falta el código del Authenticator (pieza 3.3)."""
+
+
+SECOND_FACTOR_REQUIRED = {
+    "field": "second_factor",
+    "code": "second_factor_required",
+    "message": "Escribe el código de tu Authenticator para continuar.",
+}
+
+
+def second_factor_required_response(request: Request, error: SecondFactorRequired) -> JSONResponse:
+    """Lo que contesta cualquier ruta con sesión mientras la sesión está en espera. No entrega ningún dato."""
+    return JSONResponse(
+        status_code=403, content={"errors": [SECOND_FACTOR_REQUIRED]}, headers={"Cache-Control": "no-store"}
+    )
+
+
 def require_session(request: Request, response: Response) -> CurrentSession:
     """Dependencia de FastAPI: devuelve la sesión o corta la petición con 401.
 
@@ -73,7 +91,21 @@ def require_session(request: Request, response: Response) -> CurrentSession:
     que el plazo que la base acaba de renovar. La cookie se agrega a la
     respuesta de la ruta siempre que la ruta devuelva sus datos y no una
     respuesta armada a mano.
+
+    Una sesión en espera del Authenticator no pasa: corta con 403 y el código
+    second_factor_required. Las pocas rutas que sí la aceptan (escribir el
+    código, cerrar sesión y /auth/me, que lo avisa) usan
+    require_session_even_pending.
     """
+    session = require_session_even_pending(request, response)
+    if session.second_factor_pending:
+        raise SecondFactorRequired()
+    return session
+
+
+def require_session_even_pending(request: Request, response: Response) -> CurrentSession:
+    """Como require_session, pero también deja pasar una sesión en espera del Authenticator. Solo para las rutas
+    que sirven justo para salir de esa espera o para cerrar la sesión."""
     state = request.app.state
     token = request.cookies.get(SESSION_COOKIE)
     session = authenticate(state.pool, token, state.settings)

@@ -10,7 +10,9 @@ Decisiones de Sophia del 24 y 25 de noviembre de 2026 (bitácora 41.11, 41.12 y 
   activa. Mientras está pendiente se puede volver a empezar, y la clave anterior deja de servir.
 - A los 5 códigos incorrectos seguidos la persona espera 15 minutos (los dos números, en la configuración).
 - Si ya está activo no se puede volver a activar aquí: cambiar de celular y los códigos de recuperación son la
-  pieza 3.6. Exigirlo al iniciar sesión es la pieza 3.3.
+  pieza 3.6.
+- Al iniciar sesión (pieza 3.3) la sesión de quien lo tiene activo nace en espera; verify_session la completa con el
+  código de la aplicación, y cada 30 días vuelve a pedirse.
 - La clave se guarda cifrada con AES-256-GCM, amarrada al id de la persona (app/core/encryption.py). Sin la llave de
   cifrado no se puede activar ni comprobar: se contesta que no está disponible, nunca se guarda sin cifrar.
 
@@ -168,9 +170,18 @@ class ConfirmResult:
 
 
 def confirm_setup(
-    pool: ConnectionPool, user_id: UUID, code: str, settings: Settings, *, now: float | None = None
+    pool: ConnectionPool,
+    user_id: UUID,
+    code: str,
+    settings: Settings,
+    *,
+    session_id: UUID | None = None,
+    now: float | None = None,
 ) -> ConfirmResult:
-    """Comprueba el código que muestra la aplicación. Si es el de la clave pendiente, el Authenticator queda activo."""
+    """Comprueba el código que muestra la aplicación. Si es el de la clave pendiente, el Authenticator queda activo.
+
+    La sesión con la que se activa (session_id) queda anotada como que ya lo pasó: la persona acaba de demostrar que
+    tiene la aplicación. Sus otras sesiones abiertas quedan en espera y lo piden."""
     key = master_key(settings)
     if key is None:
         logger.error("Falta DATA_ENCRYPTION_KEY: no se puede comprobar el Authenticator.")
@@ -225,7 +236,113 @@ def confirm_setup(
             "locked_until = null where user_id = %s returning confirmed_at",
             (step, user_id),
         ).fetchone()[0]
+        if session_id is not None:
+            connection.execute(
+                "update sessions set second_factor_at = now() where id = %s and user_id = %s", (session_id, user_id)
+            )
     return ConfirmResult(ConfirmOutcome.ACTIVE, activated_at=activated_at, email=email)
+
+
+# ---------------------------------------------------------------------------
+# El código al iniciar sesión (pieza 3.3)
+# ---------------------------------------------------------------------------
+
+
+class VerifyOutcome(Enum):
+    VERIFIED = "verified"
+    INVALID_CODE = "invalid_code"
+    # Demasiados códigos incorrectos: la persona espera.
+    TRY_LATER = "try_later"
+    # La persona no tiene el Authenticator activo: no hay nada que comprobar.
+    NOT_ACTIVE = "not_active"
+    # Falta la llave de cifrado, o lo guardado no se pudo descifrar.
+    UNAVAILABLE = "unavailable"
+
+
+@dataclass(frozen=True)
+class VerifyResult:
+    outcome: VerifyOutcome
+    verified_at: datetime | None = None
+    email: str | None = None
+    attempts_left: int | None = None
+    retry_after_seconds: int | None = None
+    # Cuántos códigos incorrectos seguidos hubo, solo cuando con este empezó la espera: es cuando se avisa al dueño.
+    locked_after: int | None = None
+
+
+def verify_session(
+    pool: ConnectionPool,
+    user_id: UUID,
+    session_id: UUID,
+    code: str,
+    settings: Settings,
+    *,
+    now: float | None = None,
+) -> VerifyResult:
+    """Comprueba el código del Authenticator de una sesión en espera. Si es correcto, esa sesión queda completa.
+
+    Decisiones de Sophia del 25 de noviembre de 2026 (bitácora 41.12 y 42.4, y la pieza 3.3): el código se suma a la
+    contraseña y al código del correo; un código no sirve dos veces; a los 5 incorrectos seguidos la persona espera
+    15 minutos y se le avisa por correo, porque quien llegó hasta aquí ya escribió su contraseña y el código de su
+    correo. La cuenta de intentos es de la persona, no de la sesión: abrir otra sesión no la reinicia."""
+    key = master_key(settings)
+    if key is None:
+        logger.error("Falta DATA_ENCRYPTION_KEY: no se puede comprobar el Authenticator.")
+        return VerifyResult(VerifyOutcome.UNAVAILABLE)
+    timestamp = current_time() if now is None else now
+
+    with system_transaction(pool) as connection:
+        row = connection.execute(
+            "select t.secret_ciphertext, t.last_used_step, t.failed_attempts, "
+            "ceil(extract(epoch from (t.locked_until - now())))::int, u.email "
+            "from user_totp t join users u on u.id = t.user_id "
+            "where t.user_id = %s and t.confirmed_at is not null for update of t",
+            (user_id,),
+        ).fetchone()
+        if row is None:
+            return VerifyResult(VerifyOutcome.NOT_ACTIVE)
+        ciphertext, last_used_step, failed_attempts, wait, email = row
+        if wait is not None and wait > 0:
+            return VerifyResult(VerifyOutcome.TRY_LATER, retry_after_seconds=wait)
+
+        try:
+            secret = decrypt(key, PURPOSE, ciphertext, associated(user_id))
+        except DecryptionFailed:
+            logger.error("La clave del Authenticator de una cuenta no se pudo descifrar.")
+            return VerifyResult(VerifyOutcome.UNAVAILABLE)
+
+        step = matching_step(secret, code, timestamp, last_used_step=last_used_step)
+        if step is None:
+            failed_attempts += 1
+            if failed_attempts >= settings.two_factor_max_attempts:
+                connection.execute(
+                    "update user_totp set failed_attempts = 0, locked_until = now() + make_interval(mins => %s) "
+                    "where user_id = %s",
+                    (settings.two_factor_wait_minutes, user_id),
+                )
+                return VerifyResult(
+                    VerifyOutcome.TRY_LATER,
+                    email=email,
+                    retry_after_seconds=settings.two_factor_wait_minutes * 60,
+                    locked_after=failed_attempts,
+                )
+            connection.execute(
+                "update user_totp set failed_attempts = %s, locked_until = null where user_id = %s",
+                (failed_attempts, user_id),
+            )
+            return VerifyResult(
+                VerifyOutcome.INVALID_CODE, attempts_left=settings.two_factor_max_attempts - failed_attempts
+            )
+
+        connection.execute(
+            "update user_totp set last_used_step = %s, failed_attempts = 0, locked_until = null where user_id = %s",
+            (step, user_id),
+        )
+        verified_at = connection.execute(
+            "update sessions set second_factor_at = now() where id = %s and user_id = %s returning second_factor_at",
+            (session_id, user_id),
+        ).fetchone()[0]
+    return VerifyResult(VerifyOutcome.VERIFIED, verified_at=verified_at, email=email)
 
 
 # ---------------------------------------------------------------------------
