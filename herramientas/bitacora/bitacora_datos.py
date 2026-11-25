@@ -2740,4 +2740,87 @@ PROMPTS = [
             ("44.10", "Tres pruebas fuera de la lista: el perfil no se puede modificar ni borrar por la API (405), la dirección no acepta el id de otra persona, y pedirlo no pasa por el CAPTCHA.", "Son límites de la misma pieza. Campo: cómo se sabrá que funciona.", "Aceptar", "«Acepto las desviaciones.»", "Quedaron como estaban (5fe7daa)."),
         ],
     },
+    # ------------------------------------------------------------------ 45
+    {
+        "n": 45,
+        "titulo": "Pieza 3.2: Authenticator, activarlo y comprobarlo (la tabla y las rutas)",
+        "fecha": "24 y 25 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Ya fusioné el PR de la bitácora 44. Ya tengo la clave en KeePass, pero no sé qué nombre ponerle; "
+                     "falta cargarla en Vercel y en el entorno virtual. No veo dónde colocar la llave en Vercel: estoy en "
+                     "Environment Variables y no me aparece Production ni nada. En pgAdmin me pide la contraseña, puse la "
+                     "que tengo guardada de PostgreSQL y no me deja; sí la tengo, de hecho copié la del owner. Después ya "
+                     "pude entrar y ya puse la llave en Vercel. No me deja abrir el archivo de la migración. Luego: ya "
+                     "corrió en las dos. Y al final: ya hice la corrida local en pgAdmin."),
+        "tarea": ("1) /pieza 3.2. 2) ¿Qué nombre le pongo a la clave de cifrado? 3) Acepto todas las recomendaciones; "
+                  "empieza con la tabla. 4) ¿Dónde coloco la llave en Vercel? 5) Acepto las desviaciones; ya fusioné el PR; "
+                  "ayúdame con la contraseña de pgAdmin y con Vercel. 6) ¿Qué es lo que tengo que correr en pgAdmin? "
+                  "7) Sigue con las rutas. 8) ¿Así se corre el comando de la llave local? 9) /bitacora."),
+        "salida": ("La especificación en tres campos, confirmada antes de programar; después, el desglose de cierre de "
+                   "CLAUDE.md por cada parte."),
+        "respuesta": {
+            "fecha": "25 de noviembre de 2026",
+            "commits": ("69d9a39 (rama datos/user-totp), fusionado por Sophia como #95 (55fe1bf). 360241f (rama "
+                        "api/totp-setup), fusionado por Sophia como #96 (198340d). Fuera del repositorio: Sophia corrió la "
+                        "migración en pgAdmin y cargó DATA_ENCRYPTION_KEY en Vercel y en su backend/.env."),
+            "archivos": [
+                ("database/migrations/20261124000006_user_totp.sql (nuevo)", "la tabla user_totp: la clave cifrada, la versión de la llave, cuándo se comprobó, el último periodo aceptado, los intentos fallidos y hasta cuándo espera; solo el sistema la lee y la escribe."),
+                ("tests/database/group1_user_totp.test.js (nuevo) y tests/database/README.md", "las pruebas de la tabla sobre un PostgreSQL en memoria."),
+                ("docs/database/data-model.md, tools/er-diagram/generate.mjs y dos diagramas de docs/database/img", "la tabla nueva en el modelo y en el diagrama entidad-relación."),
+                ("backend/app/core/encryption.py (nuevo)", "cifrado AES-256-GCM: una llave por uso, sacada de la llave maestra, y lo cifrado amarrado al id de la persona."),
+                ("backend/app/modules/accounts/totp.py (nuevo)", "los códigos del Authenticator (RFC 6238), sin base de datos."),
+                ("backend/app/modules/accounts/two_factor.py y two_factor_router.py (nuevos)", "empezar la activación, comprobarla y ver el estado, con sus tres rutas."),
+                ("backend/app/core/config.py, backend/app/api/v1/router.py, backend/app/notifications/messages.py y sender.py", "las variables nuevas, el registro de las rutas y el aviso por correo de que se activó."),
+                ("requirements.txt", "la dependencia cryptography 50.0.2, publicada el 30 de septiembre de 2026."),
+                ("tests/backend/test_totp_codes.py y test_two_factor.py (nuevos), conftest.py y test_email_delivery.py", "las pruebas de los códigos, del cifrado, de la configuración y de las rutas."),
+                ("docs/decisiones/0018-authenticator-totp-con-clave-cifrada.md, backend/README.md, backend/.env.example y docs/despliegue-vercel-neon.md", "dejan escrita la decisión, las rutas y la variable."),
+            ],
+            "sugerencias": [
+                ("No publicar la pieza 3.3 (pedir el Authenticator al iniciar sesión) antes que la 3.6 (recuperar el acceso).", "quien pierda el celular quedaría sin poder entrar."),
+                ("Confirmar en Neon que la tabla existe y en Vercel que DATA_ENCRYPTION_KEY está en Production.", "la IA solo pudo comprobar la base de la computadora de Sophia."),
+                ("Probar la activación con la aplicación real, desde /docs.", "las pruebas calculan el código con la fórmula del estándar, no con una aplicación."),
+                ("Agregar login_attempts al diagrama entidad-relación, en otra rama.", "ya faltaba antes de esta pieza."),
+            ],
+            "lineas": ("user_totp.sql: la tabla, sus reglas y sus permisos. encryption.py: derive_key, encrypt y decrypt. totp.py: "
+                       "code_at, matching_step y provisioning_uri. two_factor.py: start_setup, confirm_setup y read_status. "
+                       "two_factor_router.py: setup, confirm y status. config.py: data_encryption_key, two_factor_max_attempts y "
+                       "two_factor_wait_minutes. messages.py: el aviso two_factor_enabled."),
+            "pruebas": ("La tabla, en un PostgreSQL en memoria (PGlite), no en la base de Sophia: «Total: 39 casos, 39 coinciden, "
+                        "0 no coinciden.» y, con las del grupo 1, «Total: 86 casos, 86 coinciden, 0 no coinciden.»; en la primera "
+                        "corrida un caso no coincidió por un defecto de la prueba y se corrigió la prueba. Las rutas, en la "
+                        "computadora de Sophia contra la base integro local: backend completo «1386 passed, 1 warning in "
+                        "320.24s», con 54 pruebas de rutas y 63 sin base de datos, que incluyen los vectores oficiales del "
+                        "estándar. Antes de que la tabla existiera en la base local: «1332 passed, 54 skipped». Con cinco cambios "
+                        "hechos a propósito fallaron 12 pruebas; los archivos se restauraron. Cuando Sophia dijo que la migración "
+                        "había corrido en las dos bases, la IA comprobó que en la base integro local no existía la tabla (tenía "
+                        "10 tablas); después de que la corrió ahí, sí. El comando de la llave local se corrió primero en otra "
+                        "carpeta y la llave quedó en un archivo que la API no lee; se generó otra en backend/.env y se borró el "
+                        "archivo sobrante. No se probó en Vercel ni con una aplicación Authenticator real, y la IA no pudo "
+                        "comprobar la base de Neon."),
+        },
+        "decisiones": [
+            ("45.1", "La llave de cifrado se llama DATA_ENCRYPTION_KEY, tiene al menos 43 caracteres al azar y es distinta en Vercel y en la computadora.", "Un nombre general sirve después para otros datos sensibles; con dos llaves, lo de producción no se descifra con lo que hay en la computadora. Campo: qué datos necesita.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó; Sophia la cargó en Vercel y en su backend/.env."),
+            ("45.2", "El Authenticator lo activan solo los anfitriones y los administradores.", "Es lo decidido en 41.11; los clientes, más adelante si Sophia quiere. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó (360241f)."),
+            ("45.3", "Pedir la contraseña al empezar la activación.", "Quien tome una sesión abierta no debe poder poner su propio Authenticator en la cuenta. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó (360241f)."),
+            ("45.4", "Avisar por correo cuando se activa.", "Igual que con el cambio de contraseña. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó (360241f)."),
+            ("45.5", "A los 5 códigos incorrectos, 15 minutos de espera, en configuración.", "Adivinar un código de seis dígitos tiene que costar una espera. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó (360241f)."),
+            ("45.6", "«Comprobar» es confirmar la activación con un código; usarlo al iniciar sesión es la 3.3.", "Así estaban repartidos los subpasos. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó (360241f)."),
+            ("45.7", "Los diez códigos de recuperación van en la pieza 3.6, y la 3.3 no se publica antes que la 3.6.", "Son otra responsabilidad; y sin recuperación, quien pierda el celular quedaría sin entrar. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Sin cambios en esta pieza."),
+            ("45.8", "Cambiar de celular con el Authenticator ya activo queda fuera, con la 3.6; aquí se responde que ya está activo.", "Es parte de recuperar el acceso. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó: responde 409 (360241f)."),
+            ("45.9", "La 3.2 entrega la clave y la dirección otpauth://; el código QR lo dibuja la pantalla en la 3.4.", "Las pantallas son otro subpaso; para probar, la clave se escribe a mano en la aplicación. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó (360241f)."),
+            ("45.10", "Si falta la llave en el servidor, la API arranca y solo estas rutas responden 503.", "Así un olvido no tumba el sitio, como con el CAPTCHA. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Así quedó (360241f)."),
+            ("45.11", "Hacer la pieza en dos ramas: primero la tabla con su migración y después las rutas.", "Son dos responsabilidades. Campo: qué hace.", "Aceptar", "«Acepto todas las recomendaciones, empieza con la tabla.»", "Ramas datos/user-totp y api/totp-setup."),
+            ("45.12", "Agregar a la tabla la columna key_version.", "Permite cambiar la llave de cifrado más adelante sin perder las claves guardadas; no estaba en la especificación. Campo: qué datos necesita.", "Aceptar", "«Acepto las desviaciones.»", "Quedó como estaba (69d9a39)."),
+            ("45.13", "Una regla extra en la base: una clave comprobada siempre tiene anotado el periodo de su código.", "La clave se comprueba con un código. Campo: qué datos necesita.", "Aceptar", "«Acepto las desviaciones.»", "Quedó como estaba (69d9a39)."),
+            ("45.14", "Regenerar dos diagramas entidad-relación con la entidad nueva.", "El modelo cambió y el documento dice que las imágenes se regeneran. Campo: qué hace.", "Aceptar", "«Acepto las desviaciones.»", "Quedó como estaba (69d9a39)."),
+            ("45.15", "Agregar la migración nueva a la lista de Neon en la guía de despliegue.", "La base de Neon y la de la computadora son independientes. Campo: qué hace.", "Aceptar", "«Acepto las desviaciones.»", "Quedó como estaba (69d9a39)."),
+            ("45.16", "Tres contraseñas incorrectas al empezar la activación avisan al dueño por correo.", "Es la regla del ADR 0014 para el inicio de sesión, aplicada aquí también. Campo: qué hace.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
+            ("45.17", "El código se acepta escrito con el espacio de en medio, como lo muestran las aplicaciones.", "Para que copiarlo tal cual no sea un error. Campo: qué hace.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
+            ("45.18", "Sin la llave de cifrado no se revisa ni la contraseña: responde 503 de inmediato y no gasta intentos.", "No tiene caso contar un intento si de todos modos no se puede activar. Campo: qué hace.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
+            ("45.19", "Volver a empezar la activación devuelve todos los intentos.", "La clave es nueva, así que los fallos de la anterior ya no aplican. Campo: qué hace.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
+            ("45.20", "Una llave de menos de 43 caracteres impide que el backend arranque, y dice cuál variable es.", "Si la variable falta la API arranca; si viene mal es un error de configuración que conviene ver de inmediato. Campo: qué datos necesita.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
+            ("45.21", "Agregar el ADR 0018.", "Deja escritos los parámetros del Authenticator; no estaba pedido. Campo: qué hace.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
+            ("45.22", "Cambiar una prueba existente que fijaba que solo había dos tipos de aviso por correo.", "Ahora hay tres, con el de que se activó el Authenticator. Campo: cómo se sabrá que funciona.", "Aceptar", "«Acepto las siete.»", "Sophia fusionó el PR #96 (198340d) antes de decir su veredicto y lo dio al revisar la bitácora. Quedó como estaba (360241f)."),
+        ],
+    },
 ]
