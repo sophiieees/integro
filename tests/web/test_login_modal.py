@@ -108,12 +108,47 @@ def test_the_window_has_the_two_steps_and_the_register_link():
     assert 'role=\\"dialog\\"' in SCREEN and 'aria-modal=\\"true\\"' in SCREEN
 
 
+def test_the_window_has_a_third_step_for_the_authenticator_code():
+    """Pieza 3.3: quien tiene el Authenticator activo escribe el código de su aplicación después del código del correo."""
+    assert 'data-paso=\\"authenticator\\"' in SCREEN
+    assert 'name=\\"totp\\" autocomplete=\\"one-time-code\\" inputmode=\\"numeric\\" maxlength=\\"7\\"' in SCREEN
+    # El texto del paso se escribe como texto, no como HTML, y sale de la lógica.
+    assert 'querySelector("[data-texto-authenticator]").textContent = LOGICA.TEXTO_DEL_AUTHENTICATOR' in SCREEN
+    # El paso tiene su propia salida: cerrar la sesión que quedó en espera.
+    assert "data-salir-de-espera>Cerrar sesión</button>" in SCREEN
+    order = [SCREEN.index(f'data-paso=\\"{step}\\"') for step in ("correo", "codigo", "authenticator")]
+    assert order == sorted(order)
+
+
+def test_the_authenticator_code_goes_to_its_own_route_with_the_page_key_and_without_captcha():
+    assert 'peticion("POST", "/2fa/verify", datos, estado.clave)' in SCREEN
+    assert 'peticionConCaptcha("POST", "/2fa/verify"' not in SCREEN
+    assert "var datos = { code: LOGICA.limpiarCodigoDeAuthenticator(form.totp.value) };" in SCREEN
+
+
+def test_a_waiting_session_opens_the_window_straight_at_the_authenticator_step():
+    assert 'if (estado.enEspera) { mostrarPaso("authenticator", null, "totp"); return; }' in SCREEN
+    assert "estado.enEspera = cabecera.enEspera;" in SCREEN
+    # Al salir de la espera, por cerrar sesión o porque venció, se olvida.
+    assert "estado.esAnfitrion = false; estado.esAdmin = false; estado.enEspera = false;" in SCREEN
+
+
+def test_a_code_that_did_not_work_is_not_left_written():
+    assert 'form.totp.value = "";' in SCREEN
+    assert 'formulario("authenticator").reset();' in SCREEN
+
+
+def test_the_register_invitation_is_hidden_in_the_authenticator_step():
+    assert 'ventana.querySelector(".ventana-pie").hidden = paso === "authenticator";' in SCREEN
+
+
 def test_escape_backdrop_and_cancel_close_the_window_and_clear_it():
     assert 'e.key === "Escape"' in SCREEN
     assert "if (e.target === fondo) cerrarVentana();" in SCREEN
     assert "[data-cancelar]" in SCREEN
     body = SCREEN[SCREEN.index("function cerrarVentana"):SCREEN.index("function enviarCorreo")]
-    assert body.count(".reset()") == 2
+    # Los tres formularios se limpian: correo y contraseña, código del correo y código del Authenticator.
+    assert body.count(".reset()") == 3
 
 
 def test_a_hidden_window_is_really_hidden():

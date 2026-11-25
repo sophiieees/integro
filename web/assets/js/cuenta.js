@@ -5,8 +5,11 @@
       docs/diseno/vistas.md), arma la cabecera de esa vista (estructura.js) y
       pinta la cuenta: «Iniciar sesión» y «Crear cuenta», o el nombre con su
       menú, que termina en «Cerrar sesión».
-   2. «Iniciar sesión» abre una ventana sobre la página con los dos pasos del inicio
-      de sesión (ADR 0014): correo y contraseña, y luego el código.
+   2. «Iniciar sesión» abre una ventana sobre la página con los pasos del inicio
+      de sesión (ADR 0014): correo y contraseña, y luego el código. Quien tiene el
+      Authenticator activo ve un tercer paso, el código de su aplicación (ADR 0018):
+      su sesión ya existe pero está en espera, y mientras tanto la cabecera es la del
+      visitante. Si recarga la página, «Iniciar sesión» lo lleva directo a ese paso.
    3. Al terminar, la ventana se cierra y la persona sigue en la misma página.
    4. «Cerrar sesión» cierra la sesión (POST /auth/logout) con la clave
       anti-falsificación que la API entrega en /auth/me.
@@ -34,7 +37,9 @@
   /* correo es el que se escribe en la ventana de inicio de sesión; correoDeLaCuenta, el de la persona con sesión. */
   var estado = {
     sesion: false, nombre: null, apellidos: "", correoDeLaCuenta: "", clave: null, servidor: true,
-    esAnfitrion: false, esAdmin: false, paso: "correo", correo: "", enviando: false
+    esAnfitrion: false, esAdmin: false, paso: "correo", correo: "", enviando: false,
+    /* La sesión existe pero falta el código del Authenticator. */
+    enEspera: false
   };
   var vistaPintada = "visitante";
   var ventana = null;
@@ -248,6 +253,7 @@
       estado.servidor = cabecera.servidor;
       estado.esAnfitrion = cabecera.esAnfitrion;
       estado.esAdmin = cabecera.esAdmin;
+      estado.enEspera = cabecera.enEspera;
       /* Lo que se elige mirar solo vale para un administrador; si ya no lo es, se olvida. */
       if (!estado.esAdmin && leerVerComo()) guardarVerComo(null);
       pintarCabecera();
@@ -266,7 +272,7 @@
   function sinSesion() {
     quitarAvisoDeInicio();
     estado.sesion = false; estado.nombre = null; estado.apellidos = ""; estado.correoDeLaCuenta = ""; estado.clave = null;
-    estado.esAnfitrion = false; estado.esAdmin = false;
+    estado.esAnfitrion = false; estado.esAdmin = false; estado.enEspera = false;
     guardarVerComo(null);
     pintarCabecera();
     aplicarAcceso();
@@ -348,6 +354,14 @@
             "<button type=\"submit\" class=\"btn btn-primario\">Iniciar sesión</button>" +
           "</div>" +
         "</form>" +
+        "<form data-paso=\"authenticator\" novalidate hidden>" +
+          "<p class=\"ventana-texto\" data-texto-authenticator></p>" +
+          "<label class=\"campo\"><span>Código de Authenticator</span><input type=\"text\" name=\"totp\" autocomplete=\"one-time-code\" inputmode=\"numeric\" maxlength=\"7\" pattern=\"[0-9 ]*\"></label>" +
+          "<div class=\"ventana-acciones\">" +
+            "<button type=\"button\" class=\"btn-enlace\" data-salir-de-espera>Cerrar sesión</button>" +
+            "<button type=\"submit\" class=\"btn btn-primario\">Continuar</button>" +
+          "</div>" +
+        "</form>" +
         "<p class=\"ventana-pie\">¿Aún no tienes una cuenta? <a href=\"registro.html\">Regístrate</a></p>" +
       "</div>";
     document.body.appendChild(fondo);
@@ -357,6 +371,9 @@
     fondo.querySelector("[data-volver]").addEventListener("click", function () { mostrarPaso("correo", null, "email"); });
     fondo.querySelector("form[data-paso=correo]").addEventListener("submit", enviarCorreo);
     fondo.querySelector("form[data-paso=codigo]").addEventListener("submit", enviarCodigo);
+    fondo.querySelector("form[data-paso=authenticator]").addEventListener("submit", enviarAuthenticator);
+    fondo.querySelector("[data-salir-de-espera]").addEventListener("click", salirDeEspera);
+    fondo.querySelector("[data-texto-authenticator]").textContent = LOGICA.TEXTO_DEL_AUTHENTICATOR;
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !fondo.hidden) cerrarVentana(); });
     return fondo;
   }
@@ -373,6 +390,9 @@
     estado.paso = paso;
     formulario("correo").hidden = paso !== "correo";
     formulario("codigo").hidden = paso !== "codigo";
+    formulario("authenticator").hidden = paso !== "authenticator";
+    /* Quien ya está en el paso del Authenticator tiene cuenta: la invitación a registrarse sobra. */
+    ventana.querySelector(".ventana-pie").hidden = paso === "authenticator";
     mostrarAviso(aviso);
     var entrada = campo ? ventana.querySelector("[name=" + campo + "]") : ventana.querySelector("form:not([hidden]) input");
     if (entrada) entrada.focus();
@@ -390,6 +410,9 @@
     document.body.classList.add("con-ventana");
     formulario("correo").reset();
     formulario("codigo").reset();
+    formulario("authenticator").reset();
+    /* Si la sesión ya existe y solo falta el Authenticator, la ventana abre directo en ese paso. */
+    if (estado.enEspera) { mostrarPaso("authenticator", null, "totp"); return; }
     mostrarPaso("correo", estado.servidor ? null : LOGICA.SIN_SERVIDOR, "email");
     /* El resultado del desafío se prepara mientras la persona escribe. */
     CAPTCHA.preparar(zonaDelCaptcha());
@@ -403,6 +426,7 @@
     document.body.classList.remove("con-ventana");
     formulario("correo").reset();
     formulario("codigo").reset();
+    formulario("authenticator").reset();
     mostrarAviso(null);
     estado.paso = "correo";
     if (quienAbrio && document.body.contains(quienAbrio)) quienAbrio.focus();
@@ -449,8 +473,60 @@
         cargarSesion().then(regresarSiHaceFalta);
         return;
       }
+      if (siguiente.paso === "authenticator") {
+        /* La sesión se abrió en espera: se guarda su clave y se pide el código de la aplicación. */
+        estado.enEspera = true;
+        estado.clave = siguiente.clave;
+        form.reset();
+      }
       if (siguiente.paso === "correo") form.code.value = "";
       mostrarPaso(siguiente.paso, siguiente.aviso, siguiente.campo);
+    });
+  }
+
+  /* ---------- El paso del Authenticator ---------- */
+
+  function enviarAuthenticator(e) {
+    e.preventDefault();
+    if (estado.enviando) return;
+    var form = formulario("authenticator");
+    var revision = LOGICA.revisarCodigoDeAuthenticator(form.totp.value);
+    if (revision) { mostrarPaso("authenticator", revision.aviso, revision.campo); return; }
+    ocupado(true);
+    var datos = { code: LOGICA.limpiarCodigoDeAuthenticator(form.totp.value) };
+    peticion("POST", "/2fa/verify", datos, estado.clave).then(function (r) {
+      ocupado(false);
+      var siguiente = LOGICA.despuesDelAuthenticator(r.status, r.cuerpo);
+      if (siguiente.paso === "dentro") {
+        estado.enEspera = false;
+        cerrarVentana();
+        cargarSesion().then(regresarSiHaceFalta);
+        return;
+      }
+      /* Un código que no sirvió no se deja escrito: el siguiente es otro. */
+      form.totp.value = "";
+      if (siguiente.paso === "correo") {
+        sinSesion();
+        mostrarPaso("correo", siguiente.aviso, siguiente.campo);
+        CAPTCHA.preparar(zonaDelCaptcha());
+        return;
+      }
+      mostrarPaso("authenticator", siguiente.aviso, siguiente.campo);
+    });
+  }
+
+  /* «Cerrar sesión» en el paso del Authenticator: cierra la sesión que estaba en espera y vuelve al principio. */
+  function salirDeEspera() {
+    if (estado.enviando) return;
+    ocupado(true);
+    peticion("POST", "/logout", null, estado.clave).then(function () {
+      ocupado(false);
+      /* Se le pregunta a la API cómo quedó: si la sesión ya no existe, la ventana vuelve al correo y la contraseña. */
+      cargarSesion().then(function () {
+        if (estado.enEspera) { mostrarPaso("authenticator", LOGICA.despuesDeSalir(403).aviso, "totp"); return; }
+        mostrarPaso("correo", null, "email");
+        CAPTCHA.preparar(zonaDelCaptcha());
+      });
     });
   }
 
