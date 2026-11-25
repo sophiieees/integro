@@ -2338,14 +2338,14 @@ PROMPTS = [
         "titulo": "CAPTCHA con Cloudflare Turnstile: el servidor, las pantallas y la fecha de nacimiento",
         "fecha": "22 de noviembre de 2026",
         "rol": ROL_PROYECTO,
-        "contexto": ("Para las decisiones de la bitácora 38: la bitácora le parece bastante bien y ya se puede hacer; la "
-                     "decisión 38.1 queda rechazada porque no le gusta nada más que diga «iniciar sesión» y «cambiaste tu "
-                     "contraseña»; la 38.2 está bien. Las cuatro acciones del CAPTCHA le parecen bien y cree que el sistema "
-                     "queda bastante bloqueado. Entiende que el CAPTCHA es para evitar que una máquina sea quien responde y "
+        "contexto": ("Para las decisiones de la bitácora 38: la bitácora me parece bastante bien y ya se puede hacer; la "
+                     "decisión 38.1 queda rechazada porque no me gusta nada más que diga «iniciar sesión» y «cambiaste tu "
+                     "contraseña»; la 38.2 está bien. Las cuatro acciones del CAPTCHA me parecen bien y creo que el sistema "
+                     "queda bastante bloqueado. Entiendo que el CAPTCHA es para evitar que una máquina sea quien responde y "
                      "así ingrese al sistema. Sobre qué pasa si Cloudflare no responde: «si cae va a ser un problema, no "
-                     "sé». Borró el widget de Cloudflare y creó otro sin querer, con una Site Key nueva. Después de la "
-                     "recomendación de la IA confirmó las dos, aceptó todas las desviaciones y las sugerencias del servidor, "
-                     "y preguntó si las variables para fusionar se crean en Environment Variables de Vercel o en otro lado."),
+                     "sé». Borré el widget de Cloudflare y creé otro sin querer, con una Site Key nueva. Después de la "
+                     "recomendación de la IA confirmé las dos, acepté todas las desviaciones y las sugerencias del servidor, "
+                     "y pregunté si las variables para fusionar se crean en Environment Variables de Vercel o en otro lado."),
         "tarea": ("1) Decidir las dos decisiones de la bitácora 38: 38.1 rechazada, 38.2 aceptada. 2) Las cuatro acciones del "
                   "CAPTCHA están bien. 3) Qué recomienda la IA si Cloudflare no responde y si el CAPTCHA debe tener interruptor o "
                   "estar siempre activo. 4) Confirma las dos recomendaciones: rechazar si Cloudflare no responde, y sin "
@@ -2416,10 +2416,10 @@ PROMPTS = [
         "titulo": "Correo real con Resend",
         "fecha": "22 de noviembre de 2026",
         "rol": ROL_PROYECTO,
-        "contexto": ("Fusionó el PR de la fecha de nacimiento, cargó las variables del CAPTCHA en Vercel, hizo el redeploy y "
-                     "todo salió bien. El hostname del widget de Cloudflare es el que aparece. Pidió comenzar con el correo "
-                     "real y el segundo factor; después de ver la propuesta de la IA dijo que comenzaban con el correo real "
-                     "y que lo harían con Resend. Preguntó si con eso terminan el punto 2, para pasar al 3, y que en el 3 "
+        "contexto": ("Fusioné el PR de la fecha de nacimiento, cargué las variables del CAPTCHA en Vercel, hice el redeploy y "
+                     "todo salió bien. El hostname del widget de Cloudflare es el que aparece. Pedí comenzar con el correo "
+                     "real y el segundo factor; después de ver la propuesta de la IA dije que comenzábamos con el correo real "
+                     "y que lo haríamos con Resend. Pregunté si con eso terminamos el punto 2, para pasar al 3, y que en el 3 "
                      "ya se despliega lo del segundo factor."),
         "tarea": ("1) /pieza: comenzar con el correo real y el segundo factor. 2) Comenzar con el correo real, con Resend. "
                   "3) ¿Con el correo real se termina el punto 2? Pasar al 3, donde se despliega lo del segundo factor. "
@@ -2463,7 +2463,7 @@ PROMPTS = [
             ("40.6", "Con EMAIL_DELIVERY=resend y sin EMAIL_API_KEY o EMAIL_FROM, la API no arranca y dice cuál falta.", "El modo se elige a propósito y fingir que se envía sería peor. Para el CAPTCHA se hizo lo contrario: arranca y rechaza las acciones. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
             ("40.7", "El texto del 503 dice «Espera un minuto e inténtalo de nuevo», en vez de solo «Inténtalo de nuevo».", "Un código que no salió cuenta para la espera normal de un minuto entre códigos. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
             ("40.8", "Mover los textos de los avisos de console.py a messages.py, que console.py ahora importa.", "Un solo texto para el modo desarrollo y para el correo; su contenido no cambió. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
-            ("40.9", "Pasar el segundo factor del punto 2 al punto 3.", "Propuesta de Sophia, como pregunta: «con eso terminamos el punto 2, ¿no? Para pasar al 3, y en el 3 ya se despliega lo del segundo factor». La IA respondió que el segundo factor estaba en su lista del punto 2 y en docs/arquitectura.md como pieza de Cuentas, y que no encuentra escrito qué contiene el punto 3. Campo: qué hace.", "Pendiente", "", "Falta que Sophia diga qué contiene el punto 3."),
+            ("40.9", "Pasar el segundo factor del punto 2 al punto 3.", "Propuesta de Sophia, como pregunta: «con eso terminamos el punto 2, ¿no? Para pasar al 3, y en el 3 ya se despliega lo del segundo factor». La IA respondió que el segundo factor estaba en su lista del punto 2 y en docs/arquitectura.md como pieza de Cuentas, y que no encuentra escrito qué contiene el punto 3. Campo: qué hace.", "Aceptar", "«Y la aplicación de códigos [TOTP], esto va para el punto 3.»", "El segundo factor pasa al punto 3; qué contiene el punto 3 quedó definido en los prompts 41 y 42."),
         ],
     },
     # ------------------------------------------------------------------ 41
@@ -2616,6 +2616,58 @@ PROMPTS = [
             ("42.3", "Si el anfitrión pierde el celular, recuperar la misma cuenta: diez códigos de recuperación; si no los tiene, reverificación con prueba de vida iniciada desde el correo; y si perdió también el correo, ayuda del equipo. Sin cancelar el servicio ni pedir una cuenta nueva.", "Si el correo solo basta, el Authenticator deja de ser más fuerte que el correo; y una cuenta nueva pierde propiedades, reseñas y membresía, y la huella de identidad la marcaría como duplicada. Campo: qué hace.", "Aceptar", "«Sí, me sirve tu propuesta.»", "Sustituye la idea de Sophia de cancelar el servicio y hacer otra cuenta; se conserva la cuenta y, si sospechan un robo, se cierran las sesiones."),
             ("42.4", "El Authenticator vuelve a pedirse cada 30 días de sesión con actividad, en una configuración.", "Sophia describió que en la universidad se pide tras inactividad y cada cierto número de días con actividad; en anfitriones ese tope no existe. Campo: qué hace.", "Aceptar", "«30 días para que vuelva a pedir el Authenticator, está bien.»", "El número vive en una configuración."),
             ("42.5", "Tras la reverificación con prueba de vida y huella coincidente, dar acceso a las 2 horas y mantener congelados los cobros y el cambio de cuenta bancaria 24 horas.", "Dos horas solas son pocas si alguien tiene el correo y borra el aviso; la barrera fuerte es la prueba de vida, y lo que más daño haría es mover dinero. Campo: cómo se sabrá que funciona.", "Aceptar", "«Sí, déjalo así.»", "Las dos horas las propuso Sophia; las 24 horas del dinero y la separación son de la IA. Ambas cifras en configuración."),
+        ],
+    },
+    # ------------------------------------------------------------------ 43
+    {
+        "n": 43,
+        "titulo": "Punto 3: subpasos, ajuste de la bitácora y alcance del frontend",
+        "fecha": "24 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Ya fusioné el PR de la bitácora 42. La entrada 41 debe estar en primera persona. La pieza 40 no sé "
+                     "por qué no aparece en GitHub y prefiero que se resuelva conservando ambas entradas. Tenemos 8 pasos y "
+                     "vamos con el paso 3; con lo que ya te platiqué quiero saber qué se puede comenzar y cuál es la lista "
+                     "de subpasos."),
+        "tarea": ("1) Pasa la entrada 41 a primera persona. 2) Resuelve lo de la 40 conservando ambas entradas. 3) ¿Qué es lo "
+                  "que podemos comenzar del paso 3 y qué recomiendas? ¿Cuál es la lista de subpasos? Authenticator y anfitrión "
+                  "es para el paso 3, ¿no? 4) Confirmo que el punto 3 solo lleve las pantallas del anfitrión y que el rediseño "
+                  "completo vaya con los puntos 4 y 5; ya fusioné el PR. 5) /bitacora: registra lo de hoy, cierra 40.9, "
+                  "pasa el 39 y el 40 a primera persona y avisa al otro chat que descarte su cambio sin confirmar de "
+                  "bitacora_datos.py en su rama local docs/bitacora-40, para que no duplique la 40."),
+        "salida": ("La lista de subpasos del punto 3 con su orden y lo que se puede comenzar, y el registro en la bitácora, "
+                   "con el desglose de cierre de CLAUDE.md."),
+        "respuesta": {
+            "fecha": "24 de noviembre de 2026",
+            "commits": ("El commit de este registro, en la rama docs/bitacora-43. Antes, el PR #91 (rama docs/bitacora-40-41, "
+                        "commits f5ef60b y a94e0f9), fusionado por Sophia en 4e305e8."),
+            "archivos": [
+                ("herramientas/bitacora/bitacora_datos.py", "esta entrada con seis decisiones, la fila 40.9 cerrada como Aceptar y el contexto de los prompts 39 y 40 en primera persona."),
+            ],
+            "sugerencias": [
+                ("Empezar el chat de programación por el subpaso 3.1, el perfil de anfitrión.",
+                 "es lo más pequeño, host_profiles ya tiene su tabla y sus permisos y no depende de nadie externo."),
+                ("Antes del subpaso 3.2, crear la llave de cifrado, guardarla en KeePass y en las variables de entorno, e instalar una aplicación Authenticator en el celular.",
+                 "el Authenticator guarda su clave cifrada, el backend todavía no tiene cifrado ni TOTP y ningún secreto va en el repositorio."),
+                ("Elegir el proveedor de identidad y pasar a Valeria la lista legal.",
+                 "los subpasos 3.5 a 3.7 dependen de las dos cosas."),
+                ("Pegar en el chat de programación el aviso para que descarte su cambio sin confirmar de la entrada 40.",
+                 "si hace commit de esa entrada, quedaría duplicada; la IA no pudo enviarlo porque hay dos sesiones abiertas y no sabe cuál es la de Íntegro."),
+            ],
+            "lineas": ("bitacora_datos.py: la entrada 43 con seis filas de decisiones, el veredicto, la razón y el cambio de la "
+                       "fila 40.9, y el campo contexto de las entradas 39 y 40."),
+            "pruebas": ("No hay pruebas automáticas: no cambió código de la aplicación. Se leyó el repositorio: host_profiles y "
+                        "verifications existen con sus permisos (la persona lee lo suyo y solo el sistema escribe); una búsqueda "
+                        "de aes, cryptography, pyotp, totp, qrcode y encryption en el backend no encontró nada; el PR #91 está en "
+                        "main con las entradas 39, 40, 41 y 42 en orden. La carpeta del otro chat seguía en la rama "
+                        "docs/bitacora-40 con 56 líneas sin confirmar y 12 commits detrás de main."),
+        },
+        "decisiones": [
+            ("43.1", "Incorporar la entrada 40 del otro chat a main, conservando las dos entradas, en lugar de esperar a que el otro chat la confirme.", "Quedó sin confirmar en su carpeta, en una rama local que nunca se subió, y por eso no aparecía en GitHub. Campo: qué hace.", "Aceptar", "«Mejor resuélvelo conservando ambas entradas.»", "Se copió tal cual entre la 39 y la 41 (a94e0f9, PR #91)."),
+            ("43.2", "Redactar el contexto de cada prompt en primera persona.", "Sophia corrigió que el contexto del prompt 42 estaba en tercera persona; las entradas 41, 39 y 40 también lo estaban. Campo: qué hace.", "Aceptar", "«El contexto… se redacta en primera persona.» Después pidió pasar la 41, el 39 y el 40.", "La 41 en el PR #91 (f5ef60b); la 39 y la 40 en este registro."),
+            ("43.3", "Dividir el punto 3 en siete subpasos y comenzar por el 3.1: 3.1 perfil de anfitrión; 3.2 Authenticator, activar y comprobar; 3.3 Authenticator al iniciar sesión; 3.4 pantallas del anfitrión; 3.5 verificación de identidad con el proveedor; 3.6 recuperar el acceso; 3.7 huella de identidad.", "Los cuatro primeros no dependen del proveedor ni de Valeria; los tres últimos sí. Campo: qué hace.", "Pendiente", "", "Sin cambios. Sophia lo confirmará al dar la pieza en el chat de programación."),
+            ("43.4", "El punto 3 solo lleva las pantallas del anfitrión y la estructura de qué ve cada tipo de persona; el rediseño completo (estilo Airbnb en computadora, estilo Instagram en celular) va con los puntos 4 y 5.", "El rediseño gira en torno a las propiedades y la búsqueda, que son esos puntos. Campo: qué hace.", "Aceptar", "«Sí, me parece bien.»", "Sin cambios en el código."),
+            ("43.5", "La identidad del huésped se verifica al reservar, así que va con el punto 6; el copropietario y el coanfitrión verificados van con el punto 4.", "Ocurren al reservar y al registrar una propiedad, que todavía no existen. Campo: qué hace.", "Pendiente", "", "Sin cambios."),
+            ("43.6", "Avisar al otro chat que descarte su cambio sin confirmar de la entrada 40, con el texto listo para pegar.", "Si hace commit de esa entrada, quedaría duplicada. Campo: qué hace.", "Aceptar", "«Avisarle al otro chat que descarte el cambio sin confirmar de bitacora_datos.py en su rama local docs/bitacora-40, para que no duplique la 40.»", "La IA no pudo enviarlo; Sophia lo pega en el chat de programación."),
         ],
     },
 ]
