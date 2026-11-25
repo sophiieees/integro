@@ -21,7 +21,9 @@ class CodeSender(Protocol):
         la cuenta), con failures, at, ip_address y user_agent; y password_changed
         (la contraseña de la cuenta se cambió al recuperarla), con at, ip_address
         y user_agent; y two_factor_enabled (se activó el Authenticator de la cuenta),
-        con at, ip_address y user_agent. Ningún aviso lleva contraseñas ni códigos. Un aviso que no se pudo enviar no levanta error: lo
+        con at, ip_address y user_agent; y two_factor_locked (demasiados códigos
+        incorrectos del Authenticator al iniciar sesión), con failures, at, ip_address
+        y user_agent. Ningún aviso lleva contraseñas ni códigos. Un aviso que no se pudo enviar no levanta error: lo
         que avisa ya pasó y no se deshace.
         """
         ...

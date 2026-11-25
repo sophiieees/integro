@@ -14,10 +14,17 @@ from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from app.api.auth import SESSION_COOKIE, clear_session_cookie, require_session, set_session_cookie
+from app.api.auth import (
+    SECOND_FACTOR_REQUIRED,
+    SESSION_COOKIE,
+    clear_session_cookie,
+    require_session,
+    require_session_even_pending,
+    set_session_cookie,
+)
 from app.api.captcha import CaptchaRejected, require_captcha, site_key_of
 from app.api.client import client_ip
-from app.api.protection import csrf_token, require_session_for_change
+from app.api.protection import csrf_token, require_session_for_change, require_session_for_change_even_pending
 from app.database.transaction import user_transaction
 from app.modules.accounts.email_correction import CorrectionOutcome, correct_unverified_email
 from app.modules.accounts.login import LoginOutcome, SessionOutcome, finish_login, start_login
@@ -445,6 +452,9 @@ class SessionResponse(BaseModel):
     # Clave anti-falsificación de esta sesión: la página la manda en el
     # encabezado X-CSRF-Token en cada petición que cambie algo.
     csrf_token: str
+    # Solo viene, en true, si la sesión se abrió en espera del Authenticator: la página pide ese código y lo manda a
+    # /auth/2fa/verify. Mientras tanto la sesión no sirve para nada más (pieza 3.3).
+    second_factor_required: bool | None = None
 
 
 class MeResponse(BaseModel):
@@ -525,6 +535,7 @@ def login(body: LoginRequest, request: Request):
 @router.post(
     "/login/verify",
     response_model=SessionResponse,
+    response_model_exclude_none=True,
     responses={400: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
     summary="Iniciar sesión, paso 2: el código",
 )
@@ -551,6 +562,7 @@ def login_verify(body: LoginVerifyRequest, request: Request, response: Response)
             status="session_opened",
             expires_at=result.expires_at,
             csrf_token=csrf_token(result.token, state.settings),
+            second_factor_required=True if result.second_factor_required else None,
         )
     if result.outcome is SessionOutcome.CODE_EXPIRED:
         return error_response(
@@ -570,13 +582,27 @@ def login_verify(body: LoginVerifyRequest, request: Request, response: Response)
 @router.get(
     "/me",
     response_model=MeResponse,
-    responses={401: {"model": ErrorResponse}},
+    responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
     summary="Quién soy: los datos de la persona con sesión",
 )
-def me(request: Request, session: CurrentSession = Depends(require_session)):
+def me(request: Request, session: CurrentSession = Depends(require_session_even_pending)):
     """Devuelve los datos de quien tiene la sesión, que llega en la cookie
     integro_session. Los lee como esa persona, así que la base solo le deja
-    ver su propia fila. Cada uso renueva la cookie."""
+    ver su propia fila. Cada uso renueva la cookie.
+
+    Si la sesión está en espera del Authenticator responde `403` con el código
+    `second_factor_required` y **ningún dato** de la persona; solo la clave
+    anti-falsificación, que la página necesita para mandar el código a
+    `/auth/2fa/verify` o para cerrar la sesión."""
+    if session.second_factor_pending:
+        return JSONResponse(
+            status_code=403,
+            content={
+                "errors": [SECOND_FACTOR_REQUIRED],
+                "csrf_token": csrf_token(request.cookies[SESSION_COOKIE], request.app.state.settings),
+            },
+            headers={"Cache-Control": "no-store"},
+        )
     with user_transaction(request.app.state.pool, session.user_id) as connection:
         row = connection.execute(
             "select id, first_name, last_name, email, country, preferred_language from users"
@@ -636,7 +662,7 @@ def without_cookie(body: dict, settings) -> JSONResponse:
     responses={401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
     summary="Cerrar la sesión actual",
 )
-def logout(request: Request, session: CurrentSession = Depends(require_session_for_change)):
+def logout(request: Request, session: CurrentSession = Depends(require_session_for_change_even_pending)):
     """Cierra la sesión con la que llega la petición y borra su cookie. La
     llave deja de servir en ese instante y no vuelve a servir."""
     state = request.app.state

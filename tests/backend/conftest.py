@@ -50,6 +50,7 @@ SETTINGS_VARIABLES = (
     "DATA_ENCRYPTION_KEY",
     "TWO_FACTOR_MAX_ATTEMPTS",
     "TWO_FACTOR_WAIT_MINUTES",
+    "TWO_FACTOR_REVERIFY_DAYS",
 )
 
 # Llave inventada, solo para pruebas que no usan la configuración real.

@@ -41,6 +41,12 @@ class CurrentSession:
     # Segundos que debe durar la cookie de un administrador (lo que le queda a la sesión). None para los demás,
     # cuya cookie dura los días de su tipo de sesión.
     cookie_seconds: int | None = None
+    # La persona tiene el Authenticator activo (pieza 3.2). Se revisa en cada petición.
+    has_second_factor: bool = False
+    # La sesión está en espera: la persona tiene el Authenticator activo y esta sesión todavía no lo pasa, o ya
+    # pasaron los días para volver a pedirlo (pieza 3.3). Una sesión en espera no sirve para nada más que para
+    # escribir el código o cerrar la sesión.
+    second_factor_pending: bool = False
 
 
 def idle_days(is_host: bool, settings: Settings) -> int:
@@ -64,17 +70,27 @@ def authenticate(pool: ConnectionPool, token: str | None, settings: Settings) ->
             "select s.id, s.user_id, h.is_host, a.is_admin, "
             # Un administrador pierde la sesión si pasó el tiempo sin uso o el tope desde que la abrió.
             "(a.is_admin and (s.last_used_at < now() - make_interval(mins => %s) "
-            "  or s.created_at < now() - make_interval(hours => %s))) "
+            "  or s.created_at < now() - make_interval(hours => %s))), "
+            # Quien tiene el Authenticator activo necesita que esta sesión lo haya pasado, y no hace demasiado.
+            "t.active, "
+            "(t.active and (s.second_factor_at is null or s.second_factor_at <= now() - make_interval(days => %s))) "
             "from sessions s "
             "cross join lateral (select exists (select 1 from host_profiles h where h.user_id = s.user_id) as is_host) h "
             "cross join lateral (select exists (select 1 from admins a where a.user_id = s.user_id) as is_admin) a "
+            "cross join lateral (select exists (select 1 from user_totp t where t.user_id = s.user_id "
+            "  and t.confirmed_at is not null) as active) t "
             "where s.token_hash = %s and s.revoked_at is null and s.expires_at > now() "
             "for update of s",
-            (settings.session_idle_minutes_admin, settings.session_max_hours_admin, hash_session_token(token)),
+            (
+                settings.session_idle_minutes_admin,
+                settings.session_max_hours_admin,
+                settings.two_factor_reverify_days,
+                hash_session_token(token),
+            ),
         ).fetchone()
         if row is None:
             return None
-        session_id, user_id, is_host, is_admin, admin_timed_out = row
+        session_id, user_id, is_host, is_admin, admin_timed_out, has_second_factor, second_factor_pending = row
         if admin_timed_out:
             connection.execute("update sessions set revoked_at = now() where id = %s", (session_id,))
             return None
@@ -99,6 +115,8 @@ def authenticate(pool: ConnectionPool, token: str | None, settings: Settings) ->
         is_admin=is_admin,
         expires_at=expires_at,
         cookie_seconds=cookie_seconds,
+        has_second_factor=has_second_factor,
+        second_factor_pending=second_factor_pending,
     )
 
 

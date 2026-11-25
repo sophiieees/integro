@@ -174,7 +174,10 @@ def test_the_time_a_code_lasts_is_said_in_minutes_rounded_up(seconds, text):
 
 def test_the_texts_are_in_formal_tu_never_usted():
     messages = [code_message(p, "123456", 300) for p in ("verify_email", "login", "password_reset")]
-    messages += [notice_message(kind, NOTICE_DETAILS) for kind in ("failed_logins", "password_changed", "two_factor_enabled")]
+    messages += [
+        notice_message(kind, NOTICE_DETAILS)
+        for kind in ("failed_logins", "password_changed", "two_factor_enabled", "two_factor_locked")
+    ]
 
     for message in messages:
         assert not re.search(r"\busted(es)?\b", message.text + message.subject, re.I)
@@ -214,6 +217,17 @@ def test_the_authenticator_notice_says_when_and_from_where_and_carries_no_key_or
     assert "secret" not in message.text.lower() and "otpauth" not in message.text.lower()
 
 
+def test_the_authenticator_wait_notice_says_someone_already_had_the_password_and_the_email_code():
+    message = notice_message("two_factor_locked", {**NOTICE_DETAILS, "failures": 5})
+
+    assert message.subject == "Hubo códigos incorrectos del Authenticator en tu cuenta de Íntegro"
+    for text in (message.text, message.html):
+        assert "Alguien escribió 5 códigos incorrectos del Authenticator al iniciar sesión en tu cuenta de Íntegro." in text
+        assert "2026-11-22 18:30:05 UTC" in text and "Navegador: Firefox/140." in text and "Dirección: 203.0.113.7." in text
+        assert "ya había escrito tu contraseña y el código de tu correo" in text
+        assert "Si no fuiste tú, cambia tu contraseña de inmediato." in text
+
+
 def test_what_is_unknown_is_said_so():
     message = notice_message("password_changed", {"at": NOTICE_DETAILS["at"]})
 
@@ -223,7 +237,7 @@ def test_what_is_unknown_is_said_so():
 def test_what_comes_from_outside_is_escaped_in_the_html_and_left_alone_in_the_text():
     hostile = {**NOTICE_DETAILS, "user_agent": '<script>alert("hola")</script>', "ip_address": "<img src=x onerror=1>"}
 
-    for kind in ("failed_logins", "password_changed", "two_factor_enabled"):
+    for kind in ("failed_logins", "password_changed", "two_factor_enabled", "two_factor_locked"):
         message = notice_message(kind, hostile)
         assert "<script>" not in message.html and "<img" not in message.html
         assert "&lt;script&gt;" in message.html and "&lt;img" in message.html
@@ -248,7 +262,7 @@ def test_the_development_console_says_the_same_notices_as_the_email():
     from app.notifications.console import KIND_TEXTS, failed_logins_text
 
     assert failed_logins_text(NOTICE_DETAILS) in notice_message("failed_logins", NOTICE_DETAILS).text
-    assert set(KIND_TEXTS) == {"failed_logins", "password_changed", "two_factor_enabled"}
+    assert set(KIND_TEXTS) == {"failed_logins", "password_changed", "two_factor_enabled", "two_factor_locked"}
     assert isinstance(ConsoleCodeSender(), ConsoleCodeSender)
 
 

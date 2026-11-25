@@ -65,55 +65,55 @@
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M963.39,-688.61C991.64,-656.3 1049.73,-589.88 1077.4,-558.23"/>
 </g>
 <!-- User&#45;&#45;has_credential -->
-<g id="edge54" class="edge">
+<g id="edge55" class="edge">
 <title>User&#45;&#45;has_credential</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M966.93,-725.44C1028.57,-783.15 1217.19,-959.73 1271.12,-1010.22"/>
 <text xml:space="preserve" text-anchor="middle" x="1111.8" y="-871.73" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;has_totp -->
-<g id="edge56" class="edge">
+<g id="edge57" class="edge">
 <title>User&#45;&#45;has_totp</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M976.12,-721.16C1040.38,-752.6 1194.56,-828.05 1257.84,-859.02"/>
 <text xml:space="preserve" text-anchor="middle" x="1109.76" y="-793.99" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;opens -->
-<g id="edge58" class="edge">
+<g id="edge59" class="edge">
 <title>User&#45;&#45;opens</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M922.39,-725.55C836.07,-789.76 551.2,-1001.69 485.62,-1050.48"/>
 <text xml:space="preserve" text-anchor="middle" x="696.78" y="-891.92" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;requests -->
-<g id="edge60" class="edge">
+<g id="edge61" class="edge">
 <title>User&#45;&#45;requests</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M921.84,-688.64C855.43,-640.6 678.28,-512.45 624.54,-473.58"/>
 <text xml:space="preserve" text-anchor="middle" x="765.96" y="-585.01" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;is_sent -->
-<g id="edge62" class="edge">
+<g id="edge63" class="edge">
 <title>User&#45;&#45;is_sent</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M918.42,-713.79C852.25,-729.28 690.7,-767.09 631.28,-781"/>
 <text xml:space="preserve" text-anchor="middle" x="767.62" y="-751.29" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;is_admin -->
-<g id="edge64" class="edge">
+<g id="edge65" class="edge">
 <title>User&#45;&#45;is_admin</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M976.12,-708.88C1039.02,-712.9 1188.08,-722.41 1253.71,-726.6"/>
 <text xml:space="preserve" text-anchor="middle" x="1107.69" y="-721.64" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;acts_as -->
-<g id="edge66" class="edge">
+<g id="edge67" class="edge">
 <title>User&#45;&#45;acts_as</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M976.12,-697.22C1041.02,-675.13 1197.64,-621.81 1259.71,-600.68"/>
 <text xml:space="preserve" text-anchor="middle" x="1110.69" y="-652.85" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;undergoes -->
-<g id="edge68" class="edge">
+<g id="edge69" class="edge">
 <title>User&#45;&#45;undergoes</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M970.8,-688.52C1035.55,-637.54 1215.2,-496.12 1269.75,-453.17"/>
 <text xml:space="preserve" text-anchor="middle" x="1113.05" y="-574.74" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- User&#45;&#45;performs -->
-<g id="edge72" class="edge">
+<g id="edge73" class="edge">
 <title>User&#45;&#45;performs</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M918.42,-699.67C853.69,-683.15 697.68,-643.31 635.3,-627.39"/>
 <text xml:space="preserve" text-anchor="middle" x="769.63" y="-667.43" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
@@ -131,88 +131,93 @@
 <!-- Session&#45;&#45;Session.id -->
 <g id="edge14" class="edge">
 <title>Session&#45;&#45;Session.id</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M310.62,-1214.47C356.68,-1218.41 430.93,-1224.75 470.73,-1228.15"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M310.68,-1213.13C358.62,-1215.62 437.42,-1219.72 478.73,-1221.87"/>
 </g>
 <!-- Session&#45;&#45;Session.token_hash -->
 <g id="edge15" class="edge">
 <title>Session&#45;&#45;Session.token_hash</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M290.43,-1229.4C308.33,-1245.86 334.35,-1269.79 351.49,-1285.56"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M297.29,-1229.46C318.63,-1244.11 348.11,-1264.36 368.05,-1278.05"/>
 </g>
 <!-- Session&#45;&#45;Session.expires_at -->
 <g id="edge16" class="edge">
 <title>Session&#45;&#45;Session.expires_at</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M266.92,-1229.46C260.95,-1260.43 248.97,-1322.57 243.02,-1353.4"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M273.34,-1229.47C278.33,-1261.44 288.51,-1326.82 293.51,-1358.84"/>
 </g>
 <!-- Session&#45;&#45;Session.revoked_at -->
 <g id="edge17" class="edge">
 <title>Session&#45;&#45;Session.revoked_at</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M235.4,-1229.55C213.51,-1241.1 185.84,-1255.71 166.11,-1266.12"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M253.27,-1229.59C236.41,-1247.79 210.92,-1275.28 194.63,-1292.85"/>
 </g>
 <!-- Session&#45;&#45;Session.last_used_at -->
 <g id="edge18" class="edge">
 <title>Session&#45;&#45;Session.last_used_at</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M230.31,-1206.69C189.07,-1202.23 125.28,-1195.32 84.18,-1190.87"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M230.31,-1219.74C188.19,-1228.86 122.52,-1243.08 81.55,-1251.95"/>
 </g>
 <!-- Session&#45;&#45;Session.ip_address -->
 <g id="edge19" class="edge">
 <title>Session&#45;&#45;Session.ip_address</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M251.84,-1192.83C234.66,-1176.05 209.39,-1151.35 192.85,-1135.2"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M230.18,-1198.93C204.62,-1191.25 172.04,-1181.46 148.42,-1174.37"/>
 </g>
 <!-- Session&#45;&#45;Session.user_agent -->
 <g id="edge20" class="edge">
 <title>Session&#45;&#45;Session.user_agent</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M274.85,-1192.7C282.21,-1161.87 296.98,-1100.01 304.3,-1069.32"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M256.92,-1192.47C235.75,-1163.44 195.1,-1107.72 174.46,-1079.42"/>
+</g>
+<!-- Session&#45;&#45;Session.second_factor_at -->
+<g id="edge21" class="edge">
+<title>Session&#45;&#45;Session.second_factor_at</title>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M276.26,-1192.53C282.97,-1171.03 293.99,-1135.78 300.7,-1114.3"/>
 </g>
 <!-- Session&#45;&#45;opens -->
-<g id="edge59" class="edge">
+<g id="edge60" class="edge">
 <title>Session&#45;&#45;opens</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M294,-1190.99C337.1,-1158.81 424.6,-1093.5 457.74,-1068.76"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M293.99,-1190.99C337.1,-1158.81 424.6,-1093.5 457.74,-1068.76"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M295.19,-1192.59C338.3,-1160.41 425.79,-1095.1 458.94,-1070.36"/>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M296.39,-1194.19C339.5,-1162.01 426.99,-1096.71 460.14,-1071.96"/>
 <text xml:space="preserve" text-anchor="middle" x="368.76" y="-1135.37" font-family="Arial" font-size="13.00" fill="#0e0e55"> N </text>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.id -->
-<g id="edge21" class="edge">
+<g id="edge22" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.id</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M320.22,-883.97C362.92,-899.87 422.61,-922.1 455.38,-934.3"/>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.purpose -->
-<g id="edge22" class="edge">
+<g id="edge23" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.purpose</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M281.34,-883.88C293.41,-904.36 312.73,-937.14 324.47,-957.06"/>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.channel -->
-<g id="edge23" class="edge">
+<g id="edge24" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.channel</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M262.46,-883.78C248.92,-914.77 221.67,-977.13 208.34,-1007.65"/>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.destination -->
-<g id="edge24" class="edge">
+<g id="edge25" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.destination</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M230.07,-883.97C206.7,-894.69 177.96,-907.88 157.42,-917.3"/>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.code_hash -->
-<g id="edge25" class="edge">
+<g id="edge26" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.code_hash</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M209.72,-860.41C165.85,-856.77 108.09,-851.99 71.43,-848.96"/>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.expires_at -->
-<g id="edge26" class="edge">
+<g id="edge27" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.expires_at</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M245.63,-846.85C224.72,-831.2 195.2,-809.11 175.84,-794.62"/>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.attempts -->
-<g id="edge27" class="edge">
+<g id="edge28" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.attempts</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M268.72,-846.93C265.66,-814.73 259.41,-748.82 256.37,-716.74"/>
 </g>
 <!-- OneTimeCode&#45;&#45;OneTimeCode.used_at -->
-<g id="edge28" class="edge">
+<g id="edge29" class="edge">
 <title>OneTimeCode&#45;&#45;OneTimeCode.used_at</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M289.35,-846.98C307.8,-828.93 335.56,-801.79 352.79,-784.93"/>
 </g>
 <!-- OneTimeCode&#45;&#45;is_sent -->
-<g id="edge63" class="edge">
+<g id="edge64" class="edge">
 <title>OneTimeCode&#45;&#45;is_sent</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M330.91,-849.24C407.4,-831.34 534.85,-801.51 586.08,-789.52"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M331.36,-851.19C407.86,-833.29 535.31,-803.46 586.54,-791.47"/>
@@ -220,53 +225,53 @@
 <text xml:space="preserve" text-anchor="middle" x="450.64" y="-825.23" font-family="Arial" font-size="13.00" fill="#0e0e55"> N </text>
 </g>
 <!-- AuditLog&#45;&#45;AuditLog.id -->
-<g id="edge29" class="edge">
+<g id="edge30" class="edge">
 <title>AuditLog&#45;&#45;AuditLog.id</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M277.51,-552.79C284.29,-570.65 294.47,-597.47 301.15,-615.07"/>
 </g>
 <!-- AuditLog&#45;&#45;AuditLog.action -->
-<g id="edge30" class="edge">
+<g id="edge31" class="edge">
 <title>AuditLog&#45;&#45;AuditLog.action</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M226.23,-548.99C205.3,-555.96 181.09,-564.04 163.44,-569.92"/>
 </g>
 <!-- AuditLog&#45;&#45;AuditLog.entity_type -->
-<g id="edge31" class="edge">
+<g id="edge32" class="edge">
 <title>AuditLog&#45;&#45;AuditLog.entity_type</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M251.46,-515.86C236.57,-501.48 216.05,-481.65 201.72,-467.8"/>
 </g>
 <!-- AuditLog&#45;&#45;AuditLog.entity_id -->
-<g id="edge32" class="edge">
+<g id="edge33" class="edge">
 <title>AuditLog&#45;&#45;AuditLog.entity_id</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M295.65,-515.72C313.26,-502.76 336.4,-485.73 352.43,-473.94"/>
 </g>
 <!-- AuditLog&#45;&#45;performs -->
-<g id="edge73" class="edge">
+<g id="edge74" class="edge">
 <title>AuditLog&#45;&#45;performs</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M314.71,-545.54C386.01,-563.74 524.21,-599.03 582.22,-613.84"/>
 <text xml:space="preserve" text-anchor="middle" x="440.16" y="-583.59" font-family="Arial" font-size="13.00" fill="#0e0e55"> N </text>
 </g>
 <!-- PasswordReset&#45;&#45;PasswordReset.id -->
-<g id="edge33" class="edge">
+<g id="edge34" class="edge">
 <title>PasswordReset&#45;&#45;PasswordReset.id</title>
-<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M267.51,-235.59C264.52,-253.95 259.91,-282.19 256.9,-300.63"/>
+<path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M267.51,-235.59C264.51,-253.95 259.91,-282.19 256.9,-300.63"/>
 </g>
 <!-- PasswordReset&#45;&#45;PasswordReset.token_hash -->
-<g id="edge34" class="edge">
+<g id="edge35" class="edge">
 <title>PasswordReset&#45;&#45;PasswordReset.token_hash</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M205.09,-220.66C190.34,-221.39 175.17,-222.13 162.02,-222.78"/>
 </g>
 <!-- PasswordReset&#45;&#45;PasswordReset.expires_at -->
-<g id="edge35" class="edge">
+<g id="edge36" class="edge">
 <title>PasswordReset&#45;&#45;PasswordReset.expires_at</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M263.87,-199.22C257.37,-181.29 247.51,-154.08 241.03,-136.19"/>
 </g>
 <!-- PasswordReset&#45;&#45;PasswordReset.used_at -->
-<g id="edge36" class="edge">
+<g id="edge37" class="edge">
 <title>PasswordReset&#45;&#45;PasswordReset.used_at</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M327.42,-198.87C345.1,-193.11 363.67,-187.05 377.97,-182.38"/>
 </g>
 <!-- PasswordReset&#45;&#45;requests -->
-<g id="edge61" class="edge">
+<g id="edge62" class="edge">
 <title>PasswordReset&#45;&#45;requests</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M297.08,-234.22C363.48,-282.25 540.63,-410.41 594.37,-449.28"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M295.91,-235.84C362.31,-283.88 539.46,-412.03 593.2,-450.9"/>
@@ -274,12 +279,12 @@
 <text xml:space="preserve" text-anchor="middle" x="436.25" y="-347.27" font-family="Arial" font-size="13.00" fill="#0e0e55"> N </text>
 </g>
 <!-- UserCredential&#45;&#45;UserCredential.password_hash -->
-<g id="edge37" class="edge">
+<g id="edge38" class="edge">
 <title>UserCredential&#45;&#45;UserCredential.password_hash</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1658.91,-1363.17C1670.89,-1370.92 1684.05,-1379.42 1695.06,-1386.54"/>
 </g>
 <!-- UserCredential&#45;&#45;has_credential -->
-<g id="edge55" class="edge">
+<g id="edge56" class="edge">
 <title>UserCredential&#45;&#45;has_credential</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M1598.64,-1319.57C1532.8,-1257.94 1351.15,-1087.88 1298.67,-1038.75"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M1600.01,-1318.11C1534.17,-1256.48 1352.52,-1086.42 1300.04,-1037.29"/>
@@ -287,37 +292,37 @@
 <text xml:space="preserve" text-anchor="middle" x="1442.8" y="-1181.6" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- UserTotp&#45;&#45;UserTotp.secret_ciphertext -->
-<g id="edge38" class="edge">
+<g id="edge39" class="edge">
 <title>UserTotp&#45;&#45;UserTotp.secret_ciphertext</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1614.69,-1015.82C1602.27,-986.12 1580.59,-934.29 1569.1,-906.8"/>
 </g>
 <!-- UserTotp&#45;&#45;UserTotp.key_version -->
-<g id="edge39" class="edge">
+<g id="edge40" class="edge">
 <title>UserTotp&#45;&#45;UserTotp.key_version</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1647.51,-1015.89C1663.74,-1000.42 1684.98,-980.16 1699.68,-966.15"/>
 </g>
 <!-- UserTotp&#45;&#45;UserTotp.confirmed_at -->
-<g id="edge40" class="edge">
+<g id="edge41" class="edge">
 <title>UserTotp&#45;&#45;UserTotp.confirmed_at</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1672.19,-1037.93C1711.55,-1037.67 1766.65,-1037.31 1804.15,-1037.07"/>
 </g>
 <!-- UserTotp&#45;&#45;UserTotp.last_used_step -->
-<g id="edge41" class="edge">
+<g id="edge42" class="edge">
 <title>UserTotp&#45;&#45;UserTotp.last_used_step</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1648.05,-1060.41C1664.44,-1075.55 1685.82,-1095.31 1700.84,-1109.19"/>
 </g>
 <!-- UserTotp&#45;&#45;UserTotp.failed_attempts -->
-<g id="edge42" class="edge">
+<g id="edge43" class="edge">
 <title>UserTotp&#45;&#45;UserTotp.failed_attempts</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1615.12,-1060.77C1603.21,-1090.78 1582.36,-1143.27 1571.44,-1170.76"/>
 </g>
 <!-- UserTotp&#45;&#45;UserTotp.locked_until -->
-<g id="edge43" class="edge">
+<g id="edge44" class="edge">
 <title>UserTotp&#45;&#45;UserTotp.locked_until</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1576.05,-1051.55C1555.03,-1057.38 1530.89,-1064.07 1511.9,-1069.34"/>
 </g>
 <!-- UserTotp&#45;&#45;has_totp -->
-<g id="edge57" class="edge">
+<g id="edge58" class="edge">
 <title>UserTotp&#45;&#45;has_totp</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M1577.2,-1017.53C1506,-982.69 1371.22,-916.73 1312.88,-888.18"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M1578.08,-1015.73C1506.88,-980.89 1372.1,-914.94 1313.76,-886.39"/>
@@ -325,12 +330,12 @@
 <text xml:space="preserve" text-anchor="middle" x="1438.69" y="-954.96" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- Admin&#45;&#45;Admin.created_at -->
-<g id="edge44" class="edge">
+<g id="edge45" class="edge">
 <title>Admin&#45;&#45;Admin.created_at</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1663.39,-751.97C1681.48,-752.76 1702.77,-753.7 1720.27,-754.47"/>
 </g>
 <!-- Admin&#45;&#45;is_admin -->
-<g id="edge65" class="edge">
+<g id="edge66" class="edge">
 <title>Admin&#45;&#45;is_admin</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M1584.79,-749.74C1517.12,-745.42 1379.54,-736.64 1317.34,-732.67"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M1584.92,-747.74C1517.24,-743.42 1379.66,-734.64 1317.47,-730.67"/>
@@ -338,22 +343,22 @@
 <text xml:space="preserve" text-anchor="middle" x="1443.97" y="-743.11" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- HostProfile&#45;&#45;HostProfile.level -->
-<g id="edge45" class="edge">
+<g id="edge46" class="edge">
 <title>HostProfile&#45;&#45;HostProfile.level</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1601.61,-454.18C1587.81,-440.38 1570.52,-423.09 1558.39,-410.96"/>
 </g>
 <!-- HostProfile&#45;&#45;HostProfile.stripe_account_id -->
-<g id="edge46" class="edge">
+<g id="edge47" class="edge">
 <title>HostProfile&#45;&#45;HostProfile.stripe_account_id</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1678.93,-463.66C1690.34,-460.96 1702.24,-458.15 1713.24,-455.55"/>
 </g>
 <!-- HostProfile&#45;&#45;HostProfile.clabe_last4 -->
-<g id="edge47" class="edge">
+<g id="edge48" class="edge">
 <title>HostProfile&#45;&#45;HostProfile.clabe_last4</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1625.71,-498.86C1626.97,-516.13 1628.71,-539.79 1629.91,-556.04"/>
 </g>
 <!-- HostProfile&#45;&#45;acts_as -->
-<g id="edge67" class="edge">
+<g id="edge68" class="edge">
 <title>HostProfile&#45;&#45;acts_as</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M1569.97,-497.17C1496.08,-522.32 1367.37,-566.14 1312.41,-584.85"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M1569.33,-495.28C1495.44,-520.43 1366.73,-564.25 1311.76,-582.96"/>
@@ -361,37 +366,37 @@
 <text xml:space="preserve" text-anchor="middle" x="1433.32" y="-543.02" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
 </g>
 <!-- Verification&#45;&#45;Verification.id -->
-<g id="edge48" class="edge">
+<g id="edge49" class="edge">
 <title>Verification&#45;&#45;Verification.id</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1651.19,-192.68C1683.43,-214.61 1736.43,-250.66 1764.71,-269.9"/>
 </g>
 <!-- Verification&#45;&#45;Verification.kind -->
-<g id="edge49" class="edge">
+<g id="edge50" class="edge">
 <title>Verification&#45;&#45;Verification.kind</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1624.07,-192.43C1624.07,-212.72 1624.07,-245.37 1624.07,-265.81"/>
 </g>
 <!-- Verification&#45;&#45;Verification.provider -->
-<g id="edge50" class="edge">
+<g id="edge51" class="edge">
 <title>Verification&#45;&#45;Verification.provider</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1572.64,-175.58C1528.37,-176.73 1466.15,-178.34 1430.45,-179.27"/>
 </g>
 <!-- Verification&#45;&#45;Verification.provider_reference -->
-<g id="edge51" class="edge">
+<g id="edge52" class="edge">
 <title>Verification&#45;&#45;Verification.provider_reference</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1596.88,-155.77C1578.44,-143.24 1554.27,-126.81 1536.39,-114.66"/>
 </g>
 <!-- Verification&#45;&#45;Verification.result -->
-<g id="edge52" class="edge">
+<g id="edge53" class="edge">
 <title>Verification&#45;&#45;Verification.result</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1624.07,-155.7C1624.07,-125.63 1624.07,-66.57 1624.07,-36.51"/>
 </g>
 <!-- Verification&#45;&#45;Verification.resolved_at -->
-<g id="edge53" class="edge">
+<g id="edge54" class="edge">
 <title>Verification&#45;&#45;Verification.resolved_at</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1651.26,-155.77C1670.61,-142.62 1696.27,-125.18 1714.35,-112.9"/>
 </g>
 <!-- Verification&#45;&#45;undergoes -->
-<g id="edge69" class="edge">
+<g id="edge70" class="edge">
 <title>Verification&#45;&#45;undergoes</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.3" d="M1601.78,-194.33C1537.03,-245.31 1357.38,-386.73 1302.83,-429.68"/>
 <path fill="none" stroke="white" stroke-width="1.3" d="M1600.54,-192.76C1535.79,-243.74 1356.15,-385.16 1301.59,-428.11"/>
@@ -399,13 +404,13 @@
 <text xml:space="preserve" text-anchor="middle" x="1442.76" y="-314.34" font-family="Arial" font-size="13.00" fill="#0e0e55"> N </text>
 </g>
 <!-- Verification&#45;&#45;covers -->
-<g id="edge70" class="edge">
+<g id="edge71" class="edge">
 <title>Verification&#45;&#45;covers</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1675.68,-174.24C1714.93,-174.24 1767.69,-174.24 1800.99,-174.24"/>
 <text xml:space="preserve" text-anchor="middle" x="1730.03" y="-178.14" font-family="Arial" font-size="13.00" fill="#0e0e55"> N </text>
 </g>
 <!-- Property&#45;&#45;covers -->
-<g id="edge71" class="edge">
+<g id="edge72" class="edge">
 <title>Property&#45;&#45;covers</title>
 <path fill="none" stroke="#0e0e55" stroke-width="1.1" d="M1999.42,-174.24C1959.62,-174.24 1900.87,-174.24 1864.83,-174.24"/>
 <text xml:space="preserve" text-anchor="middle" x="1924.9" y="-178.14" font-family="Arial" font-size="13.00" fill="#0e0e55"> 1 </text>
@@ -504,361 +509,367 @@
 <!-- Session.id -->
 <g id="node16" class="node">
 <title>Session.id</title>
-<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="497.99" cy="-1230.48" rx="27" ry="18"/>
-<text xml:space="preserve" text-anchor="start" x="493.71" y="-1228.18" font-family="Arial" text-decoration="underline" font-size="11.00" fill="#0e0e55">id</text>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="505.91" cy="-1223.28" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="501.63" y="-1220.98" font-family="Arial" text-decoration="underline" font-size="11.00" fill="#0e0e55">id</text>
 </g>
 <!-- Session.token_hash -->
 <g id="node17" class="node">
 <title>Session.token_hash</title>
-<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="369.11" cy="-1301.76" rx="37.5" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="369.11" y="-1298.46" font-family="Arial" font-size="11.00" fill="#0e0e55">token_hash</text>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="389.99" cy="-1293.12" rx="37.5" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="389.99" y="-1289.82" font-family="Arial" font-size="11.00" fill="#0e0e55">token_hash</text>
 </g>
 <!-- Session.expires_at -->
 <g id="node18" class="node">
 <title>Session.expires_at</title>
-<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="239.51" cy="-1371.6" rx="33.99" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="239.51" y="-1368.3" font-family="Arial" font-size="11.00" fill="#0e0e55">expires_at</text>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="296.39" cy="-1377.36" rx="33.99" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="296.39" y="-1374.06" font-family="Arial" font-size="11.00" fill="#0e0e55">expires_at</text>
 </g>
 <!-- Session.revoked_at -->
 <g id="node19" class="node">
 <title>Session.revoked_at</title>
-<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="140.87" cy="-1279.44" rx="36.1" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="140.87" y="-1276.14" font-family="Arial" font-size="11.00" fill="#0e0e55">revoked_at</text>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="179.03" cy="-1309.68" rx="36.1" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="179.03" y="-1306.38" font-family="Arial" font-size="11.00" fill="#0e0e55">revoked_at</text>
 </g>
 <!-- Session.last_used_at -->
 <g id="node20" class="node">
 <title>Session.last_used_at</title>
-<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="44.39" cy="-1186.56" rx="40.65" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="44.39" y="-1183.26" font-family="Arial" font-size="11.00" fill="#0e0e55">last_used_at</text>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="44.39" cy="-1260" rx="40.65" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="44.39" y="-1256.7" font-family="Arial" font-size="11.00" fill="#0e0e55">last_used_at</text>
 </g>
 <!-- Session.ip_address -->
 <g id="node21" class="node">
 <title>Session.ip_address</title>
-<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="176.15" cy="-1118.88" rx="35.75" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="176.15" y="-1115.58" font-family="Arial" font-size="11.00" fill="#0e0e55">ip_address</text>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="117.11" cy="-1164.96" rx="35.75" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="117.11" y="-1161.66" font-family="Arial" font-size="11.00" fill="#0e0e55">ip_address</text>
 </g>
 <!-- Session.user_agent -->
 <g id="node22" class="node">
 <title>Session.user_agent</title>
-<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="308.63" cy="-1051.2" rx="36.45" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="308.63" y="-1047.9" font-family="Arial" font-size="11.00" fill="#0e0e55">user_agent</text>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="161.75" cy="-1062" rx="36.45" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="161.75" y="-1058.7" font-family="Arial" font-size="11.00" fill="#0e0e55">user_agent</text>
+</g>
+<!-- Session.second_factor_at -->
+<g id="node23" class="node">
+<title>Session.second_factor_at</title>
+<ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="306.47" cy="-1095.84" rx="53.25" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="306.47" y="-1092.54" font-family="Arial" font-size="11.00" fill="#0e0e55">second_factor_at</text>
 </g>
 <!-- OneTimeCode -->
-<g id="node23" class="node">
+<g id="node24" class="node">
 <title>OneTimeCode</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="330.88,-883.44 210.06,-883.44 210.06,-847.44 330.88,-847.44 330.88,-883.44"/>
 <text xml:space="preserve" text-anchor="start" x="223.02" y="-862.24" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">OneTimeCode</text>
 </g>
 <!-- OneTimeCode.id -->
-<g id="node24" class="node">
+<g id="node25" class="node">
 <title>OneTimeCode.id</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="479.27" cy="-943.2" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="start" x="474.99" y="-940.9" font-family="Arial" text-decoration="underline" font-size="11.00" fill="#0e0e55">id</text>
 </g>
 <!-- OneTimeCode.purpose -->
-<g id="node25" class="node">
+<g id="node26" class="node">
 <title>OneTimeCode.purpose</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="334.55" cy="-974.16" rx="27.7" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="334.55" y="-970.86" font-family="Arial" font-size="11.00" fill="#0e0e55">purpose</text>
 </g>
 <!-- OneTimeCode.channel -->
-<g id="node26" class="node">
+<g id="node27" class="node">
 <title>OneTimeCode.channel</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="200.63" cy="-1025.28" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="200.63" y="-1021.98" font-family="Arial" font-size="11.00" fill="#0e0e55">channel</text>
 </g>
 <!-- OneTimeCode.destination -->
-<g id="node27" class="node">
+<g id="node28" class="node">
 <title>OneTimeCode.destination</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="130.79" cy="-929.52" rx="35.4" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="130.79" y="-926.22" font-family="Arial" font-size="11.00" fill="#0e0e55">destination</text>
 </g>
 <!-- OneTimeCode.code_hash -->
-<g id="node28" class="node">
+<g id="node29" class="node">
 <title>OneTimeCode.code_hash</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="35.75" cy="-846" rx="35.75" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="35.75" y="-842.7" font-family="Arial" font-size="11.00" fill="#0e0e55">code_hash</text>
 </g>
 <!-- OneTimeCode.expires_at -->
-<g id="node29" class="node">
+<g id="node30" class="node">
 <title>OneTimeCode.expires_at</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="155.99" cy="-779.76" rx="33.99" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="155.99" y="-776.46" font-family="Arial" font-size="11.00" fill="#0e0e55">expires_at</text>
 </g>
 <!-- OneTimeCode.attempts -->
-<g id="node30" class="node">
+<g id="node31" class="node">
 <title>OneTimeCode.attempts</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="254.63" cy="-698.4" rx="29.09" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="254.63" y="-695.1" font-family="Arial" font-size="11.00" fill="#0e0e55">attempts</text>
 </g>
 <!-- OneTimeCode.used_at -->
-<g id="node31" class="node">
+<g id="node32" class="node">
 <title>OneTimeCode.used_at</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="368.39" cy="-769.68" rx="27.35" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="368.39" y="-766.38" font-family="Arial" font-size="11.00" fill="#0e0e55">used_at</text>
 </g>
 <!-- AuditLog -->
-<g id="node32" class="node">
+<g id="node33" class="node">
 <title>AuditLog</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="314.14,-552.24 226.8,-552.24 226.8,-516.24 314.14,-516.24 314.14,-552.24"/>
 <text xml:space="preserve" text-anchor="start" x="239.76" y="-531.04" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">AuditLog</text>
 </g>
 <!-- AuditLog.id -->
-<g id="node33" class="node">
+<g id="node34" class="node">
 <title>AuditLog.id</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="307.91" cy="-632.88" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="start" x="303.63" y="-630.58" font-family="Arial" text-decoration="underline" font-size="11.00" fill="#0e0e55">id</text>
 </g>
 <!-- AuditLog.action -->
-<g id="node34" class="node">
+<g id="node35" class="node">
 <title>AuditLog.action</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="138.71" cy="-578.16" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="138.71" y="-574.86" font-family="Arial" font-size="11.00" fill="#0e0e55">action</text>
 </g>
 <!-- AuditLog.entity_type -->
-<g id="node35" class="node">
+<g id="node36" class="node">
 <title>AuditLog.entity_type</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="184.79" cy="-451.44" rx="35.39" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="184.79" y="-448.14" font-family="Arial" font-size="11.00" fill="#0e0e55">entity_type</text>
 </g>
 <!-- AuditLog.entity_id -->
-<g id="node36" class="node">
+<g id="node37" class="node">
 <title>AuditLog.entity_id</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="371.27" cy="-460.08" rx="28.39" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="371.27" y="-456.78" font-family="Arial" font-size="11.00" fill="#0e0e55">entity_id</text>
 </g>
 <!-- PasswordReset -->
-<g id="node37" class="node">
+<g id="node38" class="node">
 <title>PasswordReset</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="335.57,-235.44 205.38,-235.44 205.38,-199.44 335.57,-199.44 335.57,-235.44"/>
 <text xml:space="preserve" text-anchor="start" x="218.34" y="-214.24" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">PasswordReset</text>
 </g>
 <!-- PasswordReset.id -->
-<g id="node38" class="node">
+<g id="node39" class="node">
 <title>PasswordReset.id</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="253.91" cy="-318.96" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="start" x="249.63" y="-316.66" font-family="Arial" text-decoration="underline" font-size="11.00" fill="#0e0e55">id</text>
 </g>
 <!-- PasswordReset.token_hash -->
-<g id="node39" class="node">
+<g id="node40" class="node">
 <title>PasswordReset.token_hash</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="124.31" cy="-224.64" rx="37.5" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="124.31" y="-221.34" font-family="Arial" font-size="11.00" fill="#0e0e55">token_hash</text>
 </g>
 <!-- PasswordReset.expires_at -->
-<g id="node40" class="node">
+<g id="node41" class="node">
 <title>PasswordReset.expires_at</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="234.47" cy="-118.08" rx="33.99" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="234.47" y="-114.78" font-family="Arial" font-size="11.00" fill="#0e0e55">expires_at</text>
 </g>
 <!-- PasswordReset.used_at -->
-<g id="node41" class="node">
+<g id="node42" class="node">
 <title>PasswordReset.used_at</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="402.95" cy="-174.24" rx="27.35" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="402.95" y="-170.94" font-family="Arial" font-size="11.00" fill="#0e0e55">used_at</text>
 </g>
 <!-- UserCredential -->
-<g id="node42" class="node">
+<g id="node43" class="node">
 <title>UserCredential</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="1686.83,-1358.64 1561.31,-1358.64 1561.31,-1322.64 1686.83,-1322.64 1686.83,-1358.64"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1690.83,-1362.64 1557.31,-1362.64 1557.31,-1318.64 1690.83,-1318.64 1690.83,-1362.64"/>
 <text xml:space="preserve" text-anchor="start" x="1574.27" y="-1337.44" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">UserCredential</text>
 </g>
 <!-- UserCredential.password_hash -->
-<g id="node43" class="node">
+<g id="node44" class="node">
 <title>UserCredential.password_hash</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1719.83" cy="-1402.56" rx="49.04" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1719.83" y="-1399.26" font-family="Arial" font-size="11.00" fill="#0e0e55">password_hash</text>
 </g>
 <!-- UserTotp -->
-<g id="node44" class="node">
+<g id="node45" class="node">
 <title>UserTotp</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="1667.76,-1056.24 1580.39,-1056.24 1580.39,-1020.24 1667.76,-1020.24 1667.76,-1056.24"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1671.76,-1060.24 1576.39,-1060.24 1576.39,-1016.24 1671.76,-1016.24 1671.76,-1060.24"/>
 <text xml:space="preserve" text-anchor="start" x="1593.35" y="-1035.04" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">UserTotp</text>
 </g>
 <!-- UserTotp.secret_ciphertext -->
-<g id="node45" class="node">
+<g id="node46" class="node">
 <title>UserTotp.secret_ciphertext</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1561.43" cy="-888.48" rx="52.89" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1561.43" y="-885.18" font-family="Arial" font-size="11.00" fill="#0e0e55">secret_ciphertext</text>
 </g>
 <!-- UserTotp.key_version -->
-<g id="node46" class="node">
+<g id="node47" class="node">
 <title>UserTotp.key_version</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1716.95" cy="-949.68" rx="38.54" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1716.95" y="-946.38" font-family="Arial" font-size="11.00" fill="#0e0e55">key_version</text>
 </g>
 <!-- UserTotp.confirmed_at -->
-<g id="node47" class="node">
+<g id="node48" class="node">
 <title>UserTotp.confirmed_at</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1845.83" cy="-1036.8" rx="41.34" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1845.83" y="-1033.5" font-family="Arial" font-size="11.00" fill="#0e0e55">confirmed_at</text>
 </g>
 <!-- UserTotp.last_used_step -->
-<g id="node48" class="node">
+<g id="node49" class="node">
 <title>UserTotp.last_used_step</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1719.11" cy="-1126.08" rx="47.3" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1719.11" y="-1122.78" font-family="Arial" font-size="11.00" fill="#0e0e55">last_used_step</text>
 </g>
 <!-- UserTotp.failed_attempts -->
-<g id="node49" class="node">
+<g id="node50" class="node">
 <title>UserTotp.failed_attempts</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1564.31" cy="-1188.72" rx="47.64" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1564.31" y="-1185.42" font-family="Arial" font-size="11.00" fill="#0e0e55">failed_attempts</text>
 </g>
 <!-- UserTotp.locked_until -->
-<g id="node50" class="node">
+<g id="node51" class="node">
 <title>UserTotp.locked_until</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1478.63" cy="-1078.56" rx="38.2" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1478.63" y="-1075.26" font-family="Arial" font-size="11.00" fill="#0e0e55">locked_until</text>
 </g>
 <!-- Admin -->
-<g id="node51" class="node">
+<g id="node52" class="node">
 <title>Admin</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="1658.81,-768.24 1589.34,-768.24 1589.34,-732.24 1658.81,-732.24 1658.81,-768.24"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1662.81,-772.24 1585.34,-772.24 1585.34,-728.24 1662.81,-728.24 1662.81,-772.24"/>
 <text xml:space="preserve" text-anchor="start" x="1602.3" y="-747.04" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">Admin</text>
 </g>
 <!-- Admin.created_at -->
-<g id="node52" class="node">
+<g id="node53" class="node">
 <title>Admin.created_at</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1755.11" cy="-756" rx="34.7" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1755.11" y="-752.7" font-family="Arial" font-size="11.00" fill="#0e0e55">created_at</text>
 </g>
 <!-- HostProfile -->
-<g id="node53" class="node">
+<g id="node54" class="node">
 <title>HostProfile</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="1674.37,-494.64 1573.77,-494.64 1573.77,-458.64 1674.37,-458.64 1674.37,-494.64"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1678.37,-498.64 1569.77,-498.64 1569.77,-454.64 1678.37,-454.64 1678.37,-498.64"/>
 <text xml:space="preserve" text-anchor="start" x="1586.73" y="-473.44" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">HostProfile</text>
 </g>
 <!-- HostProfile.level -->
-<g id="node54" class="node">
+<g id="node55" class="node">
 <title>HostProfile.level</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1543.43" cy="-396" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1543.43" y="-392.7" font-family="Arial" font-size="11.00" fill="#0e0e55">level</text>
 </g>
 <!-- HostProfile.stripe_account_id -->
-<g id="node55" class="node">
+<g id="node56" class="node">
 <title>HostProfile.stripe_account_id</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1757.99" cy="-444.96" rx="54.29" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1757.99" y="-441.66" font-family="Arial" font-size="11.00" fill="#0e0e55">stripe_account_id</text>
 </g>
 <!-- HostProfile.clabe_last4 -->
-<g id="node56" class="node">
+<g id="node57" class="node">
 <title>HostProfile.clabe_last4</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1631.27" cy="-574.56" rx="36.8" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1631.27" y="-571.26" font-family="Arial" font-size="11.00" fill="#0e0e55">clabe_last4</text>
 </g>
 <!-- Verification -->
-<g id="node57" class="node">
+<g id="node58" class="node">
 <title>Verification</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="1675.15,-192.24 1572.99,-192.24 1572.99,-156.24 1675.15,-156.24 1675.15,-192.24"/>
 <text xml:space="preserve" text-anchor="start" x="1585.95" y="-171.04" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">Verification</text>
 </g>
 <!-- Verification.id -->
-<g id="node58" class="node">
+<g id="node59" class="node">
 <title>Verification.id</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1783.91" cy="-282.96" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="start" x="1779.63" y="-280.66" font-family="Arial" text-decoration="underline" font-size="11.00" fill="#0e0e55">id</text>
 </g>
 <!-- Verification.kind -->
-<g id="node59" class="node">
+<g id="node60" class="node">
 <title>Verification.kind</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1624.07" cy="-284.4" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1624.07" y="-281.1" font-family="Arial" font-size="11.00" fill="#0e0e55">kind</text>
 </g>
 <!-- Verification.provider -->
-<g id="node60" class="node">
+<g id="node61" class="node">
 <title>Verification.provider</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1402.31" cy="-180" rx="27.69" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1402.31" y="-176.7" font-family="Arial" font-size="11.00" fill="#0e0e55">provider</text>
 </g>
 <!-- Verification.provider_reference -->
-<g id="node61" class="node">
+<g id="node62" class="node">
 <title>Verification.provider_reference</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1511.75" cy="-97.92" rx="57.79" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1511.75" y="-94.62" font-family="Arial" font-size="11.00" fill="#0e0e55">provider_reference</text>
 </g>
 <!-- Verification.result -->
-<g id="node62" class="node">
+<g id="node63" class="node">
 <title>Verification.result</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1624.07" cy="-18" rx="27" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1624.07" y="-14.7" font-family="Arial" font-size="11.00" fill="#0e0e55">result</text>
 </g>
 <!-- Verification.resolved_at -->
-<g id="node63" class="node">
+<g id="node64" class="node">
 <title>Verification.resolved_at</title>
 <ellipse fill="white" stroke="#0e0e55" stroke-width="1.2" cx="1736.39" cy="-97.92" rx="37.49" ry="18"/>
 <text xml:space="preserve" text-anchor="middle" x="1736.39" y="-94.62" font-family="Arial" font-size="11.00" fill="#0e0e55">resolved_at</text>
 </g>
 <!-- Property -->
-<g id="node64" class="node">
+<g id="node65" class="node">
 <title>Property</title>
 <polygon fill="#e3e6f6" stroke="#0e0e55" stroke-width="1.2" points="2083.42,-192.24 1999.93,-192.24 1999.93,-156.24 2083.42,-156.24 2083.42,-192.24"/>
 <text xml:space="preserve" text-anchor="start" x="2012.89" y="-171.04" font-family="Arial" font-weight="bold" font-size="14.00" fill="#0e0e55">Property</text>
 </g>
 <!-- has_credential -->
-<g id="node65" class="node">
+<g id="node66" class="node">
 <title>has_credential</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-1041.84 1258.67,-1023.84 1285.67,-1005.84 1312.67,-1023.84 1285.67,-1041.84"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-1046.65 1251.46,-1023.84 1285.67,-1001.03 1319.88,-1023.84 1285.67,-1046.65"/>
 <text xml:space="preserve" text-anchor="middle" x="1285.67" y="-1020.24" font-family="Arial" font-size="12.00" fill="#0e0e55">has</text>
 </g>
 <!-- has_totp -->
-<g id="node66" class="node">
+<g id="node67" class="node">
 <title>has_totp</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-890.64 1229.06,-872.64 1285.67,-854.64 1342.29,-872.64 1285.67,-890.64"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-894.84 1215.85,-872.64 1285.67,-850.44 1355.49,-872.64 1285.67,-894.84"/>
 <text xml:space="preserve" text-anchor="middle" x="1285.67" y="-869.04" font-family="Arial" font-size="12.00" fill="#0e0e55">protects with</text>
 </g>
 <!-- opens -->
-<g id="node67" class="node">
+<g id="node68" class="node">
 <title>opens</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="472.07,-1078.56 443.4,-1060.56 472.07,-1042.56 500.75,-1060.56 472.07,-1078.56"/>
 <text xml:space="preserve" text-anchor="middle" x="472.07" y="-1056.96" font-family="Arial" font-size="12.00" fill="#0e0e55">opens</text>
 </g>
 <!-- requests -->
-<g id="node68" class="node">
+<g id="node69" class="node">
 <title>requests</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="608.87,-480.24 569.45,-462.24 608.87,-444.24 648.29,-462.24 608.87,-480.24"/>
 <text xml:space="preserve" text-anchor="middle" x="608.87" y="-458.64" font-family="Arial" font-size="12.00" fill="#0e0e55">requests</text>
 </g>
 <!-- is_sent -->
-<g id="node69" class="node">
+<g id="node70" class="node">
 <title>is_sent</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="608.87,-804.24 578.6,-786.24 608.87,-768.24 639.15,-786.24 608.87,-804.24"/>
 <text xml:space="preserve" text-anchor="middle" x="608.87" y="-782.64" font-family="Arial" font-size="12.00" fill="#0e0e55">is sent</text>
 </g>
 <!-- is_admin -->
-<g id="node70" class="node">
+<g id="node71" class="node">
 <title>is_admin</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-746.64 1258.67,-728.64 1285.67,-710.64 1312.67,-728.64 1285.67,-746.64"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-751.45 1251.46,-728.64 1285.67,-705.83 1319.88,-728.64 1285.67,-751.45"/>
 <text xml:space="preserve" text-anchor="middle" x="1285.67" y="-725.04" font-family="Arial" font-size="12.00" fill="#0e0e55">is</text>
 </g>
 <!-- acts_as -->
-<g id="node71" class="node">
+<g id="node72" class="node">
 <title>acts_as</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-609.84 1252.71,-591.84 1285.67,-573.84 1318.63,-591.84 1285.67,-609.84"/>
 <polygon fill="none" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-614.4 1244.36,-591.84 1285.67,-569.28 1326.98,-591.84 1285.67,-614.4"/>
 <text xml:space="preserve" text-anchor="middle" x="1285.67" y="-588.24" font-family="Arial" font-size="12.00" fill="#0e0e55">acts as</text>
 </g>
 <!-- undergoes -->
-<g id="node72" class="node">
+<g id="node73" class="node">
 <title>undergoes</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="1285.67,-458.64 1237.64,-440.64 1285.67,-422.64 1333.71,-440.64 1285.67,-458.64"/>
 <text xml:space="preserve" text-anchor="middle" x="1285.67" y="-437.04" font-family="Arial" font-size="12.00" fill="#0e0e55">undergoes</text>
 </g>
 <!-- covers -->
-<g id="node73" class="node">
+<g id="node74" class="node">
 <title>covers</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="1832.87,-192.24 1802.06,-174.24 1832.87,-156.24 1863.68,-174.24 1832.87,-192.24"/>
 <text xml:space="preserve" text-anchor="middle" x="1832.87" y="-170.64" font-family="Arial" font-size="12.00" fill="#0e0e55">covers</text>
 </g>
 <!-- performs -->
-<g id="node74" class="node">
+<g id="node75" class="node">
 <title>performs</title>
 <polygon fill="#ffffff" stroke="#0e0e55" stroke-width="1.2" points="608.87,-638.64 568.39,-620.64 608.87,-602.64 649.35,-620.64 608.87,-638.64"/>
 <text xml:space="preserve" text-anchor="middle" x="608.87" y="-617.04" font-family="Arial" font-size="12.00" fill="#0e0e55">performs</text>

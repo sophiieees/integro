@@ -26,7 +26,7 @@ import hmac
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 
-from app.api.auth import SESSION_COOKIE, require_session
+from app.api.auth import SESSION_COOKIE, SecondFactorRequired, require_session_even_pending
 from app.api.client import origin_of, own_origin
 from app.core.config import Settings
 from app.modules.accounts.sessions import CurrentSession
@@ -81,12 +81,22 @@ def require_session_for_change(request: Request, response: Response) -> CurrentS
     """Dependencia de FastAPI para las rutas con sesión que cambian algo.
 
     Primero se revisa de dónde viene la petición, sin tocar la sesión: una
-    petición ajena no renueva nada. Después la sesión (401 si no la hay) y al
-    final la clave anti-falsificación.
+    petición ajena no renueva nada. Después la sesión (401 si no la hay), la
+    clave anti-falsificación y, al final, que la sesión no esté en espera del
+    Authenticator (403 con second_factor_required).
     """
+    session = require_session_for_change_even_pending(request, response)
+    if session.second_factor_pending:
+        raise SecondFactorRequired()
+    return session
+
+
+def require_session_for_change_even_pending(request: Request, response: Response) -> CurrentSession:
+    """Las mismas defensas, pero también deja pasar una sesión en espera del Authenticator. Solo para escribir el
+    código y para cerrar la sesión."""
     settings = request.app.state.settings
     check_origin(request, settings)
-    session = require_session(request, response)
+    session = require_session_even_pending(request, response)
     sent = request.headers.get(CSRF_HEADER) or ""
     expected = csrf_token(request.cookies[SESSION_COOKIE], settings)
     if not hmac.compare_digest(sent.encode("utf-8"), expected.encode("utf-8")):

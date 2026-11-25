@@ -81,6 +81,8 @@ class SessionResult:
     # Segundos que dura la cookie de la sesión de un administrador, que es corta. None para los demás.
     cookie_seconds: int | None = None
     attempts_left: int | None = None
+    # La sesión se abrió en espera: la persona tiene el Authenticator activo y falta su código (pieza 3.3).
+    second_factor_required: bool = False
 
 
 def clean_ip(address: str | None) -> str | None:
@@ -194,13 +196,14 @@ def finish_login(
     with system_transaction(pool) as connection:
         user = connection.execute(
             "select u.id, exists (select 1 from host_profiles h where h.user_id = u.id), "
-            "exists (select 1 from admins a where a.user_id = u.id) "
+            "exists (select 1 from admins a where a.user_id = u.id), "
+            "exists (select 1 from user_totp t where t.user_id = u.id and t.confirmed_at is not null) "
             "from users u where u.email = %s and u.email_verified_at is not null",
             (email,),
         ).fetchone()
         if user is None:
             return SessionResult(SessionOutcome.INVALID_CODE)
-        user_id, is_host, is_admin = user
+        user_id, is_host, is_admin, has_second_factor = user
 
         checked = check_code(connection, user_id, PURPOSE, email, code, settings)
         if checked.outcome is CodeCheck.EXPIRED:
@@ -237,4 +240,6 @@ def finish_login(
         expires_at=expires_at,
         idle_days=days,
         cookie_seconds=cookie_seconds if is_admin else None,
+        # Una sesión nueva nunca ha pasado el Authenticator: si la persona lo tiene activo, nace en espera.
+        second_factor_required=has_second_factor,
     )
