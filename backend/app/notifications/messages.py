@@ -29,6 +29,7 @@ CODE_PURPOSES = {
 NOTICE_SUBJECTS = {
     "failed_logins": "Hubo intentos fallidos de entrar a tu cuenta de Íntegro",
     "password_changed": "Cambiaste la contraseña de tu cuenta de Íntegro",
+    "two_factor_enabled": "Activaste el Authenticator en tu cuenta de Íntegro",
 }
 
 
@@ -63,7 +64,22 @@ def password_changed_text(details: dict[str, Any]) -> str:
     )
 
 
-KIND_TEXTS = {"failed_logins": failed_logins_text, "password_changed": password_changed_text}
+def two_factor_enabled_text(details: dict[str, Any]) -> str:
+    """El texto del aviso de que se activó el Authenticator. No lleva la clave ni ningún código."""
+    when = details["at"].strftime("%Y-%m-%d %H:%M:%S %Z").strip()
+    return (
+        f"El Authenticator de tu cuenta de Íntegro se activó el {when}. "
+        f"Navegador: {details.get('user_agent') or 'desconocido'}. "
+        f"Dirección: {details.get('ip_address') or 'desconocida'}. "
+        "Si no fuiste tú, cambia tu contraseña de inmediato."
+    )
+
+
+KIND_TEXTS = {
+    "failed_logins": failed_logins_text,
+    "password_changed": password_changed_text,
+    "two_factor_enabled": two_factor_enabled_text,
+}
 
 
 def minutes_text(ttl_seconds: int) -> str:
