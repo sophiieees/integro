@@ -28,7 +28,7 @@
 - Se construyó antes que la recuperación del acceso (3.6) por decisión de Sophia: mientras solo el equipo use el sitio, quien pierda el celular se recupera a mano, en pgAdmin.
 
 ## Consecuencias
-- Las pantallas del anfitrión son la pieza 3.4; la ventana de iniciar sesión recibe aparte su paso para el código.
+- La ventana de iniciar sesión tiene un tercer paso, «Código de Authenticator», que aparece después del código del correo solo para quien lo tiene activo. Mientras la sesión está en espera la cabecera es la del visitante; si la persona recarga o cierra la ventana, «Iniciar sesión» la lleva directo a ese paso, y «Cerrar sesión» en ese paso cierra la sesión en espera. Un código que no sirvió no se deja escrito. Activar el Authenticator desde la web sigue sin pantalla: es la pieza 3.4.
 - Con el Authenticator activo no se puede volver a activar aquí. Cambiar de celular, los diez códigos de recuperación y la ayuda del equipo son la pieza 3.6 (bitácora 41.13 y 42.3). **Antes de abrir el sitio a personas de fuera hace falta la 3.6:** quien pierda el celular quedaría sin poder entrar.
 - Una sesión en espera sigue existiendo hasta que vence o se cierra. Quien tenga la contraseña y el correo de alguien puede intentar 5 códigos cada 15 minutos; el dueño recibe un aviso cada vez que empieza la espera.
 - Si se pierde `DATA_ENCRYPTION_KEY`, o se cambia sin más, las claves guardadas ya no se pueden descifrar y cada persona tiene que activar su Authenticator de nuevo. Cambiar la llave con orden (cifrar de nuevo lo guardado, con `key_version`) queda por construir.

@@ -163,13 +163,14 @@ test("con sesión la cabecera muestra el nombre y guarda la clave de la página"
 
   assert.deepEqual(r, {
     sesion: true, nombre: "Ana", apellidos: "Torres", correo: CORREO, clave: "clave-de-la-pagina", servidor: true,
-    esAnfitrion: false, esAdmin: false
+    esAnfitrion: false, esAdmin: false, enEspera: false
   });
 });
 
 test("sin sesión la cabecera muestra «Iniciar sesión»", () => {
   assert.deepEqual(LOGICA.estadoDeCabecera(401, { errors: [{ code: "not_authenticated" }] }), {
-    sesion: false, nombre: null, apellidos: "", correo: "", clave: null, servidor: true, esAnfitrion: false, esAdmin: false
+    sesion: false, nombre: null, apellidos: "", correo: "", clave: null, servidor: true, esAnfitrion: false, esAdmin: false,
+    enEspera: false
   });
 });
 
@@ -322,4 +323,104 @@ test("una página de regreso permitida manda sobre lo demás; una que no vale se
 
 test("el aviso de inicio dice el nombre", () => {
   assert.equal(LOGICA.avisoDeInicio("Ana"), "Iniciaste sesión como Ana.");
+});
+
+/* --- El código del Authenticator al iniciar sesión (pieza 3.3, decisión de Sophia del 25 de noviembre de 2026) ---- */
+
+const EN_ESPERA = { errors: [{ field: "second_factor", code: "second_factor_required", message: "Escribe el código de tu Authenticator para continuar." }], csrf_token: "clave-en-espera" };
+
+test("si la sesión se abrió en espera, la ventana pasa al paso del Authenticator y guarda la clave de la página", () => {
+  const r = LOGICA.despuesDelCodigo(200, { status: "session_opened", csrf_token: "clave-nueva", second_factor_required: true });
+
+  assert.deepEqual(r, { paso: "authenticator", campo: "totp", aviso: null, clave: "clave-nueva" });
+});
+
+test("sin Authenticator activo el código del correo deja dentro, como siempre", () => {
+  assert.deepEqual(LOGICA.despuesDelCodigo(200, { status: "session_opened", csrf_token: "c" }), { paso: "dentro", campo: null, aviso: null });
+  assert.equal(LOGICA.despuesDelCodigo(200, { status: "session_opened", csrf_token: "c", second_factor_required: false }).paso, "dentro");
+  assert.equal(LOGICA.despuesDelCodigo(200, { status: "session_opened", csrf_token: "c", second_factor_required: "true" }).paso, "dentro");
+});
+
+test("una sesión en espera no es una sesión para la cabecera: no hay nombre, pero sí la clave para mandar el código", () => {
+  assert.deepEqual(LOGICA.estadoDeCabecera(403, EN_ESPERA), {
+    sesion: false, nombre: null, apellidos: "", correo: "", clave: "clave-en-espera", servidor: true,
+    esAnfitrion: false, esAdmin: false, enEspera: true
+  });
+  assert.equal(LOGICA.vistaDe(LOGICA.estadoDeCabecera(403, EN_ESPERA)), "visitante");
+});
+
+test("otro 403 de /auth/me no se confunde con la espera del Authenticator", () => {
+  const otro = LOGICA.estadoDeCabecera(403, { errors: [{ field: "request", code: "origin_not_allowed", message: "x" }], csrf_token: "c" });
+  assert.equal(otro.enEspera, false);
+  assert.equal(otro.clave, null);
+  assert.equal(LOGICA.estadoDeCabecera(403, null).enEspera, false);
+});
+
+test("una página protegida, con la sesión en espera, pide iniciar sesión y no muestra nada", () => {
+  const permiso = LOGICA.permisoDePagina("sesion", LOGICA.estadoDeCabecera(403, EN_ESPERA));
+  assert.equal(permiso.permitido, false);
+  assert.equal(permiso.accion.iniciarSesion, true);
+});
+
+test("el código del Authenticator se limpia de espacios, como lo muestran las aplicaciones", () => {
+  assert.equal(LOGICA.limpiarCodigoDeAuthenticator("123 456"), "123456");
+  assert.equal(LOGICA.limpiarCodigoDeAuthenticator("  123456 \n"), "123456");
+  assert.equal(LOGICA.limpiarCodigoDeAuthenticator(""), "");
+  assert.equal(LOGICA.limpiarCodigoDeAuthenticator(null), "");
+});
+
+test("un código vacío o que no son 6 números se avisa sin llamar a la API", () => {
+  assert.deepEqual(LOGICA.revisarCodigoDeAuthenticator(""), { campo: "totp", aviso: "Escribe el código de tu aplicación Authenticator." });
+  assert.deepEqual(LOGICA.revisarCodigoDeAuthenticator("   "), { campo: "totp", aviso: "Escribe el código de tu aplicación Authenticator." });
+  for (const mal of ["12345", "1234567", "abcdef", "12-456"]) {
+    assert.deepEqual(LOGICA.revisarCodigoDeAuthenticator(mal), { campo: "totp", aviso: "El código debe constar de 6 dígitos." }, mal);
+  }
+  assert.equal(LOGICA.revisarCodigoDeAuthenticator("123456"), null);
+  assert.equal(LOGICA.revisarCodigoDeAuthenticator("123 456"), null);
+});
+
+test("con el código correcto del Authenticator la persona queda dentro", () => {
+  assert.deepEqual(LOGICA.despuesDelAuthenticator(200, { status: "verified", verified_at: "2026-11-25T18:00:00Z" }), { paso: "dentro", campo: null, aviso: null });
+});
+
+test("un código incorrecto dice cuántos intentos quedan y la ventana sigue en ese paso", () => {
+  const con = (quedan) => LOGICA.despuesDelAuthenticator(400, Object.assign(error("code", "invalid_code", "El código no es correcto."), { attempts_left: quedan }));
+  assert.deepEqual(con(4), { paso: "authenticator", campo: "totp", aviso: "El código ingresado no es correcto. Te quedan 4 intentos." });
+  assert.equal(con(1).aviso, "El código ingresado no es correcto. Te queda 1 intento.");
+  assert.equal(LOGICA.despuesDelAuthenticator(400, error("code", "invalid_code", "x")).aviso, "El código ingresado no es correcto.");
+});
+
+test("demasiados códigos incorrectos dicen cuánto esperar", () => {
+  const r = LOGICA.despuesDelAuthenticator(429, Object.assign(error("credentials", "try_later", "x"), { retry_after: 900 }));
+  assert.deepEqual(r, { paso: "authenticator", campo: "totp", aviso: "Se escribieron demasiados códigos incorrectos. Inténtalo nuevamente en 15 minutos." });
+  assert.match(LOGICA.despuesDelAuthenticator(429, Object.assign(error("credentials", "try_later", "x"), { retry_after: 30 })).aviso, /en 1 minuto\.$/);
+});
+
+test("si la sesión en espera ya venció, la ventana vuelve al correo y la contraseña", () => {
+  const r = LOGICA.despuesDelAuthenticator(401, error("authorization", "not_authenticated", "Inicia sesión para continuar."));
+  assert.deepEqual(r, { paso: "correo", campo: "email", aviso: "Tu sesión venció. Vuelve a iniciar sesión." });
+});
+
+test("si ya no tiene el Authenticator activo, no hay nada que comprobar y queda dentro", () => {
+  assert.equal(LOGICA.despuesDelAuthenticator(409, error("two_factor", "two_factor_not_active", "x")).paso, "dentro");
+});
+
+test("sin servidor, sin llave de cifrado o con una respuesta rara, la ventana lo dice y no se mueve", () => {
+  assert.deepEqual(LOGICA.despuesDelAuthenticator(0, null), { paso: "authenticator", campo: "totp", aviso: LOGICA.SIN_SERVIDOR });
+  assert.equal(LOGICA.despuesDelAuthenticator(503, error("two_factor", "two_factor_unavailable", "x")).aviso, "No pudimos comprobar el código en este momento. Inténtalo más tarde.");
+  assert.equal(LOGICA.despuesDelAuthenticator(422, error("code", "invalid_format", "El código tiene 6 números.")).aviso, "El código tiene 6 números.");
+  assert.equal(LOGICA.despuesDelAuthenticator(403, error("request", "csrf_failed", "Falta la clave de la página o no es la de esta sesión. Recarga la página.")).aviso, "Falta la clave de la página o no es la de esta sesión. Recarga la página.");
+  assert.equal(LOGICA.despuesDelAuthenticator(500, null).paso, "authenticator");
+  assert.ok(LOGICA.despuesDelAuthenticator(500, null).aviso);
+});
+
+test("los textos del paso del Authenticator están en tono formal de tú", () => {
+  const textos = [
+    LOGICA.TEXTO_DEL_AUTHENTICATOR,
+    LOGICA.revisarCodigoDeAuthenticator("").aviso,
+    LOGICA.despuesDelAuthenticator(401, null).aviso,
+    LOGICA.despuesDelAuthenticator(503, null).aviso
+  ];
+  for (const texto of textos) assert.doesNotMatch(texto, /\busted(es)?\b|\bEscriba\b|\bIntente\b|\bsu (aplicación|sesión)\b/i, texto);
+  assert.equal(LOGICA.TEXTO_DEL_AUTHENTICATOR, "Escribe el código de 6 dígitos que muestra tu aplicación Authenticator.");
 });

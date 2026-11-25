@@ -4,10 +4,13 @@
    qué texto se le muestra a la persona. No toca el documento ni llama a la
    API: eso lo hace cuenta.js. Así se prueba sin navegador, con node.
 
-   La ventana tiene tres pasos:
-     "correo"  pide correo y contraseña  (POST /api/v1/auth/login)
-     "codigo"  pide el código de 6 dígitos (POST /api/v1/auth/login/verify)
-     "dentro"  la sesión quedó abierta y la ventana se cierra
+   La ventana tiene estos pasos:
+     "correo"         pide correo y contraseña  (POST /api/v1/auth/login)
+     "codigo"         pide el código de 6 dígitos del correo (POST /api/v1/auth/login/verify)
+     "authenticator"  solo para quien tiene el Authenticator activo: la sesión quedó abierta pero en espera, y pide el
+                      código de su aplicación (POST /api/v1/auth/2fa/verify). Decisión de Sophia del 25 de noviembre de
+                      2026, pieza 3.3.
+     "dentro"         la sesión sirve y la ventana se cierra
 
    Funciona en el navegador (window.INTEGRO_CUENTA) y en node (module.exports).
 */
@@ -81,7 +84,14 @@
     var error = primerError(cuerpo);
     var codigo = error ? error.code : null;
     if (status === 0) return { paso: "codigo", campo: null, aviso: SIN_SERVIDOR };
-    if (status === 200 && cuerpo && cuerpo.status === "session_opened") return { paso: "dentro", campo: null, aviso: null };
+    if (status === 200 && cuerpo && cuerpo.status === "session_opened") {
+      /* Con el Authenticator activo la sesión nace en espera: falta el código de la aplicación. clave es la clave
+         anti-falsificación de esa sesión, que hace falta para mandar el código o para cerrar la sesión. */
+      if (cuerpo.second_factor_required === true) {
+        return { paso: "authenticator", campo: "totp", aviso: null, clave: cuerpo.csrf_token || null };
+      }
+      return { paso: "dentro", campo: null, aviso: null };
+    }
     if (status === 400 && codigo === "invalid_code") {
       var quedan = cuerpo.attempts_left;
       var aviso = "El código ingresado no es correcto.";
@@ -92,6 +102,49 @@
     if (status === 400 && codigo === "too_many_attempts") return { paso: "correo", campo: "email", aviso: "Se agotaron los intentos con ese código. Vuelve a escribir tu correo electrónico y tu contraseña para recibir uno nuevo." };
     if (status === 422 && error) return { paso: "codigo", campo: "code", aviso: error.message };
     return { paso: "codigo", campo: null, aviso: (error && error.message) || RESPUESTA_RARA };
+  }
+
+  /* ---------- El código del Authenticator ---------- */
+
+  var TEXTO_DEL_AUTHENTICATOR = "Escribe el código de 6 dígitos que muestra tu aplicación Authenticator.";
+
+  /* Las aplicaciones muestran el código con un espacio en medio («123 456»): se quita antes de mandarlo. */
+  function limpiarCodigoDeAuthenticator(escrito) {
+    return String(escrito || "").replace(/\s+/g, "");
+  }
+
+  function revisarCodigoDeAuthenticator(escrito) {
+    var c = limpiarCodigoDeAuthenticator(escrito);
+    if (!c) return { campo: "totp", aviso: "Escribe el código de tu aplicación Authenticator." };
+    if (!/^[0-9]{6}$/.test(c)) return { campo: "totp", aviso: "El código debe constar de 6 dígitos." };
+    return null;
+  }
+
+  /* Qué sigue después de mandar el código del Authenticator (POST /auth/2fa/verify). */
+  function despuesDelAuthenticator(status, cuerpo) {
+    var error = primerError(cuerpo);
+    var codigo = error ? error.code : null;
+    var aqui = { paso: "authenticator", campo: "totp", aviso: null };
+    if (status === 0) { aqui.aviso = SIN_SERVIDOR; return aqui; }
+    if (status === 200 && cuerpo && cuerpo.status === "verified") return { paso: "dentro", campo: null, aviso: null };
+    /* Ya no tiene el Authenticator activo: no hay nada que comprobar y la sesión sirve. */
+    if (status === 409 && codigo === "two_factor_not_active") return { paso: "dentro", campo: null, aviso: null };
+    if (status === 400 && codigo === "invalid_code") {
+      var quedan = cuerpo.attempts_left;
+      aqui.aviso = "El código ingresado no es correcto.";
+      if (typeof quedan === "number") aqui.aviso += " Te " + (quedan === 1 ? "queda" : "quedan") + " " + plural(quedan, "intento", "intentos") + ".";
+      return aqui;
+    }
+    if (status === 429 && codigo === "try_later") {
+      aqui.aviso = "Se escribieron demasiados códigos incorrectos. Inténtalo nuevamente en " + minutos(cuerpo.retry_after) + ".";
+      return aqui;
+    }
+    /* La sesión en espera venció o se cerró: se empieza de nuevo. */
+    if (status === 401) return { paso: "correo", campo: "email", aviso: "Tu sesión venció. Vuelve a iniciar sesión." };
+    if (status === 503) { aqui.aviso = "No pudimos comprobar el código en este momento. Inténtalo más tarde."; return aqui; }
+    if (status === 422 && error) { aqui.aviso = error.message; return aqui; }
+    aqui.aviso = (error && error.message) || RESPUESTA_RARA;
+    return aqui;
   }
 
   /* Qué muestra la cabecera según la respuesta de GET /auth/me.
@@ -106,12 +159,22 @@
         clave: cuerpo.csrf_token || null,
         servidor: true,
         esAnfitrion: cuerpo.is_host === true,
-        esAdmin: cuerpo.is_admin === true
+        esAdmin: cuerpo.is_admin === true,
+        enEspera: false
+      };
+    }
+    /* La sesión existe pero está en espera del Authenticator: la API no entrega ningún dato de la persona, solo la
+       clave para mandar el código. La cabecera es la del visitante, e «Iniciar sesión» lleva directo a ese paso. */
+    var error = primerError(cuerpo);
+    if (status === 403 && error && error.code === "second_factor_required") {
+      return {
+        sesion: false, nombre: null, apellidos: "", correo: "", clave: cuerpo.csrf_token || null, servidor: true,
+        esAnfitrion: false, esAdmin: false, enEspera: true
       };
     }
     return {
       sesion: false, nombre: null, apellidos: "", correo: "", clave: null, servidor: status !== 0,
-      esAnfitrion: false, esAdmin: false
+      esAnfitrion: false, esAdmin: false, enEspera: false
     };
   }
 
@@ -229,6 +292,10 @@
     revisarCodigo: revisarCodigo,
     despuesDelCorreo: despuesDelCorreo,
     despuesDelCodigo: despuesDelCodigo,
+    TEXTO_DEL_AUTHENTICATOR: TEXTO_DEL_AUTHENTICATOR,
+    limpiarCodigoDeAuthenticator: limpiarCodigoDeAuthenticator,
+    revisarCodigoDeAuthenticator: revisarCodigoDeAuthenticator,
+    despuesDelAuthenticator: despuesDelAuthenticator,
     estadoDeCabecera: estadoDeCabecera,
     vistaDe: vistaDe,
     permisoDePagina: permisoDePagina,

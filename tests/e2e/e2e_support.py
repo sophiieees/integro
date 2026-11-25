@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+from pydantic import SecretStr
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "backend"))
@@ -110,6 +111,9 @@ FAKE_TURNSTILE = """
 
 # La llave pública que la API entrega a las pruebas: una de prueba de Cloudflare, que solo vale con la cookie sin Secure.
 STUB_SITE_KEY = "1x00000000000000000000AA"
+# Llave de cifrado inventada, para que el servidor de las pruebas pueda guardar y leer claves del Authenticator.
+# No es la de backend/.env.
+TEST_ENCRYPTION_KEY = "llave-maestra-inventada-para-las-pruebas-0123456789"
 
 
 def free_port() -> int:
@@ -225,7 +229,10 @@ def site():
     import uvicorn
 
     # El servidor local no tiene HTTPS: la cookie de sesión viaja sin Secure.
-    settings = load_settings().model_copy(update={"session_cookie_secure": False, "turnstile_site_key": STUB_SITE_KEY})
+    settings = load_settings().model_copy(update={
+        "session_cookie_secure": False, "turnstile_site_key": STUB_SITE_KEY,
+        "data_encryption_key": SecretStr(TEST_ENCRYPTION_KEY),
+    })
     real_pool = create_pool(settings)
     real_pool.open(wait=True, timeout=10)
     server = None
@@ -468,7 +475,8 @@ class Page:
     def step(self) -> str | None:
         return self.js(
             "(() => { const f = (n) => document.querySelector('#ventana-entrar form[data-paso=' + n + ']'); "
-            "return f('correo') && !f('correo').hidden ? 'correo' : f('codigo') && !f('codigo').hidden ? 'codigo' : null; })()"
+            "return f('correo') && !f('correo').hidden ? 'correo' : f('codigo') && !f('codigo').hidden ? 'codigo' "
+            ": f('authenticator') && !f('authenticator').hidden ? 'authenticator' : null; })()"
         )
 
     def warning(self) -> str | None:
@@ -623,6 +631,25 @@ def make_host(site: Site, email: str) -> None:
     """Le da a esa persona su perfil de anfitrión, como lo hará Verificación más adelante."""
     with system_transaction(site.pool) as connection:
         connection.execute("insert into host_profiles (user_id) select id from users where email = %s", (email,))
+
+
+def enroll_authenticator(site: Site, email: str) -> bytes:
+    """Deja activo el Authenticator de esa persona, sin pasar por las rutas, y devuelve su clave.
+
+    Guarda la clave cifrada como lo hace la API, con la llave inventada de las pruebas. Con esto, la siguiente sesión
+    de la persona nace en espera y la ventana le pide el código de su aplicación (pieza 3.3)."""
+    from app.core.encryption import encrypt
+    from app.modules.accounts.totp import generate_secret
+    from app.modules.accounts.two_factor import PURPOSE, associated
+
+    secret = generate_secret()
+    with system_transaction(site.pool) as connection:
+        user_id = connection.execute("select id from users where email = %s", (email,)).fetchone()[0]
+        connection.execute(
+            "insert into user_totp (user_id, secret_ciphertext, confirmed_at, last_used_step) values (%s, %s, now(), 0)",
+            (user_id, encrypt(TEST_ENCRYPTION_KEY, PURPOSE, secret, associated(user_id))),
+        )
+    return secret
 
 
 def make_admin(site: Site, email: str) -> None:

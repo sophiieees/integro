@@ -21,6 +21,7 @@ Reglas que ya están decididas y se mantienen:
 - Un solo registro sirve para huésped y para anfitrión; el perfil de anfitrión se crea después, cuando la persona lo pide (`POST /api/v1/host-profile`, pieza 3.1, decisión del 24 de noviembre de 2026). Queda con nivel `new`; la verificación de identidad lo pasa a `verified` (pieza 3.5).
 - Los administradores se dan de alta solo a mano, en pgAdmin; la API nunca escribe en `admins`.
 - Un administrador no es anfitrión por serlo, ni al revés: son dos permisos distintos y la API los revisa por separado.
+- Quien tiene el Authenticator activo (anfitriones y administradores, ADR 0018) inicia sesión en tres pasos: correo y contraseña, código del correo y código de su aplicación. Hasta escribir este último su sesión está en espera: la cabecera es la del visitante y las páginas protegidas no muestran nada.
 - La sesión del anfitrión dura 7 días sin uso; la del administrador, 30 minutos sin uso y 12 horas como tope, en todo el sitio (ADR 0014; el tope ya existe desde el 21 de noviembre de 2026). El segundo factor es obligatorio para anfitriones y panel (arquitectura, sección 7). **El segundo factor todavía no existe**: una ruta de administrador con datos no se publica hasta tenerlos.
 
 ## La cabecera de cada vista
