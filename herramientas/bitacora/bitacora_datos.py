@@ -2410,39 +2410,99 @@ PROMPTS = [
             ("39.15", "Poner el CAPTCHA en cinco rutas, aunque se habló de cuatro acciones.", "La cuarta acción, pedir otro código de verificación, incluye la corrección del correo, que es una ruta aparte (correct-unverified-email). No se presentó como desviación. Campo: qué hace.", "Aceptar", "Acepto 39.15.", "Quedó en cinco rutas (#82)."),
         ],
     },
+    # ------------------------------------------------------------------ 40
+    {
+        "n": 40,
+        "titulo": "Correo real con Resend",
+        "fecha": "22 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Fusionó el PR de la fecha de nacimiento, cargó las variables del CAPTCHA en Vercel, hizo el redeploy y "
+                     "todo salió bien. El hostname del widget de Cloudflare es el que aparece. Pidió comenzar con el correo "
+                     "real y el segundo factor; después de ver la propuesta de la IA dijo que comenzaban con el correo real "
+                     "y que lo harían con Resend. Preguntó si con eso terminan el punto 2, para pasar al 3, y que en el 3 "
+                     "ya se despliega lo del segundo factor."),
+        "tarea": ("1) /pieza: comenzar con el correo real y el segundo factor. 2) Comenzar con el correo real, con Resend. "
+                  "3) ¿Con el correo real se termina el punto 2? Pasar al 3, donde se despliega lo del segundo factor. "
+                  "4) Aceptar las desviaciones. 5) /bitacora."),
+        "salida": "No se indicó. Se aplicó el desglose de cierre de CLAUDE.md.",
+        "respuesta": {
+            "fecha": "22 de noviembre de 2026",
+            "commits": ("c78aaf6 (rama api/correo-real, desde main; sin fusionar). Fuera del repositorio: falta que Sophia "
+                        "compre un dominio, cree la cuenta de Resend, verifique el dominio y cargue las variables en Vercel."),
+            "archivos": [
+                ("backend/app/notifications/resend.py (nuevo)", "envía cada código y cada aviso con una llamada HTTPS a Resend; reintenta una vez con la misma Idempotency-Key; un código que no sale levanta DeliveryFailed y un aviso nunca levanta error; en el registro del servidor solo van el código HTTP y el nombre del error."),
+                ("backend/app/notifications/messages.py (nuevo)", "el asunto y el texto de cada código y de cada aviso, en español y de tú, en texto y en HTML con los colores de la web, escapando lo que viene de fuera."),
+                ("backend/app/api/delivery.py (nuevo) y backend/app/main.py", "el 503 con el código email_unavailable cuando un código no se pudo enviar."),
+                ("backend/app/core/config.py, backend/app/notifications/__init__.py y backend/app/notifications/sender.py", "la opción EMAIL_DELIVERY=resend con EMAIL_API_KEY y EMAIL_FROM (sin ellas la API no arranca y dice cuál) y el aviso de falla del envío."),
+                ("backend/app/modules/accounts/registration.py, email_correction.py, password_reset.py y router.py", "qué hace cada ruta si el correo no sale."),
+                ("backend/app/notifications/console.py", "el modo desarrollo usa los mismos textos de los avisos."),
+                ("docs/decisiones/0017-correo-real-con-resend.md, backend/README.md, backend/.env.example, docs/despliegue-vercel-neon.md y docs/decisiones/README.md", "dejan escrita la decisión, las variables y el paso a paso para configurar Resend."),
+                ("tests/backend/test_email_delivery.py (nuevo) y tests/backend/conftest.py", "las pruebas con un servidor HTTP local que hace de Resend."),
+            ],
+            "sugerencias": [
+                ("Comprar un dominio y decidir el remitente, por ejemplo no-responder@tu-dominio.", "sin dominio propio Resend no envía a nadie (pendiente: Sophia)."),
+                ("Una pieza de pantallas que muestre que el correo no salió.", "hoy, si falla al registrarse la persona ve el paso del código sin aviso, y ante un 503 ve el aviso genérico de respuesta inesperada (pendiente)."),
+                ("Revisar con Valeria el aviso de privacidad, ahora también por el uso de Resend.", "Resend recibe el correo de quien se registra o inicia sesión (pendiente)."),
+                ("Definir qué contiene el punto 3 antes de mover el segundo factor.", "no hay una definición escrita del punto 3 en el repositorio, y el segundo factor figura en la lista del punto 2 de Sophia del 21 de noviembre y en docs/arquitectura.md, sección 4, como pieza del módulo de Cuentas (pendiente: Sophia)."),
+            ],
+            "lineas": ("resend.py: ResendCodeSender (send_code, send_notice, _deliver, _post) y error_name. messages.py: code_message, "
+                       "notice_message, minutes_text. delivery.py: delivery_failed_response. config.py: email_delivery con la opción "
+                       "resend, email_api_key y email_from. __init__.py: create_code_sender para resend. router.py: email_sent en "
+                       "RegisterResponse. registration.py, email_correction.py y password_reset.py: el manejo de DeliveryFailed."),
+            "pruebas": ("En la computadora de Sophia, contra la base integro local; no se probó contra el Resend real. Backend "
+                        "completo: «1235 passed, 1 warning in 264.52s», 72 de ellas nuevas en test_email_delivery.py. Rompiendo a "
+                        "propósito el reintento, el registro y la recuperación de contraseña, fallaron 7 pruebas; los archivos se "
+                        "restauraron. No se corrieron las pruebas de navegador: no se tocó ninguna pantalla."),
+        },
+        "decisiones": [
+            ("40.1", "Proveedor de correo: Resend, y no Amazon SES.", "El plan gratuito alcanza para el piloto y no pide la aprobación a producción que SES exigiría con un sitio público; el envío queda detrás de CodeSender para poder cambiar. Campo: qué datos necesita.", "Aceptar", "Lo vamos a hacer con resend.", "Se construyó con Resend."),
+            ("40.2", "Comenzar con el correo real y dejar el segundo factor para después.", "Es lo que deja entrar a personas de fuera del equipo; el segundo factor se pide para anfitriones y panel, cuyas pantallas todavía no existen. Campo: qué hace.", "Aceptar", "No, comenzamos con el correo real.", "Se construyó el correo real."),
+            ("40.3", "Reintentar una vez el envío que falla, con la misma Idempotency-Key.", "Si el primer intento sí llegó, el segundo no manda un correo repetido; la especificación hablaba de la llave de idempotencia, no del reintento. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.4", "password-reset/request contesta siempre 200, aunque el correo no salga; la especificación decía 503 para todas las rutas.", "Con un 503 solo cuando la cuenta existe, la respuesta diría quién tiene cuenta. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.5", "register y correct-unverified-email contestan lo de siempre con email_sent en false, en vez de 503.", "Lo guardado queda guardado: volver a mandar el formulario diría «ya existe una cuenta» o «es el mismo correo». Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.6", "Con EMAIL_DELIVERY=resend y sin EMAIL_API_KEY o EMAIL_FROM, la API no arranca y dice cuál falta.", "El modo se elige a propósito y fingir que se envía sería peor. Para el CAPTCHA se hizo lo contrario: arranca y rechaza las acciones. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.7", "El texto del 503 dice «Espera un minuto e inténtalo de nuevo», en vez de solo «Inténtalo de nuevo».", "Un código que no salió cuenta para la espera normal de un minuto entre códigos. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.8", "Mover los textos de los avisos de console.py a messages.py, que console.py ahora importa.", "Un solo texto para el modo desarrollo y para el correo; su contenido no cambió. Campo: qué hace.", "Aceptar", "Acepto las desviaciones.", "Quedó como estaba (c78aaf6)."),
+            ("40.9", "Pasar el segundo factor del punto 2 al punto 3.", "Propuesta de Sophia, como pregunta: «con eso terminamos el punto 2, ¿no? Para pasar al 3, y en el 3 ya se despliega lo del segundo factor». La IA respondió que el segundo factor estaba en su lista del punto 2 y en docs/arquitectura.md como pieza de Cuentas, y que no encuentra escrito qué contiene el punto 3. Campo: qué hace.", "Pendiente", "", "Falta que Sophia diga qué contiene el punto 3."),
+        ],
+    },
     # ------------------------------------------------------------------ 41
     {
         "n": 41,
         "titulo": "Estado del proyecto, punto 3 (identidad, anfitrión y vistas) y veredictos",
         "fecha": "24 de noviembre de 2026",
         "rol": ROL_PROYECTO,
-        "contexto": ("Después de la bitácora 39 (CAPTCHA), pidió saber qué falta del proyecto. Fusionó el PR de esa bitácora. "
-                     "El correo real queda pendiente porque todavía no hay dominio, y WhatsApp porque no hay número. El segundo "
-                     "factor con la aplicación Authenticator pasa al punto 3, que además lleva un poco de frontend porque hay "
-                     "que definir las cuatro vistas: visitante, usuario que renta, anfitrión y administrador; la del "
-                     "administrador es para ella, Shakti y Valeria, para dar mantenimiento y ver cómo funciona la plataforma. "
-                     "Para verificar la identidad pensaba en una foto de la cara desde varios ángulos y de la INE por delante "
-                     "y por detrás, o el pasaporte u otra identificación. Para la propiedad pensaba pedir el papel de la "
-                     "propiedad, a nombre de quién está la dirección, alguna foto o el registro de Google Maps. Para los pagos, "
-                     "pruebas de 10 pesos, como hace con LIA. Calendario y reservas serán de las partes más complejas. El "
-                     "frontend actual no le gusta ni coincide con su idea. Dijo que muchos de los procesos se podrían hacer "
-                     "con IA, pero que de momento no. Todavía no se paga el dominio, ni Vercel Pro, ni Neon."),
-        "tarea": ("1) /pieza «¿qué falta del proyecto de Íntegro?»: saber en qué punto vamos y qué falta. 2) Explicar cómo se "
-                  "verificará la identidad y el perfil del anfitrión, qué puntos legales debe revisar Valeria y qué puede hacer "
-                  "ella misma; si la IA tiene otra sugerencia además de su idea de fotos de cara e identificación. 3) Explicar "
-                  "qué significa «escribir la tabla de estados» de las propiedades, qué es búsqueda y cotización, y por qué "
-                  "la IA dice que el cotizador no está fusionado. 4) Decir qué tan rápido saldrá todo esto. 5) Hacerle "
-                  "preguntas para decidir. 6) Mandarle lo que haya que fusionar. 7) Anotar los nuevos veredictos pendientes "
-                  "con las especificaciones y preguntas. 8) Contestar las preguntas de la IA: solo el dueño puede ser anfitrión "
-                  "o también un copropietario y quien renta con permiso; cómo lo manejan Airbnb y Wonder y qué recomienda la IA "
-                  "en seguridad para el huésped y el anfitrión; si el administrador de propiedad es necesario (aclaró que la "
-                  "vista de administrador es para ellos tres); si la prueba de vida la desarrollan ellos o es una aplicación "
-                  "aparte; si al huésped también se le pide identidad; si hay que guardar los documentos de la propiedad o solo "
-                  "el resultado de la verificación; si el Authenticator es demasiado para el inicio de sesión de un anfitrión y "
-                  "a qué se refiere recuperar el acceso; cómo debe verse la plataforma en computadora y en celular (estilo "
-                  "Airbnb con sugeridos y fotos que pasan solas en computadora; desplazamiento tipo Instagram en celular, no "
-                  "TikTok; videos cortos o fotos con animación de unos 5 segundos); qué significa el punto del cotizador. "
-                  "9) Dar sus veredictos finales sobre cada propuesta del borrador. 10) /bitacora."),
+        "contexto": ("Después de la bitácora 39 (CAPTCHA), quiero saber qué falta del proyecto. Fusioné el PR de esa "
+                     "bitácora. El correo real queda pendiente porque todavía no tenemos dominio, y WhatsApp porque no "
+                     "tenemos número. La aplicación de códigos (TOTP) va para el punto 3 y creo que podemos usar "
+                     "Authenticator. El punto 3 también lleva un poco de frontend, porque tenemos que ver las vistas: son "
+                     "cuatro definidas hasta ahora, la del visitante, la del usuario que va a rentar la propiedad, la del "
+                     "anfitrión y la del administrador; la del administrador es para mí, para Shakti y para Valeria, para "
+                     "darle mantenimiento y ver cómo funciona la plataforma. Para verificar la identidad pensaba en una "
+                     "foto de la cara desde todos los ángulos y de la INE por delante y por detrás, o el pasaporte u otra "
+                     "identificación. Para la propiedad pensaba pedir el papel de la propiedad, a nombre de quién está la "
+                     "dirección, alguna foto o un registro de Google Maps. Para los pagos podemos hacer la arquitectura y "
+                     "pruebas de 10 pesos, como con LIA. Calendario y reservas serán de las partes más complejas. El "
+                     "frontend de ahorita no me gusta para nada y no es la idea que tengo. Muchos de los procesos se "
+                     "podrían hacer con IA, pero de momento los dejamos sin ella. Todavía no hemos pagado el dominio, ni "
+                     "Vercel Pro, ni Neon."),
+        "tarea": ("1) /pieza «¿qué falta del proyecto de Íntegro?»: saber en qué punto vamos y qué falta. 2) ¿Cómo vamos "
+                  "a verificar la identidad y el perfil del anfitrión? ¿Qué puntos legales tiene que revisar Valeria y qué "
+                  "puedo hacer yo? ¿Tienes otra sugerencia además de mi idea de fotos de cara e identificación? 3) ¿A qué "
+                  "te refieres con «escribir la tabla de estados» de las propiedades? ¿A qué te refieres con búsqueda y "
+                  "cotización, y por qué dices que no fusioné el cotizador? 4) ¿Qué tan rápido crees que salga esto? "
+                  "5) Pregúntame cosas para decidir. 6) Mándame lo que haya que fusionar. 7) Anota los nuevos veredictos "
+                  "pendientes con las especificaciones y preguntas. 8) Respondo tus preguntas: solo el dueño puede ser "
+                  "anfitrión o también un copropietario y quien renta con permiso; ¿cómo lo manejan Airbnb y Wonder y qué "
+                  "recomiendas en seguridad para el huésped y el anfitrión?; el administrador de propiedad no lo veo "
+                  "necesario, porque la vista de administrador es para nosotros tres; ¿la prueba de vida la desarrollamos "
+                  "nosotros o es una aplicación aparte?; al huésped también se le pide identidad, ¿cómo lo manejan Airbnb "
+                  "o Wonder?; ¿guardamos los documentos de la propiedad o solo el resultado?; ¿el Authenticator es "
+                  "demasiado para el inicio de sesión de un anfitrión y a qué te refieres con recuperar el acceso?; en "
+                  "computadora quiero algo estilo Airbnb con sugeridos y fotos que pasen solas, en celular desplazamiento "
+                  "tipo Instagram y no TikTok, y videos cortos o fotos con animación de unos 5 segundos; ¿a qué te "
+                  "refieres con el punto del cotizador? 9) Mis veredictos finales sobre cada propuesta del borrador. "
+                  "10) /bitacora."),
         "salida": ("Lo que haya que fusionar y la tabla de veredictos del borrador, con el desglose de cierre de CLAUDE.md."),
         "respuesta": {
             "fecha": "24 de noviembre de 2026",
