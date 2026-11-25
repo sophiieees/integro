@@ -2410,4 +2410,95 @@ PROMPTS = [
             ("39.15", "Poner el CAPTCHA en cinco rutas, aunque se habló de cuatro acciones.", "La cuarta acción, pedir otro código de verificación, incluye la corrección del correo, que es una ruta aparte (correct-unverified-email). No se presentó como desviación. Campo: qué hace.", "Aceptar", "Acepto 39.15.", "Quedó en cinco rutas (#82)."),
         ],
     },
+    # ------------------------------------------------------------------ 41
+    {
+        "n": 41,
+        "titulo": "Estado del proyecto, punto 3 (identidad, anfitrión y vistas) y veredictos",
+        "fecha": "24 de noviembre de 2026",
+        "rol": ROL_PROYECTO,
+        "contexto": ("Después de la bitácora 39 (CAPTCHA), pidió saber qué falta del proyecto. Fusionó el PR de esa bitácora. "
+                     "El correo real queda pendiente porque todavía no hay dominio, y WhatsApp porque no hay número. El segundo "
+                     "factor con la aplicación Authenticator pasa al punto 3, que además lleva un poco de frontend porque hay "
+                     "que definir las cuatro vistas: visitante, usuario que renta, anfitrión y administrador; la del "
+                     "administrador es para ella, Shakti y Valeria, para dar mantenimiento y ver cómo funciona la plataforma. "
+                     "Para verificar la identidad pensaba en una foto de la cara desde varios ángulos y de la INE por delante "
+                     "y por detrás, o el pasaporte u otra identificación. Para la propiedad pensaba pedir el papel de la "
+                     "propiedad, a nombre de quién está la dirección, alguna foto o el registro de Google Maps. Para los pagos, "
+                     "pruebas de 10 pesos, como hace con LIA. Calendario y reservas serán de las partes más complejas. El "
+                     "frontend actual no le gusta ni coincide con su idea. Dijo que muchos de los procesos se podrían hacer "
+                     "con IA, pero que de momento no. Todavía no se paga el dominio, ni Vercel Pro, ni Neon."),
+        "tarea": ("1) /pieza «¿qué falta del proyecto de Íntegro?»: saber en qué punto vamos y qué falta. 2) Explicar cómo se "
+                  "verificará la identidad y el perfil del anfitrión, qué puntos legales debe revisar Valeria y qué puede hacer "
+                  "ella misma; si la IA tiene otra sugerencia además de su idea de fotos de cara e identificación. 3) Explicar "
+                  "qué significa «escribir la tabla de estados» de las propiedades, qué es búsqueda y cotización, y por qué "
+                  "la IA dice que el cotizador no está fusionado. 4) Decir qué tan rápido saldrá todo esto. 5) Hacerle "
+                  "preguntas para decidir. 6) Mandarle lo que haya que fusionar. 7) Anotar los nuevos veredictos pendientes "
+                  "con las especificaciones y preguntas. 8) Contestar las preguntas de la IA: solo el dueño puede ser anfitrión "
+                  "o también un copropietario y quien renta con permiso; cómo lo manejan Airbnb y Wonder y qué recomienda la IA "
+                  "en seguridad para el huésped y el anfitrión; si el administrador de propiedad es necesario (aclaró que la "
+                  "vista de administrador es para ellos tres); si la prueba de vida la desarrollan ellos o es una aplicación "
+                  "aparte; si al huésped también se le pide identidad; si hay que guardar los documentos de la propiedad o solo "
+                  "el resultado de la verificación; si el Authenticator es demasiado para el inicio de sesión de un anfitrión y "
+                  "a qué se refiere recuperar el acceso; cómo debe verse la plataforma en computadora y en celular (estilo "
+                  "Airbnb con sugeridos y fotos que pasan solas en computadora; desplazamiento tipo Instagram en celular, no "
+                  "TikTok; videos cortos o fotos con animación de unos 5 segundos); qué significa el punto del cotizador. "
+                  "9) Dar sus veredictos finales sobre cada propuesta del borrador. 10) /bitacora."),
+        "salida": ("Lo que haya que fusionar y la tabla de veredictos del borrador, con el desglose de cierre de CLAUDE.md."),
+        "respuesta": {
+            "fecha": "24 de noviembre de 2026",
+            "commits": ("El commit de este registro, en la rama docs/bitacora-41. Lleva el número 41 porque el 40 ya lo "
+                        "tiene el otro chat (Correo real con Resend), sin confirmar, en la rama docs/bitacora-40 de la "
+                        "carpeta de trabajo."),
+            "archivos": [
+                ("herramientas/bitacora/bitacora_datos.py", "esta entrada, con veintiuna decisiones."),
+            ],
+            "sugerencias": [
+                ("Elegir dos o tres proveedores de verificación de identidad y pedirles precio y acceso de prueba.",
+                 "la decisión del proveedor sigue sin tomarse desde el 16 de octubre y el punto 3 depende de ella; la IA se ofreció a compararlos con fuentes citadas."),
+                ("Pasar a Valeria la lista legal: aviso de privacidad y consentimiento para datos biométricos, contrato con el proveedor, huella de identidad y derechos ARCO, quién puede rentar una propiedad, regulación local de renta corta e impuestos, y términos si hay documentos falsos.",
+                 "la nueva Ley Federal de Protección de Datos Personales en Posesión de los Particulares (20 de marzo de 2025) pide consentimiento informado y tratar solo lo estrictamente necesario."),
+                ("Empezar el punto 3 por el Authenticator y el perfil de anfitrión.",
+                 "no dependen del proveedor de identidad ni de la revisión legal de Valeria."),
+                ("Agregar a property_photos una columna que diga si el archivo es foto, foto con movimiento o video, al diseñar el grupo 2.",
+                 "hoy solo tiene id, property_id, file_path y position; cuesta una columna ahora y evita rehacer la tabla."),
+                ("Calcular el total de la reserva en el servidor y dejar la lógica del cotizador solo como vista previa.",
+                 "la arquitectura y las reglas de seguridad piden que el total lo calcule el servidor."),
+                ("Escribir las tablas de cambios permitidos de propiedades, membresías y reservas antes de construir sus grupos.",
+                 "las reglas de CLAUDE.md las exigen y las de reservas ni siquiera tienen lista de estados."),
+                ("Decidir si un anfitrión puede pagar para salir primero en los recomendados.",
+                 "sin comisión por reserva conviene decirlo desde ahora; Sophia todavía no lo ha respondido."),
+            ],
+            "lineas": "bitacora_datos.py: esta entrada, con veintiuna filas de decisiones.",
+            "pruebas": ("No hay pruebas automáticas: no cambió código de la aplicación. Se leyó origin/main con git: el último "
+                        "PR fusionado era el #88 (bitácora 39); la rama funcion/cotizador tiene un commit del 4 de noviembre "
+                        "(2b9ac3b) que no está en main, donde no existe web/assets/js/cotizador.js; las tablas de estados de "
+                        "propiedades y membresías dicen «Falta escribir la tabla de cambios permitidos» y las de reservas «Sin "
+                        "definir». Las comparaciones con Airbnb y la ley salieron de búsquedas en la web, no de los textos "
+                        "completos, y de Wonder no se encontró información. No se pudieron consultar los PR: gh no está "
+                        "instalado y la conexión de GitHub de la sesión tenía el token vencido."),
+        },
+        "decisiones": [
+            ("41.1", "Cerrar el punto 2 dejando pendientes el correo real (falta el dominio) y WhatsApp (falta el número).", "Son lo que falta del punto 2 y ninguno depende de programación. Campo: qué datos necesita.", "Aceptar", "El correo real: «lo vamos a tener que dejar pendiente». WhatsApp: «queda pendiente también porque no tenemos el número». Y al decidir: «Correo y WhatsApp quedan pendientes, exacto, aceptar.»", "Sin cambios en el código."),
+            ("41.2", "Anotar que el punto 3 incluye el frontend de las cuatro vistas: visitante, huésped, anfitrión y administrador.", "Lo dijo Sophia al pasar al punto 3; se anota para que el chat de programación lo sepa. Campo: qué hace.", "Aceptar", "«Son 4 vistas del frontend, aceptar.»", "Sin cambios en el código."),
+            ("41.3", "Limitar quién puede ser anfitrión al dueño y al copropietario.", "Anunciar una propiedad ajena es el fraude más común en la renta corta; Airbnb sí permite anfitriones que no son dueños. Campo: qué datos necesita.", "Aceptar", "«Anfitrión y dueño copropietario. Sí, aceptar.»", "Sin cambios en el código."),
+            ("41.4", "Incluir al administrador de la propiedad como una figura que puede rentar.", "La IA la propuso en una lista junto al dueño y al copropietario. Campo: qué datos necesita.", "Rechazar", "«Lo del administrador, exacto, se rechaza.» Antes: «no lo veo tan necesario, porque el mismo host administra su propiedad.»", "El administrador de propiedad no existe como figura; la vista de administrador es solo para Sophia, Shakti y Valeria."),
+            ("41.5", "Quien renta con permiso del anfitrión: no en la primera versión; si más adelante se permite, con autorización escrita del dueño y el dueño verificado.", "Una persona que renta sin ser dueña abre la puerta a anuncios de propiedades sin derecho. Campo: qué datos necesita.", "Revisar", "«Como es un tema legal, más un tema legal que de programación, vamos a dejar pendiente como revisar, porque sí, justo en la primera vista todavía no.»", "Se entiende que en la primera versión no entra. Las condiciones que Sophia dio para cuando se permita son la autorización escrita del dueño y el dueño verificado; la revisión es de Valeria."),
+            ("41.6", "El copropietario tiene su propia cuenta verificada, pero el dinero va a un solo titular.", "Hoy el modelo tiene un titular por propiedad, que paga la membresía y recibe el dinero. Campo: qué datos necesita.", "Aceptar", "«Copropietario sí va a tener su cuenta verificada. El dinero solo va a pasar a un titular.»", "Sin cambios en el modelo todavía."),
+            ("41.7", "Verificar la identidad con prueba de vida en lugar de fotos de la cara desde todos los ángulos; la hace un proveedor externo.", "Es más difícil de engañar con una foto impresa y no se desarrolla en el proyecto. Campo: qué hace.", "Aceptar", "«Prueba de vida, lo aceptamos.»", "Falta elegir el proveedor."),
+            ("41.8", "Pedir identidad también al huésped.", "Airbnb verifica a anfitriones, coanfitriones nuevos y huéspedes que reservan; protege al anfitrión. Campo: qué hace.", "Aceptar", "«Identidad para el huésped, sí.» Antes: «para seguridad del anfitrión, sí».", "Sin cambios en el código."),
+            ("41.9", "Guardar el documento de la propiedad, cifrado, y no la identificación; acceso solo del administrador con registro de quién lo abrió y borrado al plazo que indique Valeria.", "Sophia quiere respaldo legal; la regla de CLAUDE.md solo cubre identificaciones y la ley pide tratar lo estrictamente necesario. Campo: qué datos necesita.", "Aceptar", "«Guardar el documento de la propiedad cifrado, sí.»", "Falta decidir dónde se guarda y el plazo de borrado."),
+            ("41.10", "Verificar la propiedad por capas, como lo dice la arquitectura: documento cruzado con la identidad, dirección contra el pin, padrón local donde aplique y Registro Público solo por excepción.", "Google Maps comprueba la ubicación pero no que sea dueño. Campo: cómo se sabrá que funciona.", "Aceptar", "«Verificación de propiedad por capas, sí. Eso sí se va a hacer tal como lo menciona la arquitectura.»", "Sin cambios en la arquitectura."),
+            ("41.11", "Segundo factor con una aplicación Authenticator para los anfitriones.", "Reciben ingresos y administran propiedades; la arquitectura ya pide un segundo factor para anfitriones. Campo: qué hace.", "Aceptar", "«Vamos a usar Authenticator para el anfitrión.»", "Va en el punto 3."),
+            ("41.12", "El anfitrión entra con contraseña y Authenticator, en lugar del código por correo.", "Es más seguro, no depende de que llegue un correo y quita un paso; cambia el ADR 0014. Campo: qué hace.", "Pendiente", "", "Sin cambios. Sophia: «está bien cómo lo pusiste. O sea, déjalo pendiente»."),
+            ("41.13", "Si el anfitrión pierde el celular: diez códigos de recuperación de un solo uso y, si pierde también esos, ayuda de una persona con reverificación por prueba de vida, no por correo.", "Sin la aplicación no puede entrar a una cuenta con ingresos. Campo: qué hace.", "Pendiente", "", "Sin cambios."),
+            ("41.14", "Probar los pagos con el modo de prueba de Stripe, que no mueve dinero real, en lugar de pesos reales.", "Sophia propuso pruebas de 10 pesos; los pesos reales solo existen en modo real. Campo: cómo se sabrá que funciona.", "Aceptar", "«Sí se puede probar en el modo prueba de Stripe.»", "Sin cambios en el código."),
+            ("41.15", "Frontend: en el celular, desplazamiento tipo Instagram y no TikTok; en la computadora, estilo Airbnb, con barra de navegación, buscador, imagen y sugeridos, y al señalar una propiedad se amplía y sus fotos pasan solas.", "Sophia lo describió así; en el celular no hay cursor, así que las fotos se animan cuando la propiedad queda a la vista. Campo: qué hace.", "Aceptar", "«En el celular va a ser tipo Instagram y en [la computadora] estilo Airbnb.» Confirmó que fue un error de pronunciación.", "Para la pieza de frontend; la vista del administrador es distinta y no necesita tanto desplazamiento."),
+            ("41.16", "Recomendados con reglas simples (más reservadas, mejor calificadas, cercanas), sin inteligencia artificial en la primera versión.", "La tabla de eventos de uso todavía no existe y una IA agrega costo y complejidad. Campo: qué hace.", "Aceptar", "«En la primera revisión, sí, aún no vamos a meter [IA]. Yo creo que muchos de los procesos que estamos viendo se pueden hacer con IA, pero de momento vamos a dejarlas sin IA.»", "Sin IA por ahora; queda abierta para más adelante."),
+            ("41.17", "Videos cortos del anfitrión, alojados en un servicio aparte por su peso.", "Con 49.55 MB de transferencia en 30 días en Vercel y 100 GB al mes en el plan Hobby, los videos cambiarían la escala. Campo: cómo se sabrá que funciona.", "Pendiente", "", "Sophia: «está bueno platicarlo y anotarlo para después», cuando haya dominio, Vercel Pro y Neon de pago."),
+            ("41.18", "Conservar la lógica del cotizador (noches, temporada, limpieza y estancia mínima) y rehacer la pantalla.", "La rama funcion/cotizador (2b9ac3b) se hizo para la pantalla de propiedad vieja, que se va a rediseñar. Campo: qué hace.", "Aceptar", "«Lo del cotizador, sí, eso sí hay que mantenerlo. La lógica me gusta. Lo único que vamos a hacer es rehacer la pantalla.»", "Falta decidir cómo se verá la pantalla; Sophia: «No sabría cómo ponerlo todavía»."),
+            ("41.19", "Calcular el total del cotizador en el servidor y dejar el del navegador solo como vista previa.", "La arquitectura y las reglas de seguridad piden que el total lo calcule el servidor. Campo: qué hace.", "Pendiente", "", "Sin cambios."),
+            ("41.20", "Fotos con movimiento de 3 a 5 segundos, como las fotos en vivo del teléfono, y una columna en property_photos que diga si es foto, foto con movimiento o video.", "Pesan mucho menos que un video y cuesta una columna agregarla al diseñar el grupo 2. Campo: qué datos necesita.", "Pendiente", "", "Sophia preguntó por este tipo de animación; todavía no decide."),
+            ("41.21", "Repartir el dinero entre propietarios por porcentaje, por ejemplo 60 % y 40 %, cada uno con su cuenta, todo firmado.", "Idea de Sophia para el futuro; hoy el dinero va a un solo titular. Campo: qué hace.", "Pendiente", "", "Sophia: «es más legal que de programación, entonces queda como pendiente»; la revisa Valeria."),
+        ],
+    },
 ]
