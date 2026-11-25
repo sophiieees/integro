@@ -48,7 +48,8 @@ Todas las entidades y relaciones, sin atributos. Los atributos están en los dia
 
 ![Personas y acceso](img/chen-people-access.png)
 
-- Entidades débiles: `UserCredential`, `Admin` y `HostProfile`. Las tres dependen de `User` con relación de identificación de uno a uno, por eso no llevan clave parcial.
+- Entidades débiles: `UserCredential`, `UserTotp`, `Admin` y `HostProfile`. Las cuatro dependen de `User` con relación de identificación de uno a uno, por eso no llevan clave parcial.
+- `UserTotp`: la clave del Authenticator de la persona, cifrada (`secret_ciphertext`). No es la clave en claro ni permite obtenerla sin la llave de cifrado, que vive fuera de la base.
 - Atributo compuesto: `name` (`first_name`, `last_name`).
 - Atributo multivalor: `phone`.
 - Atributo derivado: `age`, que se calcula con `birth_date`.
@@ -118,6 +119,7 @@ Los diagramas se generan desde `tools/er-diagram/generate.mjs`, que contiene la 
 | Relación | Llave foránea | Obligatoria | Cómo se lee |
 |---|---|---|---|
 | `users` y `user_credentials` | `user_credentials.user_id → users(id)`, única | Sí | Una persona tiene una sola contraseña. Que toda persona tenga contraseña lo garantiza el registro, que guarda las dos filas juntas. |
+| `users` y `user_totp` | `user_totp.user_id → users(id)`, única | Sí | Una persona tiene a lo más una clave de Authenticator. Si vuelve a empezar la activación o cambia de celular, la misma fila recibe la clave nueva. |
 | `users` y `admins` | `admins.user_id → users(id)`, única | Sí | Una persona puede ser administradora o no. |
 | `users` y `host_profiles` | `host_profiles.user_id → users(id)`, única | Sí | Una persona puede ser anfitriona o no; si lo es, tiene un solo perfil. |
 | `host_profiles` y `memberships` | `memberships.host_id → host_profiles(user_id)`, única | Sí | Un anfitrión tiene una sola membresía; si deja de pagar y vuelve, se reactiva la misma. |
@@ -170,7 +172,7 @@ Notación: `tabla(columnas)`. La llave primaria va <ins>subrayada</ins>. `FK` ma
 
 ### Grupo 1. Personas y acceso
 
-Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verifications`, `sessions`, `password_resets`, `one_time_codes`, `login_attempts` y `admins` construidas.
+Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verifications`, `sessions`, `password_resets`, `one_time_codes`, `login_attempts`, `admins` y `user_totp` construidas.
 
 - **users**(<ins>id</ins>, first_name, last_name, email UK, email_verified_at?, country, birth_date, preferred_language, identity_status, identity_fingerprint? UK)
   - `email_verified_at` queda vacía hasta que la persona escribe el código que se le envió al correo. La escribe solo el sistema.
@@ -191,6 +193,11 @@ Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verificati
 - **login_attempts**(<ins>id</ins>, email?, user_id? FK → users(id), succeeded, ip_address?, user_agent?)
   - Una fila por cada vez que alguien escribe un correo y una contraseña, acierte o no. Sirve para contar los fallos seguidos: un acierto reinicia la cuenta. `user_id` queda vacío si el correo no tiene cuenta, y `email` si lo escrito no tenía forma de correo.
   - Solo se agregan filas; el sistema no las cambia ni las borra, y la persona no las ve. No lleva `updated_at` porque una fila nunca cambia.
+- **user_totp**(<ins>id</ins>, user_id FK UK → users(id), secret_ciphertext, key_version, confirmed_at?, last_used_step?, failed_attempts, locked_until?)
+  - La clave del Authenticator (códigos de 6 dígitos que cambian cada 30 segundos), cifrada por la API con AES-256-GCM. La llave de cifrado no vive en la base: está en una variable de entorno. `key_version` dice con qué versión de la llave se cifró.
+  - `confirmed_at` queda vacía mientras la activación está pendiente; se llena cuando la persona comprueba la clave con un código. `last_used_step` es el último periodo de 30 segundos cuyo código se aceptó: un código no sirve dos veces.
+  - `failed_attempts` cuenta los códigos incorrectos seguidos y `locked_until` dice hasta cuándo espera la persona. Los números (5 intentos, 15 minutos) viven en la configuración de la API.
+  - Solo la lee y la escribe el sistema. La persona no lee ni su propia fila; si su Authenticator está activo se lo dice la API. Nada se borra.
 - **admins**(<ins>id</ins>, user_id FK UK → users(id))
   - Las altas y las bajas las hace solo el dueño de la base, a mano. El sistema solo lee la tabla; la persona puede leer su propia fila.
 - **host_profiles**(<ins>id</ins>, user_id FK UK → users(id), level, stripe_account_id? UK, clabe_last4?)
@@ -282,8 +289,10 @@ Aceptadas por Sophia el 17 de noviembre de 2026.
 | 20 | Cada intento de inicio de sesión se guarda en `login_attempts`, con el correo, la dirección IP y el navegador | La cuenta nunca se bloquea: a los 3 fallos se avisa al dueño y a los 6 quien está intentando espera 15 minutos, por dispositivo y dirección (ADR 0014). Para contar hay que guardar. |
 | 21 | `login_attempts` solo admite filas nuevas | Es un registro: ni el sistema lo cambia ni lo borra. |
 | 22 | Los administradores se dan de alta solo a mano, por el dueño de la base | La API no tiene permiso de escribir en `admins`, ni siquiera actuando como el sistema: quien tome el control de la API no puede hacerse administrador. |
+| 23 | La clave del Authenticator va en su propia tabla, `user_totp`, cifrada, y la persona no puede leer ni su propia fila | El ADR 0014 pedía guardarla cifrada con AES-256-GCM en una tabla aparte. Si la persona pudiera leerla, quien tomara su sesión podría copiar la clave. |
+| 24 | `user_totp` guarda el último periodo aceptado, los intentos fallidos y hasta cuándo espera | Un código no debe servir dos veces, y adivinar un código de seis dígitos tiene que costar una espera. |
 
-Las decisiones 15 a 19 son del 17 de noviembre de 2026, al construir las tablas de acceso a la cuenta. Las decisiones 20 a 22 son del 18 de noviembre de 2026.
+Las decisiones 15 a 19 son del 17 de noviembre de 2026, al construir las tablas de acceso a la cuenta. Las decisiones 20 a 22 son del 18 de noviembre de 2026. Las decisiones 23 y 24 son del 24 de noviembre de 2026 (pieza 3.2).
 
 ## 6. Tablas de estados
 

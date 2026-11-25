@@ -7,6 +7,7 @@ Estas pruebas corren las migraciones de `database/migrations/` sobre un PostgreS
 | Archivo | Para qué |
 |---|---|
 | `group1_users.test.js` | Casos del grupo 1: `users`, `user_credentials`, `user_phones`, `host_profiles` y `verifications`. |
+| `group1_user_totp.test.js` | Casos de `user_totp`, la clave cifrada del Authenticator: una fila por persona, el formato de la clave cifrada, comprobarla, que nada se borra y que la persona no lee ni su propia fila. |
 
 ## Cómo correrlas
 
@@ -21,7 +22,10 @@ Después, desde la raíz del repositorio:
 
 ```bash
 NODE_PATH=~/pglite-pruebas/node_modules node tests/database/group1_users.test.js
+NODE_PATH=~/pglite-pruebas/node_modules node tests/database/group1_user_totp.test.js
 ```
+
+Cada archivo corre **todas** las migraciones, en orden, antes de sus casos: así también comprueba que una migración nueva no rompe las anteriores.
 
 Cada caso imprime lo esperado, lo obtenido y `COINCIDE` o `NO COINCIDE`. La última línea da el total. El programa termina con código 0 solo si todos coinciden.
 
