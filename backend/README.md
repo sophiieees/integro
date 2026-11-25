@@ -16,6 +16,7 @@ Esta carpeta contiene hoy solo el esqueleto: la aplicación arranca, lee su conf
 | `app/api/v1/health.py` | Las dos rutas de comprobación. |
 | `app/modules/` | Módulos de dominio. Cada módulo crea su carpeta en su pieza. |
 | `app/modules/accounts/` | Cuentas: reglas del formulario (`validation.py`), qué tan confiable es una contraseña (`password_strength.py`), contraseñas, códigos y llaves (`security.py`), códigos de un solo uso (`codes.py`), registro y comprobación del correo (`registration.py`), inicio de sesión (`login.py`), sesiones (`sessions.py`) y sus rutas (`router.py`). |
+| `app/modules/hosts/` | Anfitriones: pedir el perfil de anfitrión y verlo (`profile.py`) y sus rutas (`router.py`). Pieza 3.1. |
 | `app/api/protection.py` | Defensas de las peticiones con sesión que cambian algo: de dónde viene la petición y la clave anti-falsificación. |
 | `app/web.py` | Muestra las páginas de `web/` desde la misma dirección de la API. |
 | `app/api/auth.py` | Quién hace la petición: lee la llave de la cookie de sesión, entrega la sesión a la ruta que la pida y renueva la cookie. |
@@ -47,6 +48,8 @@ Las tablas no viven aquí: están en `database/migrations/`, en la raíz del rep
 | `GET /api/v1/auth/sessions` | Las sesiones abiertas de la persona: `{"sessions": [{"id", "created_at", "last_used_at", "expires_at", "ip_address", "user_agent", "current"}]}`. Nunca la llave ni su huella. |
 | `DELETE /api/v1/auth/sessions/{id}` | Cierra una de sus sesiones. `200 {"status": "closed", "closed": 1}`. `404` si es de otra persona, no existe o ya estaba cerrada. |
 | `POST /api/v1/auth/sessions/close-others` | Cierra todas sus sesiones menos la actual. `200 {"status": "closed", "closed": 2}`. |
+| `POST /api/v1/host-profile` | Pedir ser anfitrión. No lleva cuerpo: quién lo pide sale de la sesión. `201 {"level": "new", "created_at": "..."}` y queda su fila en `host_profiles`; desde la siguiente petición `/auth/me` dice `is_host: true` y su sesión dura 7 días sin uso en lugar de 30. Si ya tenía perfil, `200` con el que tiene, sin cambiarlo: un perfil `verified` o `suspended` no vuelve a `new`. `401` sin sesión; `403` si la petición no pasa las defensas, o con `email_not_verified` si su correo no está comprobado. No pide CAPTCHA, Authenticator ni verificación de identidad (piezas 3.3 y 3.5). |
+| `GET /api/v1/host-profile` | Su perfil de anfitrión: `200 {"level": "new", "created_at": "..."}`. `level` es `new`, `verified` o `suspended`. `404` con `no_host_profile` si todavía no lo ha pedido; `401` sin sesión. Nunca entrega la cuenta de Stripe ni el perfil de otra persona: se lee con el papel de la persona y la base solo le da su fila. |
 | `GET /docs` | Documentación OpenAPI que FastAPI genera a partir del código. Desde ahí se pueden probar las rutas. |
 | `GET /` y lo demás | Las páginas de `web/`: la portada en `/`, y `propiedad.html`, `anfitriones.html`, `como-funciona.html` y `assets/` por su nombre. Las rutas de arriba ganan siempre. |
 

@@ -194,6 +194,8 @@ Estado: `users`, `user_credentials`, `user_phones`, `host_profiles`, `verificati
 - **admins**(<ins>id</ins>, user_id FK UK → users(id))
   - Las altas y las bajas las hace solo el dueño de la base, a mano. El sistema solo lee la tabla; la persona puede leer su propia fila.
 - **host_profiles**(<ins>id</ins>, user_id FK UK → users(id), level, stripe_account_id? UK, clabe_last4?)
+  - `level`: `new` (recién pedido), `verified` (identidad comprobada) o `suspended` (suspendido por la plataforma).
+  - La fila la crea el sistema cuando una persona con sesión y correo comprobado pide ser anfitriona (pieza 3.1), con nivel `new`. La persona lee su fila; no la escribe. Pedirlo otra vez no cambia el nivel.
 - **verifications**(<ins>id</ins>, user_id FK → users(id), property_id? FK → properties(id), kind, provider, provider_reference, result, resolved_at?)
   - Única la pareja (provider, provider_reference). `property_id` se agrega en el grupo 2.
 
